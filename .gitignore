@@ -1,0 +1,10 @@
+venv/
+__pycache__/
+*.pyc
+.env
+data/*
+!data/.keep
+models/*
+!models/.keep
+catboost_info/
+.pytest_cache/
