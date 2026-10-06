@@ -1,0 +1,16 @@
+# Project Status
+- [x] Phase 0: Scoping (posture, milestones, change type and project facts agreed), repository initialized, and for an existing project the working branch created and the codebase mapped, docs index created
+- [x] Phase 0b: Baseline screenshots (existing projects with a UI only)
+- [ ] Phase 1: Spec interview and user approval
+- [ ] Phase 2.1: docs/SPEC.md
+- [ ] Phase 2.2: docs/ARCHITECTURE.md (draft) and docs/DECISIONS.md
+- [ ] Phase 2.2b: Design studio (ui only)
+- [ ] Phase 2.2c: Prototype accepted by the user (ui only)
+- [ ] Phase 2.2d: Architecture frozen and signed off
+- [ ] Phase 2.2e: Design review (sensitive-data only) (not needed)
+- [ ] Phase 2.3: docs/TASKS.json
+- [ ] Phase 2.4: Setup (tools checked, credentials listed, user confirmed)
+- [ ] Phase 3.1: M1 built, verified and committed per task, reviewed (code, and UI for ui projects), UAT accepted, CHANGELOG updated
+- [ ] Phase 3.2: M2 built, verified and committed per task, reviewed (code, and UI for ui projects), UAT accepted, CHANGELOG updated
+- [ ] Phase 3.3: M3 built, verified and committed per task, reviewed (code, and UI for ui projects), UAT accepted, CHANGELOG updated
+- [ ] Phase 4: Final test run, README, and handover
