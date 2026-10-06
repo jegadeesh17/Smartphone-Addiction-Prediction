@@ -8,8 +8,8 @@
 - [x] Phase 2.2c: Prototype accepted by the user (ui only)
 - [x] Phase 2.2d: Architecture frozen and signed off
 - [x] Phase 2.2e: Design review (sensitive-data only) (not needed)
-- [ ] Phase 2.3: docs/TASKS.json
-- [ ] Phase 2.4: Setup (tools checked, credentials listed, user confirmed)
+- [x] Phase 2.3: docs/TASKS.json
+- [x] Phase 2.4: Setup (tools checked, credentials listed, user confirmed)
 - [ ] Phase 3.1: M1 built, verified and committed per task, reviewed (code, and UI for ui projects), UAT accepted, CHANGELOG updated
 - [ ] Phase 3.2: M2 built, verified and committed per task, reviewed (code, and UI for ui projects), UAT accepted, CHANGELOG updated
 - [ ] Phase 3.3: M3 built, verified and committed per task, reviewed (code, and UI for ui projects), UAT accepted, CHANGELOG updated
