@@ -62,11 +62,15 @@ class TestInferenceEngine:
         assert 0.0 <= response.probability <= 1.0
         assert response.prediction in (0, 1)
         assert response.classification in ("ADDICTION DETECTED", "HEALTHY")
+        assert response.severity in ("High", "Moderate", "Healthy")
         assert response.risk_tier in ("HIGH", "MODERATE", "LOW")
         assert response.status_label in (
-            "Elevated Risk Tier",
-            "Compensatory Usage Pattern",
-            "Balanced Habit Profile",
+            "ADDICTION DETECTED • HIGH RISK",
+            "ADDICTION DETECTED • MODERATE RISK",
+            "ADDICTION DETECTED • LOW RISK",
+            "HEALTHY PATTERN • HIGH RISK",
+            "HEALTHY PATTERN • MODERATE RISK",
+            "HEALTHY PATTERN • LOW RISK",
         )
         assert isinstance(response.ratios, BehavioralMetrics)
         assert isinstance(response.interventions, list)
@@ -87,7 +91,7 @@ class TestInferenceEngine:
         assert 0.0 <= response.probability <= 1.0
 
     def test_threshold_responsiveness(self) -> None:
-        """Verify threshold alterations re-evaluate classification while preserving probability (AC-1.3)."""
+        """Verify threshold alterations re-evaluate classification while preserving probability and severity (AC-1.3, PAR-3, PAR-4)."""
         engine = InferenceEngine()
 
         # At default profile, LightGBM Fold 1 produces probability ~0.5282
@@ -100,23 +104,25 @@ class TestInferenceEngine:
         # Probabilities should be virtually identical
         assert abs(res_lower.probability - res_higher.probability) < 1e-4
 
-        # With tau=0.50 (0.5282 >= 0.50): ADDICTION DETECTED
+        # With tau=0.50 (0.5282 >= 0.50): ADDICTION DETECTED, risk tier MODERATE / Moderate
         assert res_lower.prediction == 1
         assert res_lower.classification == "ADDICTION DETECTED"
-        assert res_lower.status_label == "Elevated Risk Tier"
-        assert res_lower.risk_tier == "HIGH"
+        assert res_lower.status_label == "ADDICTION DETECTED • MODERATE RISK"
+        assert res_lower.risk_tier == "MODERATE"
+        assert res_lower.severity == "Moderate"
 
-        # With tau=0.60 (0.5282 < 0.60 and 0.5282 >= 0.35): HEALTHY / Compensatory Usage Pattern
+        # With tau=0.60 (0.5282 < 0.60): HEALTHY, while intrinsic risk tier remains MODERATE / Moderate
         assert res_higher.prediction == 0
         assert res_higher.classification == "HEALTHY"
-        assert res_higher.status_label == "Compensatory Usage Pattern"
+        assert res_higher.status_label == "HEALTHY PATTERN • MODERATE RISK"
         assert res_higher.risk_tier == "MODERATE"
+        assert res_higher.severity == "Moderate"
 
     def test_three_tier_clinical_spectrum_mapping(self) -> None:
-        """Verify 3-tier clinical spectrum status_label and risk_tier per ADR-0006."""
+        """Verify 3-tier clinical spectrum status_label and risk_tier per AC-1.1, PAR-4, and ADR-0006."""
         engine = InferenceEngine()
 
-        # 1. Elevated Risk Tier (prob >= threshold)
+        # 1. High Severity / Elevated Risk Tier (P >= 0.70)
         p_high = BehavioralProfileInput(
             daily_screen_time_hours=14.0,
             social_media_hours=7.0,
@@ -130,23 +136,25 @@ class TestInferenceEngine:
             threshold=0.50,
         )
         res_high = engine.predict(p_high)
-        assert res_high.probability >= 0.50
+        assert res_high.probability >= 0.70
         assert res_high.prediction == 1
         assert res_high.classification == "ADDICTION DETECTED"
-        assert res_high.status_label == "Elevated Risk Tier"
+        assert res_high.severity == "High"
         assert res_high.risk_tier == "HIGH"
+        assert res_high.status_label == "ADDICTION DETECTED • HIGH RISK"
 
-        # 2. Compensatory Usage Pattern (0.35 <= prob < threshold)
-        # Using tau=0.65 on default profile (where prob ~ 0.5282)
-        p_mod = BehavioralProfileInput(threshold=0.65)
+        # 2. Moderate Severity / Moderate Risk Tier (0.40 <= P < 0.70)
+        # Default profile produces prob ~ 0.5282
+        p_mod = BehavioralProfileInput(threshold=0.50)
         res_mod = engine.predict(p_mod)
-        assert 0.35 <= res_mod.probability < 0.65
-        assert res_mod.prediction == 0
-        assert res_mod.classification == "HEALTHY"
-        assert res_mod.status_label == "Compensatory Usage Pattern"
+        assert 0.40 <= res_mod.probability < 0.70
+        assert res_mod.prediction == 1
+        assert res_mod.classification == "ADDICTION DETECTED"
+        assert res_mod.severity == "Moderate"
         assert res_mod.risk_tier == "MODERATE"
+        assert res_mod.status_label == "ADDICTION DETECTED • MODERATE RISK"
 
-        # 3. Balanced Habit Profile (prob < 0.35)
+        # 3. Healthy Usage Pattern / Low Risk Tier (P < 0.40)
         p_low = BehavioralProfileInput(
             daily_screen_time_hours=1.5,
             social_media_hours=0.5,
@@ -161,11 +169,12 @@ class TestInferenceEngine:
             threshold=0.50,
         )
         res_low = engine.predict(p_low)
-        assert res_low.probability < 0.35
+        assert res_low.probability < 0.40
         assert res_low.prediction == 0
         assert res_low.classification == "HEALTHY"
-        assert res_low.status_label == "Balanced Habit Profile"
+        assert res_low.severity == "Healthy"
         assert res_low.risk_tier == "LOW"
+        assert res_low.status_label == "HEALTHY PATTERN • LOW RISK"
 
     def test_latency_benchmark_under_20ms(self) -> None:
         """Verify 10 repeated inferences each complete in <20ms and p95 latency < 20ms (AC-1.2)."""
@@ -256,11 +265,15 @@ class TestMockInferenceEngine:
         assert 0.0 <= res.probability <= 1.0
         assert res.prediction in (0, 1)
         assert res.classification in ("ADDICTION DETECTED", "HEALTHY")
+        assert res.severity in ("High", "Moderate", "Healthy")
         assert res.risk_tier in ("HIGH", "MODERATE", "LOW")
         assert res.status_label in (
-            "Elevated Risk Tier",
-            "Compensatory Usage Pattern",
-            "Balanced Habit Profile",
+            "ADDICTION DETECTED • HIGH RISK",
+            "ADDICTION DETECTED • MODERATE RISK",
+            "ADDICTION DETECTED • LOW RISK",
+            "HEALTHY PATTERN • HIGH RISK",
+            "HEALTHY PATTERN • MODERATE RISK",
+            "HEALTHY PATTERN • LOW RISK",
         )
         assert isinstance(res.ratios, BehavioralMetrics)
         assert isinstance(res.interventions, list)
@@ -341,21 +354,31 @@ class TestMockInferenceEngine:
         """Verify 3-tier clinical spectrum status_label mapping in mock engine."""
         mock = MockInferenceEngine()
 
-        # 1. Elevated Risk Tier (prob >= threshold)
-        p_high = BehavioralProfileInput(daily_screen_time_hours=12.0, threshold=0.50)
+        # 1. High Risk (P >= 0.70)
+        p_high = BehavioralProfileInput(
+            daily_screen_time_hours=14.0,
+            social_media_hours=6.0,
+            gaming_hours=3.0,
+            sleep_hours=4.0,
+            threshold=0.50,
+        )
         res_high = mock.predict(p_high)
+        assert res_high.probability >= 0.70
         assert res_high.prediction == 1
-        assert res_high.status_label == "Elevated Risk Tier"
+        assert res_high.severity == "High"
         assert res_high.risk_tier == "HIGH"
+        assert res_high.status_label == "ADDICTION DETECTED • HIGH RISK"
 
-        # 2. Compensatory Usage Pattern (0.35 <= prob < threshold)
-        p_mod = BehavioralProfileInput(threshold=0.60)  # default prob is 0.5050
+        # 2. Moderate Risk (0.40 <= P < 0.70)
+        p_mod = BehavioralProfileInput(threshold=0.50)  # default prob is ~0.5050
         res_mod = mock.predict(p_mod)
-        assert res_mod.prediction == 0
-        assert res_mod.status_label == "Compensatory Usage Pattern"
+        assert 0.40 <= res_mod.probability < 0.70
+        assert res_mod.prediction == 1
+        assert res_mod.severity == "Moderate"
         assert res_mod.risk_tier == "MODERATE"
+        assert res_mod.status_label == "ADDICTION DETECTED • MODERATE RISK"
 
-        # 3. Balanced Habit Profile (prob < 0.35)
+        # 3. Healthy / Low Risk (P < 0.40)
         p_low = BehavioralProfileInput(
             daily_screen_time_hours=2.0,
             social_media_hours=0.5,
@@ -368,10 +391,11 @@ class TestMockInferenceEngine:
             threshold=0.50,
         )
         res_low = mock.predict(p_low)
-        assert res_low.probability < 0.35
+        assert res_low.probability < 0.40
         assert res_low.prediction == 0
-        assert res_low.status_label == "Balanced Habit Profile"
+        assert res_low.severity == "Healthy"
         assert res_low.risk_tier == "LOW"
+        assert res_low.status_label == "HEALTHY PATTERN • LOW RISK"
 
     def test_mock_predict_accepts_dict(self) -> None:
         """Verify mock adapter accepts dictionary profile input."""

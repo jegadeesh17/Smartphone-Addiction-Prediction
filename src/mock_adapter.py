@@ -13,7 +13,13 @@ from typing import Any, Union
 
 import numpy as np
 
-from src.recommendations import compute_metrics, generate_clinical_interventions
+from src.recommendations import (
+    classify_risk_tier,
+    classify_severity,
+    compute_metrics,
+    generate_clinical_interventions,
+    get_authoritative_status_label,
+)
 from src.schemas import BehavioralProfileInput, PredictionResponse
 
 
@@ -68,21 +74,12 @@ class MockInferenceEngine:
         interventions = generate_clinical_interventions(profile, metrics)
 
         threshold = profile.decision_threshold
-        if prob_rounded >= threshold:
-            prediction = 1
-            classification = "ADDICTION DETECTED"
-            status_label = "Elevated Risk Tier"
-            risk_tier = "HIGH"
-        elif prob_rounded >= 0.35:
-            prediction = 0
-            classification = "HEALTHY"
-            status_label = "Compensatory Usage Pattern"
-            risk_tier = "MODERATE"
-        else:
-            prediction = 0
-            classification = "HEALTHY"
-            status_label = "Balanced Habit Profile"
-            risk_tier = "LOW"
+        is_addicted = prob_rounded >= threshold
+        prediction = 1 if is_addicted else 0
+        classification = "ADDICTION DETECTED" if is_addicted else "HEALTHY"
+        risk_tier = classify_risk_tier(prob_rounded)
+        severity = classify_severity(prob_rounded)
+        status_label = get_authoritative_status_label(is_addicted, prob_rounded, threshold)
 
         latency_ms = max(0.01, round((time.perf_counter() - t0) * 1000.0, 3))
 
@@ -90,7 +87,7 @@ class MockInferenceEngine:
             probability=prob_rounded,
             prediction=prediction,
             classification=classification,
-            severity=risk_tier,
+            severity=severity,
             status_label=status_label,
             ratios=metrics,
             interventions=interventions,

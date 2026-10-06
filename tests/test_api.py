@@ -125,14 +125,11 @@ class TestPredictEndpoint:
         # Contract fields
         assert "probability" in data
         assert 0.0 <= data["probability"] <= 1.0
-        assert data["prediction"] in (0, 1)
-        assert data["classification"] in ("ADDICTION DETECTED", "HEALTHY")
-        assert data["severity"] in ("HIGH", "MODERATE", "LOW", "High", "Moderate", "Healthy")
-        assert data["status_label"] in (
-            "Elevated Risk Tier",
-            "Compensatory Usage Pattern",
-            "Balanced Habit Profile",
-        )
+        assert data["prediction"] == 1
+        assert data["classification"] == "ADDICTION DETECTED"
+        assert data["severity"] == "Moderate"
+        assert data["risk_tier"] == "MODERATE"
+        assert data["status_label"].startswith("ADDICTION DETECTED • MODERATE RISK")
         assert data["latency_ms"] > 0.0
         assert data["decision_threshold"] == sample_valid_profile["decision_threshold"]
 
@@ -165,6 +162,9 @@ class TestPredictEndpoint:
         data_low = res_low.json()
         assert data_low["prediction"] == 1
         assert data_low["classification"] == "ADDICTION DETECTED"
+        assert data_low["severity"] == "Moderate"
+        assert data_low["risk_tier"] == "MODERATE"
+        assert data_low["status_label"].startswith("ADDICTION DETECTED • MODERATE RISK")
 
         # High threshold (0.95) guarantees healthy classification
         high_tau_payload = {**sample_valid_profile, "decision_threshold": 0.95}
@@ -173,6 +173,9 @@ class TestPredictEndpoint:
         data_high = res_high.json()
         assert data_high["prediction"] == 0
         assert data_high["classification"] == "HEALTHY"
+        assert data_high["severity"] == "Moderate"
+        assert data_high["risk_tier"] == "MODERATE"
+        assert data_high["status_label"].startswith("HEALTHY PATTERN • MODERATE RISK")
 
         # Underlying model probabilities should remain identical
         assert data_low["probability"] == pytest.approx(data_high["probability"], abs=1e-4)
@@ -305,11 +308,9 @@ class TestMockModelFallbackToggle:
         # Calibrated baseline centered heuristic yields ~50.5% (48-52%) on standard population medians (ADR-0007)
         assert 0.48 <= data["probability"] <= 0.53
         assert data["latency_ms"] < 10.0
-        assert data["status_label"] in (
-            "Elevated Risk Tier",
-            "Compensatory Usage Pattern",
-            "Balanced Habit Profile",
-        )
+        assert data["severity"] == "Moderate"
+        assert data["risk_tier"] == "MODERATE"
+        assert data["status_label"].startswith("ADDICTION DETECTED • MODERATE RISK")
 
 
 # ==============================================================================

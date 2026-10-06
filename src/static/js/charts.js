@@ -35,42 +35,44 @@
     const GAUGE_ARC_LENGTH = 326.4;
 
     /**
-     * Authoritative 3-tier clinical status mapping per ADR-0006
+     * Authoritative 3-tier clinical status mapping per ADR-0006 & SPEC AC-1.1 / PAR-4
      * @param {number} prob - Evaluated addiction probability [0.0, 1.0]
      * @param {number} threshold - Decision threshold tau [0.05, 0.95]
      * @returns {Object} Tier metadata with label, classes, CSS color tokens, and advisory HTML
      */
     function getClinicalTier(prob, threshold) {
         const tau = Number(threshold) || 0.50;
+        const isAddicted = prob >= tau;
+        const tier = prob >= 0.70 ? 'HIGH' : (prob >= 0.40 ? 'MODERATE' : 'LOW');
+        const computedStatusLabel = isAddicted
+            ? 'ADDICTION DETECTED • ' + tier + ' RISK'
+            : 'HEALTHY PATTERN • ' + tier + ' RISK';
 
-        if (prob >= tau) {
-            return {
-                label: 'Elevated Risk Tier',
-                badgeClass: 'badge-high',
-                pillClass: 'status-pill-high',
-                colorVar: 'var(--danger)',
-                summaryHtml: 'Estimated risk probability exceeds clinical decision threshold (&tau; = ' +
-                    tau.toFixed(2) + '). Behavioral boundary restructuring recommended.'
-            };
-        } else if (prob >= 0.35) {
-            return {
-                label: 'Compensatory Usage Pattern',
-                badgeClass: 'badge-mod',
-                pillClass: 'status-pill-mod',
-                colorVar: 'var(--amber)',
-                summaryHtml: 'Estimated risk probability reflects moderate recreational usage below threshold (&tau; = ' +
-                    tau.toFixed(2) + '). Targeted routine adjustments advised.'
-            };
-        } else {
-            return {
-                label: 'Balanced Habit Profile',
-                badgeClass: 'badge-low',
-                pillClass: 'status-pill-low',
-                colorVar: 'var(--low-risk)',
-                summaryHtml: 'Estimated risk probability demonstrates balanced behavioral equilibrium below threshold (&tau; = ' +
-                    tau.toFixed(2) + '). Healthy digital routine maintained.'
-            };
+        let pillClass = 'status-pill-low';
+        let badgeClass = 'badge-low';
+        let colorVar = 'var(--low-risk)';
+
+        if (isAddicted) {
+            pillClass = 'status-pill-high';
+            badgeClass = 'badge-high';
+            colorVar = 'var(--danger)';
+        } else if (tier === 'MODERATE') {
+            pillClass = 'status-pill-mod';
+            badgeClass = 'badge-mod';
+            colorVar = 'var(--amber)';
         }
+
+        return {
+            tier: tier,
+            isAddicted: isAddicted,
+            label: computedStatusLabel,
+            badgeClass: badgeClass,
+            pillClass: pillClass,
+            colorVar: colorVar,
+            summaryHtml: isAddicted
+                ? 'Estimated risk probability exceeds clinical decision threshold (&tau; = ' + tau.toFixed(2) + '). Behavioral boundary restructuring recommended.'
+                : 'Estimated risk probability demonstrates healthy digital habits below threshold (&tau; = ' + tau.toFixed(2) + '). Maintain current balanced routine.'
+        };
     }
 
     /**
@@ -79,12 +81,15 @@
      *
      * @param {number} probability - Assessed addiction probability in range [0.0, 1.0]
      * @param {number} [threshold=0.50] - Active classification decision threshold tau
+     * @param {string} [statusLabel] - Authoritative status label from backend API
+     * @param {string} [classification] - Diagnostic classification ("ADDICTION DETECTED" or "HEALTHY")
      * @returns {Object} Render evaluation metadata
      */
-    function renderRiskGauge(probability, threshold) {
+    function renderRiskGauge(probability, threshold, statusLabel, classification) {
         const prob = Math.min(1.0, Math.max(0.0, Number(probability) || 0.0));
         const tau = Math.min(0.95, Math.max(0.05, Number(threshold) || 0.50));
         const pctFormatted = (prob * 100).toFixed(1) + '%';
+        const tauFormatted = tau.toFixed(2);
 
         // 1. Calculate Arc Stroke Dashoffset
         // offset = length * (1.0 - prob)
@@ -103,40 +108,84 @@
             probNumEl.textContent = pctFormatted;
         }
 
-        // 3. 3-Tier Clinical Spectrum Determination
-        const tier = getClinicalTier(prob, tau);
+        // 3. Status determination & definitive classification (ADR-0006, PAR-3, PAR-4, PAR-6)
+        const isAddicted = prob >= tau;
+        const tier = prob >= 0.70 ? 'HIGH' : (prob >= 0.40 ? 'MODERATE' : 'LOW');
+        const computedStatusLabel = isAddicted
+            ? 'ADDICTION DETECTED • ' + tier + ' RISK'
+            : 'HEALTHY PATTERN • ' + tier + ' RISK';
+
+        // If statusLabel is passed from API, use it directly for #badge-status!
+        const finalStatusLabel = (statusLabel && typeof statusLabel === 'string' && statusLabel.trim().length > 0)
+            ? statusLabel
+            : computedStatusLabel;
+
+        const finalClassification = classification || (isAddicted ? 'ADDICTION DETECTED' : 'HEALTHY');
+
+        // Status pill styling:
+        // - If isAddicted (or statusLabel contains "ADDICTION DETECTED"): status-pill-high
+        // - Else if tier === 'MODERATE' (or statusLabel contains "MODERATE RISK"): status-pill-mod
+        // - Else: status-pill-low
+        let pillClass = 'status-pill-low';
+        let colorVar = 'var(--low-risk)';
+        let badgeClass = 'badge-low';
+
+        if (isAddicted || (statusLabel && statusLabel.indexOf('ADDICTION DETECTED') !== -1)) {
+            pillClass = 'status-pill-high';
+            colorVar = 'var(--danger)';
+            badgeClass = 'badge-high';
+        } else if (tier === 'MODERATE' || (statusLabel && statusLabel.indexOf('MODERATE RISK') !== -1)) {
+            pillClass = 'status-pill-mod';
+            colorVar = 'var(--amber)';
+            badgeClass = 'badge-mod';
+        } else {
+            pillClass = 'status-pill-low';
+            colorVar = 'var(--low-risk)';
+            badgeClass = 'badge-low';
+        }
 
         if (arcEl) {
-            arcEl.style.stroke = tier.colorVar;
+            arcEl.style.stroke = colorVar;
         }
 
         // 4. Consolidated Authoritative Status Pill (ADR-0006)
         const statusPill = document.getElementById('status-pill');
         if (statusPill) {
-            // Apply single authoritative status pill classes
-            statusPill.className = 'status-pill ' + tier.pillClass;
+            statusPill.className = 'status-pill ' + pillClass;
         }
 
         const badgeStatus = document.getElementById('badge-status');
         if (badgeStatus) {
-            badgeStatus.className = 'badge ' + tier.badgeClass;
-            badgeStatus.textContent = tier.label;
+            badgeStatus.className = 'badge ' + badgeClass;
+            badgeStatus.textContent = finalStatusLabel;
         }
 
         // 5. Narrative Classification Summary
         const summaryEl = document.getElementById('classification-summary');
         if (summaryEl) {
-            summaryEl.innerHTML = 'Estimated risk probability <strong>' + pctFormatted + '</strong>: ' + tier.summaryHtml;
+            const decisionVerb = (finalClassification === 'ADDICTION DETECTED' || isAddicted || (statusLabel && statusLabel.indexOf('ADDICTION DETECTED') !== -1))
+                ? 'ADDICTION DETECTED'
+                : 'HEALTHY';
+            const actionAdvice = (decisionVerb === 'ADDICTION DETECTED')
+                ? 'Behavioral boundary restructuring recommended.'
+                : 'Maintain current balanced digital routine.';
+
+            summaryEl.innerHTML = 'Diagnostic decision: <strong>' + decisionVerb +
+                '</strong> at threshold &tau; = ' + tauFormatted +
+                ' (assessed risk probability: <strong>' + pctFormatted + '</strong>). ' + actionAdvice;
         }
 
         return {
             probability: prob,
             threshold: tau,
             percentage: pctFormatted,
-            label: tier.label,
-            badgeClass: tier.badgeClass,
-            pillClass: tier.pillClass,
-            colorVar: tier.colorVar
+            label: finalStatusLabel,
+            classification: finalClassification,
+            tier: tier,
+            isAddicted: isAddicted,
+            badgeClass: badgeClass,
+            pillClass: pillClass,
+            colorVar: colorVar
         };
     }
 

@@ -319,10 +319,37 @@
 
                 checkPhysiologicalBoundary();
 
-                // If threshold slider changed, instantly re-evaluate risk gauge readout (PAR-1, PAR-3)
+                // If threshold slider changed, instantly re-evaluate risk gauge readout and status pill (PAR-1, PAR-3)
                 if (cfg.key === 'threshold') {
+                    const currentProbability = state.lastProbability;
+                    const newThreshold = state.profile.threshold;
+                    const isAddicted = currentProbability >= newThreshold;
+                    const tier = currentProbability >= 0.70 ? 'HIGH' : (currentProbability >= 0.40 ? 'MODERATE' : 'LOW');
+                    const computedStatusLabel = isAddicted
+                        ? 'ADDICTION DETECTED • ' + tier + ' RISK'
+                        : 'HEALTHY PATTERN • ' + tier + ' RISK';
+                    const classification = isAddicted ? 'ADDICTION DETECTED' : 'HEALTHY';
+
+                    // Immediately update #badge-status text
+                    if (dom.badgeStatus) {
+                        dom.badgeStatus.textContent = computedStatusLabel;
+                    }
+
+                    // Immediately flip #status-pill styling between high/mod/low without waiting for API response
+                    if (dom.statusPill) {
+                        let pillClass = 'status-pill-low';
+                        if (isAddicted) {
+                            pillClass = 'status-pill-high';
+                        } else if (tier === 'MODERATE') {
+                            pillClass = 'status-pill-mod';
+                        } else {
+                            pillClass = 'status-pill-low';
+                        }
+                        dom.statusPill.className = 'status-pill ' + pillClass;
+                    }
+
                     if (typeof window.renderRiskGauge === 'function') {
-                        window.renderRiskGauge(state.lastProbability, state.profile.threshold);
+                        window.renderRiskGauge(currentProbability, newThreshold, computedStatusLabel, classification);
                     }
                 }
 
@@ -426,11 +453,33 @@
     // -------------------------------------------------------------------------
     function renderDiagnosticOutput(data) {
         const prob = data.probability;
-        const thresh = state.profile.threshold;
+        const thresh = data.decision_threshold !== undefined ? data.decision_threshold : state.profile.threshold;
+        const statusLabel = data.status_label;
+        const classification = data.classification;
 
         // 1. Render SVG Risk Gauge via charts.js
         if (typeof window.renderRiskGauge === 'function') {
-            window.renderRiskGauge(prob, thresh);
+            window.renderRiskGauge(prob, thresh, statusLabel, classification);
+        }
+
+        // Update #badge-status and #status-pill using data.status_label
+        if (statusLabel) {
+            if (dom.badgeStatus) {
+                dom.badgeStatus.textContent = statusLabel;
+            }
+            if (dom.statusPill) {
+                const isAddicted = prob >= thresh || statusLabel.indexOf('ADDICTION DETECTED') !== -1;
+                const tier = prob >= 0.70 ? 'HIGH' : (prob >= 0.40 ? 'MODERATE' : 'LOW');
+                let pillClass = 'status-pill-low';
+                if (isAddicted || statusLabel.indexOf('ADDICTION DETECTED') !== -1) {
+                    pillClass = 'status-pill-high';
+                } else if (tier === 'MODERATE' || statusLabel.indexOf('MODERATE RISK') !== -1) {
+                    pillClass = 'status-pill-mod';
+                } else {
+                    pillClass = 'status-pill-low';
+                }
+                dom.statusPill.className = 'status-pill ' + pillClass;
+            }
         }
 
         // 2. Render 4 Granular Ratio Diagnostic Cards with Target Indicators
@@ -464,28 +513,28 @@
             }
         }
 
-        // Ratio 3: Avg Session Length (Target > 8.0 min)
+        // Ratio 3: Avg Session Length (Target > 5.0 min per SPEC Journey 1)
         if (dom.metricUnlockMins && dom.targetUnlockMins) {
             dom.metricUnlockMins.textContent = avgUnlock.toFixed(1) + ' min';
-            if (avgUnlock >= 8.0) {
+            if (avgUnlock >= 5.0) {
                 dom.targetUnlockMins.className = 'metric-card-target target-met';
-                dom.targetUnlockMins.innerHTML = '<span>Target Met (&gt; 8.0 min)</span>';
+                dom.targetUnlockMins.innerHTML = '<span>Target Met (&gt; 5.0 min)</span>';
             } else {
                 dom.targetUnlockMins.className = 'metric-card-target target-breached';
-                dom.targetUnlockMins.innerHTML = '<span>Target Fragmented (&lt; 8.0 min)</span>';
+                dom.targetUnlockMins.innerHTML = '<span>Target Fragmented (&lt; 5.0 min)</span>';
             }
         }
 
-        // Ratio 4: Weekend Surge (Target < 1.5h)
+        // Ratio 4: Weekend Surge (Target < 2.0h per SPEC Journey 1)
         if (dom.metricWeekendSurge && dom.targetWeekendSurge) {
             const surgeSign = weekendSurge >= 0 ? '+' : '';
             dom.metricWeekendSurge.textContent = surgeSign + weekendSurge.toFixed(1) + 'h';
-            if (weekendSurge <= 1.5) {
+            if (weekendSurge <= 2.0) {
                 dom.targetWeekendSurge.className = 'metric-card-target target-met';
-                dom.targetWeekendSurge.innerHTML = '<span>Target Met (&lt; 1.5h)</span>';
+                dom.targetWeekendSurge.innerHTML = '<span>Target Met (&lt; 2.0h)</span>';
             } else {
                 dom.targetWeekendSurge.className = 'metric-card-target target-breached';
-                dom.targetWeekendSurge.innerHTML = '<span>Surge Detected (&gt; 1.5h)</span>';
+                dom.targetWeekendSurge.innerHTML = '<span>Surge Detected (&gt; 2.0h)</span>';
             }
         }
 
@@ -548,6 +597,10 @@
         // PAR-6: Correct spelling 'ADDICTION DETECTED' / 'HEALTHY'
         const classification = isAddicted ? 'ADDICTION DETECTED' : 'HEALTHY';
         const tier = prob >= 0.70 ? 'High' : (prob >= 0.40 ? 'Moderate' : 'Healthy');
+        const tierUpper = prob >= 0.70 ? 'HIGH' : (prob >= 0.40 ? 'MODERATE' : 'LOW');
+        const computedStatusLabel = isAddicted
+            ? `ADDICTION DETECTED • ${tierUpper} RISK`
+            : `HEALTHY PATTERN • ${tierUpper} RISK`;
 
         const interventions = [];
         if (s_to_sl > 1.2) {
@@ -568,7 +621,7 @@
             prediction: isAddicted ? 1 : 0,
             classification: classification,
             severity: tier,
-            status_label: isAddicted ? 'Elevated Risk Tier' : (prob >= 0.35 ? 'Compensatory Usage Pattern' : 'Balanced Habit Profile'),
+            status_label: computedStatusLabel,
             ratios: {
                 screen_to_sleep_ratio: s_to_sl,
                 recreational_share: rec_to_s,
