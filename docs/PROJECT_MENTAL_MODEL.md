@@ -53,4 +53,19 @@
 ---
 
 ## Part 1: Requirements and UX (Spec Interview)
-*(To be populated in Phase 1 upon user confirmation)*
+- **Primary Journey**:
+  1. User accesses the dashboard at `http://localhost:8000/app` or `/`.
+  2. Page renders an Executive Header with editorial styling, followed by two core analytical zones:
+     - **Zone 1: Behavioral Profile Controls**: Sliders and segmented controls for demographics (`Age`, `Gender`, `Stress Level`, `Academic/Work Impact`), screen allocations (`Daily Screen`, `Social Media`, `Gaming`, `Weekend Screen`, `Sleep`), and unlock patterns (`App Opens`, `Notifications`).
+     - **Zone 2: Live Diagnostic Card & Population Benchmarks**: Instant reactive risk gauge displaying addiction probability calculated via LightGBM Fold 1 using cached population priors (<20ms latency), dynamic classification badge (`ADDICTION DETECTED` vs `HEALTHY` at adjustable threshold $\tau$), core behavioral ratios (`Screen/Sleep Ratio`, `Recreational Share`, `Avg Session Length`, `Weekend Surge`), and rule-based digital hygiene recommendations.
+  3. Header tab switcher enables flipping between Individual Diagnostic, Population Analytics (M2), and What-If Simulation (M3).
+- **Errors and Edge Cases**:
+  - API validation via Pydantic v2 enforces physiological limits (`sleep_hours`: 1.0–18.0, `daily_screen_time`: 0.0–24.0, non-negative counts).
+  - If total allocated hours (screen + sleep) exceed 24h, UI displays an inline visual constraint indicator warning without blocking exploratory input.
+  - If model artifacts or priors fail to load at startup, application fails fast with structured error logging.
+- **Non-Goals (Out of Scope for M1)**:
+  - Full 5-fold heavy ensemble evaluation during live slider interactions (Option A LightGBM fold 1 is used).
+  - What-If scenario simulations and batch CSV scoring (deferred to M3).
+  - User authentication, session databases, or external cloud deployments.
+  - Streamlit runtime (Streamlit is completely removed and replaced with FastAPI + custom web UI).
+

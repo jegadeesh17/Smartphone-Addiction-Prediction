@@ -1,7 +1,7 @@
 # Project Status
 - [x] Phase 0: Scoping (posture, milestones, change type and project facts agreed), repository initialized, and for an existing project the working branch created and the codebase mapped, docs index created
 - [x] Phase 0b: Baseline screenshots (existing projects with a UI only)
-- [ ] Phase 1: Spec interview and user approval
+- [x] Phase 1: Spec interview and user approval
 - [ ] Phase 2.1: docs/SPEC.md
 - [ ] Phase 2.2: docs/ARCHITECTURE.md (draft) and docs/DECISIONS.md
 - [ ] Phase 2.2b: Design studio (ui only)
