@@ -82,7 +82,7 @@
           ],
           "files_to_modify": [],
           "acceptance_criteria": "SPEC AC-1.1 (POST /api/predict returns 200 with probability, classification, ratios, interventions), AC-1.6 (bounds violations return 422), AC-1.8 (GET /health returns 200 with status healthy). Verified by 'pytest -q tests/test_api.py'.",
-          "status": "pending"
+          "status": "completed"
         },
         {
           "id": "M1-TASK-06",

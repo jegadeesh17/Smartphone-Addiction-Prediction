@@ -173,7 +173,16 @@ def get_inference_engine(
             _mock_engine_instance = MockInferenceEngine()
         return _mock_engine_instance
 
-    if _engine_instance is None or force_new or model_path is not None or priors_path is not None:
+    target_model = Path(model_path).resolve() if model_path is not None else None
+    target_priors = Path(priors_path).resolve() if priors_path is not None else None
+
+    needs_new = (
+        _engine_instance is None
+        or force_new
+        or (target_model is not None and _engine_instance.model_path != target_model)
+        or (target_priors is not None and _engine_instance.priors_path != target_priors)
+    )
+    if needs_new:
         _engine_instance = InferenceEngine(model_path=model_path, priors_path=priors_path)
     return _engine_instance
 
