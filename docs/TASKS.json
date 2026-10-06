@@ -19,7 +19,7 @@
             "requirements.txt"
           ],
           "acceptance_criteria": "SPEC Baseline setup and REG-2, REG-3: Fast test command 'pytest -q -m \"not slow\"' runs with exit code 0, discovering tests/test_baseline.py and verifying data/train.csv and models/lgb_fold_1.joblib are present and unmutated.",
-          "status": "pending"
+          "status": "completed"
         },
         {
           "id": "M1-TASK-02",
