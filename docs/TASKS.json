@@ -51,7 +51,7 @@
             "src/features.py"
           ],
           "acceptance_criteria": "SPEC REG-1 (create_features outputs 74 features with zero NaNs), REG-3 (raw datasets immutable), ADR-0002 (vectorized single-row transformer generates exact 74 features without single-row NaNs). Verified by 'pytest -q tests/test_features.py'.",
-          "status": "pending"
+          "status": "completed"
         },
         {
           "id": "M1-TASK-04",

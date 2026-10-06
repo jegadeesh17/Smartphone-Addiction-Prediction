@@ -9,6 +9,36 @@ import numpy as np
 import pandas as pd
 
 
+# ==============================================================================
+# Categorical Mapping Constants (ADR-0002, REG-1)
+# ==============================================================================
+
+GENDER_MAP = {'Female': 0, 'Male': 1, 'Other': 2}
+GENDER_CATEGORIES = ['Female', 'Male', 'Other']
+
+STRESS_MAP = {'Low': 0, 'Medium': 1, 'High': 2}
+STRESS_CATEGORIES = ['Low', 'Medium', 'High']
+
+IMPACT_MAP = {'No': 0, 'Yes': 1}
+IMPACT_CATEGORIES = ['No', 'Yes']
+
+GENDER_STRESS_CATEGORIES = [
+    'Female_High', 'Female_Low', 'Female_Medium', 'Female_nan',
+    'Male_High', 'Male_Low', 'Male_Medium', 'Male_nan',
+    'Other_High', 'Other_Low', 'Other_Medium', 'Other_nan',
+    'nan_High', 'nan_Low', 'nan_Medium', 'nan_nan',
+]
+GENDER_STRESS_MAP = {cat: i for i, cat in enumerate(GENDER_STRESS_CATEGORIES)}
+
+STRESS_IMPACT_CATEGORIES = [
+    'High_No', 'High_Yes', 'High_nan',
+    'Low_No', 'Low_Yes', 'Low_nan',
+    'Medium_No', 'Medium_Yes', 'Medium_nan',
+    'nan_No', 'nan_Yes', 'nan_nan',
+]
+STRESS_IMPACT_MAP = {cat: i for i, cat in enumerate(STRESS_IMPACT_CATEGORIES)}
+
+
 def create_features(df_train: pd.DataFrame, df_test: pd.DataFrame = None) -> tuple[pd.DataFrame, pd.DataFrame, list[str]]:
     """
     Extracts high-signal domain features and cohort statistics across combined train+test splits.
@@ -21,7 +51,7 @@ def create_features(df_train: pd.DataFrame, df_test: pd.DataFrame = None) -> tup
     if df_test is not None:
         df_all = pd.concat([df_train.assign(is_train=1), df_test.assign(is_train=0, addicted_label=np.nan)], ignore_index=True)
     else:
-        df_all = df_train.assign(is_train=1).copy()
+        df_all = df_train.assign(is_train=1).reset_index(drop=True).copy()
 
     raw_num = [
         'age', 'daily_screen_time_hours', 'social_media_hours', 'gaming_hours',
@@ -35,15 +65,15 @@ def create_features(df_train: pd.DataFrame, df_test: pd.DataFrame = None) -> tup
     df_all['num_missing'] = df_all[[f'{c}_isna' for c in raw_num + raw_cat]].sum(axis=1)
 
     # 2. Categorical Encodings (Standard & Composite)
-    df_all['gender_code'] = df_all['gender'].astype('category').cat.codes
-    df_all['stress_code'] = df_all['stress_level'].map({'Low': 0, 'Medium': 1, 'High': 2}).fillna(-1).astype(int)
-    df_all['impact_code'] = df_all['academic_work_impact'].map({'No': 0, 'Yes': 1}).fillna(-1).astype(int)
+    df_all['gender_code'] = pd.Categorical(df_all['gender'], categories=GENDER_CATEGORIES).codes
+    df_all['stress_code'] = df_all['stress_level'].map(STRESS_MAP).fillna(-1).astype(int)
+    df_all['impact_code'] = df_all['academic_work_impact'].map(IMPACT_MAP).fillna(-1).astype(int)
 
     df_all['gender_stress'] = df_all['gender'].astype(str) + '_' + df_all['stress_level'].astype(str)
-    df_all['gender_stress_code'] = df_all['gender_stress'].astype('category').cat.codes
+    df_all['gender_stress_code'] = pd.Categorical(df_all['gender_stress'], categories=GENDER_STRESS_CATEGORIES).codes
 
     df_all['stress_impact'] = df_all['stress_level'].astype(str) + '_' + df_all['academic_work_impact'].astype(str)
-    df_all['stress_impact_code'] = df_all['stress_impact'].astype('category').cat.codes
+    df_all['stress_impact_code'] = pd.Categorical(df_all['stress_impact'], categories=STRESS_IMPACT_CATEGORIES).codes
 
     # 3. Frequency Encodings
     for c in ['age', 'gender', 'stress_level', 'academic_work_impact', 'sleep_hours', 'daily_screen_time_hours', 'gender_stress', 'stress_impact']:

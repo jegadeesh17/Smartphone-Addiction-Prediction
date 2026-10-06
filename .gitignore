@@ -12,6 +12,7 @@ Thumbs.db
 .impeccable/review/
 data/*
 !data/.keep
+!data/priors.json
 models/*
 !models/.keep
 catboost_info/
