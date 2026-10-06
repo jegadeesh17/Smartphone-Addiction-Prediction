@@ -121,7 +121,7 @@ def create_app() -> FastAPI:
     app.include_router(health_router)
     app.include_router(predict_router)
 
-    # Mount Static Files (if directory exists)
+    # Mount Static Assets at /static
     for sdir in [
         ROOT_DIR / "src" / "static",
         ROOT_DIR / "app" / "static",
@@ -131,7 +131,7 @@ def create_app() -> FastAPI:
             app.mount("/static", StaticFiles(directory=str(sdir)), name="static")
             break
 
-    # Optional root page serving if HTML exists
+    # Serve Editorial Dashboard Index Template at GET / and GET /app
     @app.get("/", include_in_schema=False, response_model=None)
     @app.get("/app", include_in_schema=False, response_model=None)
     async def serve_index() -> Union[FileResponse, JSONResponse]:
@@ -141,7 +141,7 @@ def create_app() -> FastAPI:
             ROOT_DIR / "app" / "static" / "index.html",
         ]:
             if candidate.is_file():
-                return FileResponse(candidate)
+                return FileResponse(candidate, media_type="text/html")
         return JSONResponse(
             content={
                 "message": "Smartphone Addiction Prediction API",

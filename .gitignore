@@ -9,7 +9,7 @@ __pycache__/
 .DS_Store
 Thumbs.db
 .ui-review/
-.impeccable/review/
+.impeccable/
 data/*
 !data/.keep
 !data/priors.json

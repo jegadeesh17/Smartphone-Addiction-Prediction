@@ -98,7 +98,7 @@
             "src/main.py"
           ],
           "acceptance_criteria": "SPEC PAR-7 (multi-model CV benchmark table accessible), DESIGN.md sections 1, 2, 3. Verified by 'pytest -q tests/test_api.py' checking GET / and GET /app return 200 with text/html content containing app shell and benchmark markup.",
-          "status": "pending"
+          "status": "completed"
         },
         {
           "id": "M1-TASK-07",

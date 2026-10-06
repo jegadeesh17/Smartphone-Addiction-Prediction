@@ -343,10 +343,10 @@ def build_single_row_features(
 
     # Ensure ordering matches exact feature names in priors
     feat_cols = priors.get("feature_names", list(feature_row.keys()))
-    df = pd.DataFrame([feature_row])[feat_cols]
+    df = pd.DataFrame([[feature_row[c] for c in feat_cols]], columns=feat_cols)
 
     # Guarantee zero NaNs
-    if df.isna().any().any():
+    if df.isna().to_numpy().any():
         df = df.fillna(0.0)
 
     return df

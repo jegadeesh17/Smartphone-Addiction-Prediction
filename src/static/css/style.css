@@ -1,0 +1,1060 @@
+/* ==========================================================================
+   App Shell, Layout & Component Stylesheet
+   Smartphone Addiction Analytical Platform
+   Conforming to DESIGN.md, ADR-0006, and ADR-0008
+   ========================================================================== */
+
+/* Universal Reset & Box Sizing */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    font-size: 16px;
+    background-color: var(--bg);
+    color: var(--text-1);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+    line-height: 1.5;
+}
+
+/* Accessibility Focus Ring (WCAG 2.1 AA) */
+:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   Header & Brand Navigation Bar
+   -------------------------------------------------------------------------- */
+.app-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--panel);
+    border-bottom: 1px solid var(--line);
+    box-shadow: var(--shadow-header);
+}
+
+.header-top {
+    max-width: 1360px;
+    margin: 0 auto;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.brand-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.brand-mark {
+    width: 36px;
+    height: 36px;
+    background: var(--gold);
+    color: var(--ink-white);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-serif);
+    font-size: 1.25rem;
+    font-weight: 700;
+    box-shadow: var(--shadow-mark);
+    user-select: none;
+}
+
+.brand-title-group h1 {
+    font-family: var(--font-serif);
+    font-size: 1.65rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--text-1);
+    line-height: 1.2;
+}
+
+.brand-title-group p {
+    font-size: 0.85rem;
+    color: var(--text-2);
+}
+
+/* Calm Status Indicator & Live Telemetry Strip */
+.telemetry-strip {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.75rem;
+    color: var(--text-2);
+}
+
+.telemetry-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background: var(--panel-subtle);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-pill);
+    font-weight: 500;
+}
+
+.status-indicator-static {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--low-risk);
+    display: inline-block;
+}
+
+/* Nav Tab Container (Clean bottom border, zero side borders) */
+.nav-tab-container {
+    max-width: 1360px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    gap: 4px;
+    border-top: 1px solid var(--line-soft);
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.nav-tab-container::-webkit-scrollbar {
+    display: none;
+}
+
+.tab-button {
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 12px 18px;
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-2);
+    cursor: pointer;
+    transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tab-button:hover {
+    color: var(--text-1);
+    background-color: var(--gold-subtle);
+}
+
+.tab-button.active {
+    color: var(--gold);
+    font-weight: 600;
+    border-bottom-color: var(--gold);
+}
+
+/* --------------------------------------------------------------------------
+   Main Workspace Layout
+   -------------------------------------------------------------------------- */
+.main-workspace {
+    max-width: 1360px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 24px;
+    flex: 1;
+}
+
+.tab-content-panel {
+    display: none;
+}
+
+.tab-content-panel.active {
+    display: block;
+}
+
+/* 55/45 Two-Column Grid for Tab 1 */
+.diagnostic-grid {
+    display: grid;
+    grid-template-columns: 55% 45%;
+    gap: 24px;
+    align-items: start;
+}
+
+/* Panels & Cards */
+.panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    box-shadow: var(--shadow-card);
+    margin-bottom: 20px;
+}
+
+.panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--line-soft);
+}
+
+.panel-title {
+    font-family: var(--font-serif);
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-1);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.panel-subtitle {
+    font-size: 0.825rem;
+    color: var(--text-3);
+}
+
+/* Form Controls & Sliders */
+.form-group {
+    margin-bottom: 16px;
+}
+
+.label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.form-label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-1);
+}
+
+.form-value {
+    font-size: 0.85rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--gold);
+}
+
+/* Range Slider Styling */
+.range-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    background: var(--track);
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+}
+
+.range-slider:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+}
+
+.range-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--gold);
+    border: 2px solid var(--ink-white);
+    box-shadow: var(--shadow-thumb);
+    cursor: pointer;
+    transition: transform 0.1s ease, background-color 0.1s ease;
+}
+
+.range-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+    background: var(--gold-hover);
+}
+
+.range-slider::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--gold);
+    border: 2px solid var(--ink-white);
+    box-shadow: var(--shadow-thumb);
+    cursor: pointer;
+}
+
+/* Segmented Control Pill Buttons */
+.segmented-control {
+    display: flex;
+    background: var(--field-bg);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-pill);
+    padding: 3px;
+    gap: 3px;
+}
+
+.segment-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 8px 12px;
+    border-radius: var(--radius-pill);
+    font-family: var(--font-sans);
+    font-size: 0.825rem;
+    font-weight: 500;
+    color: var(--text-2);
+    cursor: pointer;
+    transition: color 0.15s ease, background-color 0.15s ease;
+    text-align: center;
+    min-height: 38px;
+}
+
+.segment-btn:hover {
+    color: var(--text-1);
+}
+
+.segment-btn.active {
+    background: var(--panel);
+    color: var(--gold);
+    font-weight: 600;
+    box-shadow: var(--shadow-pill);
+}
+
+/* Physiological Warning Banner */
+.boundary-warning {
+    display: none;
+    background: var(--amber-bg);
+    border: 1px solid var(--amber-border);
+    border-radius: var(--radius-md);
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    color: var(--amber);
+    font-size: 0.85rem;
+    line-height: 1.4;
+    align-items: center;
+    gap: 10px;
+}
+
+.boundary-warning.active {
+    display: flex;
+}
+
+/* Live Assessment Output Card */
+.assessment-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    box-shadow: var(--shadow-card);
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.assessment-title {
+    font-family: var(--font-serif);
+    font-size: 1.15rem;
+    color: var(--text-1);
+    margin-bottom: 14px;
+    font-weight: 600;
+}
+
+/* --------------------------------------------------------------------------
+   SVG Risk Gauge Geometry (ADR-0008)
+   ViewBox: 0 0 240 170 | Center: (120, 120) | R=85 | Sweep: 220° (160° to 380°)
+   Arc feet end at Y ≈ 149.1px, leaving >20px canvas padding.
+   -------------------------------------------------------------------------- */
+.gauge-container {
+    position: relative;
+    width: 240px;
+    height: 170px;
+    margin: 0 auto;
+}
+
+.gauge-svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+.gauge-bg {
+    fill: none;
+    stroke: var(--track);
+    stroke-width: 14;
+    stroke-linecap: round;
+}
+
+.gauge-meter {
+    fill: none;
+    stroke: var(--low-risk);
+    stroke-width: 14;
+    stroke-linecap: round;
+    stroke-dasharray: 326.4;
+    stroke-dashoffset: 326.4;
+    transition: stroke-dashoffset 0.25s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.25s ease;
+}
+
+.gauge-readout {
+    position: absolute;
+    top: 86px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    pointer-events: none;
+}
+
+.gauge-percentage {
+    font-family: var(--font-sans);
+    font-size: 2.3rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-1);
+    line-height: 1;
+}
+
+/* Sub-Gauge Caption Layout: positive top margin guarantees >32px clearance (ADR-0008) */
+.gauge-caption {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-top: 1rem;
+    margin-bottom: 0;
+    text-align: center;
+}
+
+/* --------------------------------------------------------------------------
+   Consolidated Authoritative Status Pill (ADR-0006)
+   -------------------------------------------------------------------------- */
+.status-pill-container {
+    display: flex;
+    justify-content: center;
+    margin: 14px 0 12px;
+}
+
+.status-pill {
+    border-radius: var(--radius-pill);
+    padding: 6px 16px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.status-pill-low {
+    background: var(--low-risk-bg);
+    color: var(--low-risk);
+    border: 1px solid var(--low-risk-border);
+}
+
+.status-pill-amber {
+    background: var(--amber-bg);
+    color: var(--amber);
+    border: 1px solid var(--amber-border);
+}
+
+.status-pill-danger {
+    background: var(--danger-bg);
+    color: var(--danger);
+    border: 1px solid var(--danger-border);
+}
+
+/* Legacy badge compatibility wrapper */
+.badge-group {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 14px 0 16px;
+}
+
+.badge {
+    border-radius: var(--radius-pill);
+    padding: 4px 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.badge-low {
+    background: var(--low-risk-bg);
+    color: var(--low-risk);
+    border: 1px solid var(--low-risk-border);
+}
+
+.badge-amber {
+    background: var(--amber-bg);
+    color: var(--amber);
+    border: 1px solid var(--amber-border);
+}
+
+.badge-danger {
+    background: var(--danger-bg);
+    color: var(--danger);
+    border: 1px solid var(--danger-border);
+}
+
+.classification-text {
+    font-size: 0.9rem;
+    color: var(--text-2);
+    margin-top: 8px;
+}
+
+.classification-text strong {
+    color: var(--text-1);
+}
+
+/* Granular Metric Tiles */
+.metric-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-top: 18px;
+}
+
+.metric-card {
+    background: var(--panel-subtle);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+    text-align: left;
+}
+
+.metric-card-label {
+    font-size: 0.75rem;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 600;
+}
+
+.metric-card-value {
+    font-family: var(--font-sans);
+    font-size: 1.45rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-1);
+    margin: 4px 0 2px;
+}
+
+.metric-card-target {
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 500;
+}
+
+.target-met {
+    color: var(--low-risk);
+}
+
+.target-breached {
+    color: var(--danger);
+}
+
+/* Dynamic Interventions Box */
+.intervention-box {
+    margin-top: 20px;
+    text-align: left;
+}
+
+.intervention-box h3,
+.intervention-box h4 {
+    font-family: var(--font-serif);
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-1);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.intervention-item {
+    background: var(--panel-subtle);
+    border: 1px solid var(--line-soft);
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 8px;
+    font-size: 0.825rem;
+    line-height: 1.4;
+    color: var(--text-1);
+}
+
+.intervention-item.optimal {
+    border-color: var(--low-risk-border);
+    background: var(--low-risk-bg);
+}
+
+/* --------------------------------------------------------------------------
+   Multi-Model Benchmark Table (PAR-7)
+   -------------------------------------------------------------------------- */
+.benchmark-table-wrapper {
+    overflow-x: auto;
+    margin-top: 12px;
+}
+
+.styled-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.825rem;
+    text-align: left;
+}
+
+.styled-table th {
+    background: var(--panel-subtle);
+    color: var(--text-2);
+    font-weight: 600;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line);
+    text-transform: uppercase;
+    font-size: 0.725rem;
+    letter-spacing: 0.05em;
+}
+
+.styled-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line-soft);
+    color: var(--text-1);
+    font-variant-numeric: tabular-nums;
+}
+
+.styled-table tr:last-child td {
+    border-bottom: none;
+}
+
+.styled-table tr.highlight-row {
+    background: var(--gold-highlight);
+    font-weight: 600;
+}
+
+/* --------------------------------------------------------------------------
+   Tab 2: Population Cohort Analytics Styles
+   -------------------------------------------------------------------------- */
+.cohort-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.cohort-slicing-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.filter-label {
+    font-size: 0.825rem;
+    font-weight: 600;
+    color: var(--text-2);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.cohort-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.cohort-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.cohort-stat-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    box-shadow: var(--shadow-card);
+}
+
+.cohort-title {
+    font-family: var(--font-serif);
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text-1);
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.cohort-metric-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.825rem;
+    padding: 6px 0;
+    border-bottom: 1px dashed var(--line-soft);
+}
+
+.cohort-metric-row:last-child {
+    border-bottom: none;
+}
+
+.cohort-metric-label {
+    color: var(--text-2);
+}
+
+.cohort-metric-val {
+    font-weight: 600;
+    color: var(--text-1);
+    font-variant-numeric: tabular-nums;
+}
+
+/* 2D Joint Density Heatmap */
+.heatmap-container {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    margin-bottom: 24px;
+}
+
+.heatmap-grid {
+    display: grid;
+    grid-template-columns: 80px repeat(6, 1fr);
+    gap: 6px;
+    margin-top: 16px;
+    font-size: 0.75rem;
+    align-items: center;
+}
+
+.heatmap-cell {
+    height: 48px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    color: var(--ink-white);
+    transition: transform 0.15s ease;
+    cursor: default;
+    border: 1px solid var(--heatmap-border);
+}
+
+.heatmap-cell:hover {
+    transform: scale(1.04);
+    z-index: 2;
+}
+
+.heatmap-axis-label {
+    font-weight: 600;
+    color: var(--text-2);
+    text-align: right;
+    padding-right: 8px;
+}
+
+.heatmap-col-header {
+    font-weight: 600;
+    color: var(--text-2);
+    text-align: center;
+    padding-bottom: 6px;
+}
+
+/* Personal Quantile Benchmark Overlay */
+.quantile-panel {
+    margin-top: 16px;
+}
+
+.quantile-row {
+    margin-bottom: 16px;
+}
+
+.quantile-track {
+    width: 100%;
+    height: 10px;
+    background: var(--track);
+    border-radius: var(--radius-pill);
+    overflow: hidden;
+    margin: 8px 0 6px;
+    position: relative;
+}
+
+.quantile-fill {
+    height: 100%;
+    background: var(--gold);
+    border-radius: var(--radius-pill);
+    transform-origin: left;
+}
+
+/* --------------------------------------------------------------------------
+   Tab 3: What-If Simulation Styles
+   -------------------------------------------------------------------------- */
+.what-if-grid {
+    display: grid;
+    grid-template-columns: 50% 50%;
+    gap: 24px;
+    align-items: start;
+}
+
+.comparison-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 20px;
+    background: var(--panel-subtle);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-md);
+    margin-bottom: 20px;
+}
+
+.comparison-side {
+    text-align: center;
+}
+
+.comparison-arrow {
+    font-size: 1.5rem;
+    color: var(--text-3);
+}
+
+.delta-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: var(--radius-pill);
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.delta-reduction {
+    background: var(--low-risk-bg);
+    color: var(--low-risk);
+    border: 1px solid var(--low-risk-border);
+}
+
+.delta-increase {
+    background: var(--danger-bg);
+    color: var(--danger);
+    border: 1px solid var(--danger-border);
+}
+
+/* --------------------------------------------------------------------------
+   Tab 4: Batch CSV Diagnostics Styles
+   -------------------------------------------------------------------------- */
+.dropzone-container {
+    border: 2px dashed var(--line);
+    background: var(--field-bg);
+    border-radius: var(--radius-lg);
+    padding: 40px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+    margin-bottom: 24px;
+}
+
+.dropzone-container:hover,
+.dropzone-container.drag-over {
+    border-color: var(--gold);
+    background: var(--panel-subtle);
+}
+
+.dropzone-icon {
+    font-size: 1.8rem;
+    font-weight: 700;
+    font-family: var(--font-serif);
+    color: var(--gold);
+    margin-bottom: 12px;
+}
+
+.dropzone-text {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-1);
+    margin-bottom: 4px;
+}
+
+.dropzone-hint {
+    font-size: 0.8rem;
+    color: var(--text-3);
+    margin-bottom: 16px;
+}
+
+.file-input {
+    display: none;
+}
+
+.batch-summary-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+/* Buttons */
+.btn-primary {
+    background: var(--gold);
+    color: var(--ink-white);
+    border: none;
+    border-radius: var(--radius-md);
+    padding: 10px 18px;
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease, transform 0.1s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-primary:hover {
+    background: var(--gold-hover);
+}
+
+.btn-secondary {
+    background: var(--panel-subtle);
+    color: var(--text-1);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    padding: 8px 14px;
+    font-family: var(--font-sans);
+    font-size: 0.825rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-secondary:hover {
+    background: var(--field-bg);
+    border-color: var(--gold);
+}
+
+/* State Containers */
+.state-container {
+    padding: 30px;
+    text-align: center;
+    color: var(--text-2);
+}
+
+.spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid var(--track);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 12px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Footer */
+.app-footer {
+    border-top: 1px solid var(--line);
+    background: var(--panel);
+    padding: 20px 24px;
+    margin-top: auto;
+    font-size: 0.8rem;
+    color: var(--text-3);
+}
+
+.footer-content {
+    max-width: 1360px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+/* --------------------------------------------------------------------------
+   Responsive Layout & Mobile Hardening (Down to 390px)
+   -------------------------------------------------------------------------- */
+@media (max-width: 1024px) {
+    .diagnostic-grid, .what-if-grid {
+        grid-template-columns: 1fr;
+    }
+    .cohort-summary-grid, .batch-summary-strip {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .main-workspace {
+        padding: 16px;
+    }
+    .header-top {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 12px 16px;
+    }
+    .telemetry-strip {
+        width: 100%;
+        justify-content: space-between;
+    }
+    .nav-tab-container {
+        padding: 0 16px;
+    }
+    .panel {
+        padding: 16px;
+    }
+    .metric-grid {
+        grid-template-columns: 1fr;
+    }
+    .cohort-summary-grid, .batch-summary-strip {
+        grid-template-columns: 1fr;
+    }
+    .range-slider {
+        height: 8px;
+    }
+    .segment-btn {
+        min-height: 44px; /* Accessible 44px touch target */
+    }
+    .btn-primary, .btn-secondary {
+        width: 100%;
+        justify-content: center;
+        min-height: 44px; /* Accessible 44px touch target */
+    }
+    .footer-content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+/* Prefers Reduced Motion Invariant */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
