@@ -114,7 +114,7 @@
             "src/static/css/style.css"
           ],
           "acceptance_criteria": "SPEC AC-1.1, AC-1.3, AC-1.4, AC-1.5, AC-1.7, PAR-1, PAR-3, PAR-4, PAR-5, PAR-6 (correct 'ADDICTION DETECTED' spelling), ADR-0006, ADR-0008, FEEDBACK.md items 1 & 2. Verified by 'pytest -q tests/test_api.py' checking UI template delivery and valid predict payload interactions.",
-          "status": "pending"
+          "status": "completed"
         }
       ]
     },

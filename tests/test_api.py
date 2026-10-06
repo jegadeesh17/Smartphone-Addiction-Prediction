@@ -438,3 +438,160 @@ class TestCorsAndRootRoutes:
         assert response.status_code == 404
 
 
+# ==============================================================================
+# 6. Individual Diagnostic View & UI Components (M1-TASK-07)
+# ==============================================================================
+
+
+class TestIndividualDiagnosticView:
+    """Test suite validating UI template delivery and components for M1-TASK-07."""
+
+    def test_static_js_assets_served(self, client: TestClient) -> None:
+        """Verify static JavaScript visualization and client application files are served."""
+        for path in ["/static/js/charts.js", "/static/js/app.js"]:
+            response = client.get(path)
+            assert response.status_code == 200
+            assert any(
+                js_type in response.headers.get("content-type", "")
+                for js_type in ("javascript", "application/x-javascript", "text/plain")
+            )
+            assert len(response.text) > 0
+
+        # Check charts.js exports and geometry
+        charts_js = client.get("/static/js/charts.js").text
+        assert "renderRiskGauge" in charts_js
+        assert "getClinicalTier" in charts_js
+        assert "GAUGE_ARC_LENGTH = 326.4" in charts_js
+        assert "3-tier" in charts_js or "Elevated Risk Tier" in charts_js
+
+        # Check app.js debouncing and API integration
+        app_js = client.get("/static/js/app.js").text
+        assert "/api/predict" in app_js
+        assert "triggerDiagnosticPrediction" in app_js
+        assert "schedulePrediction" in app_js
+
+    def test_individual_diagnostic_input_controls_par1(self, client: TestClient) -> None:
+        """Verify index.html delivers all 12 behavioral input controls + threshold slider (PAR-1)."""
+        response = client.get("/")
+        assert response.status_code == 200
+        html = response.text
+
+        # 12 features controls
+        assert 'id="input-age"' in html
+        assert 'data-group="gender"' in html
+        assert 'data-group="stress"' in html
+        assert 'data-group="impact"' in html
+        assert 'id="input-daily-screen"' in html
+        assert 'id="input-social-media"' in html
+        assert 'id="input-gaming"' in html
+        assert 'id="input-work-study"' in html
+        assert 'id="input-weekend-screen"' in html
+        assert 'id="input-sleep"' in html
+        assert 'id="input-notifications"' in html
+        assert 'id="input-app-opens"' in html
+
+        # Threshold slider (tau)
+        assert 'id="input-threshold"' in html
+        assert 'id="val-threshold"' in html
+
+    def test_individual_diagnostic_svg_gauge_adr0008(self, client: TestClient) -> None:
+        """Verify SVG circular arc risk gauge adheres to geometry and clearance contract (ADR-0008)."""
+        response = client.get("/")
+        assert response.status_code == 200
+        html = response.text
+
+        # 220-degree sweep arc in viewBox 0 0 240 170
+        assert 'viewBox="0 0 240 170"' in html
+        assert 'class="gauge-bg"' in html
+        assert 'id="gauge-arc"' in html
+        assert 'id="gauge-probability-num"' in html
+
+        # Dedicated external caption container with positive margin clearance
+        assert 'class="gauge-caption"' in html
+        assert "Addiction Risk Probability" in html
+
+    def test_individual_diagnostic_status_pill_adr0006(self, client: TestClient) -> None:
+        """Verify consolidated authoritative status pill element is present (ADR-0006)."""
+        response = client.get("/")
+        assert response.status_code == 200
+        html = response.text
+
+        assert 'id="status-pill"' in html
+        assert 'id="badge-status"' in html
+        assert 'id="classification-summary"' in html
+
+    def test_individual_diagnostic_ratio_metric_cards_ac14(self, client: TestClient) -> None:
+        """Verify 4 granular ratio diagnostic cards with target indicators (AC-1.4, PAR-2)."""
+        response = client.get("/")
+        assert response.status_code == 200
+        html = response.text
+
+        assert 'id="metric-screen-sleep"' in html
+        assert 'id="target-screen-sleep"' in html
+        assert 'id="metric-rec-share"' in html
+        assert 'id="target-rec-share"' in html
+        assert 'id="metric-unlock-mins"' in html
+        assert 'id="target-unlock-mins"' in html
+        assert 'id="metric-weekend-surge"' in html
+        assert 'id="target-weekend-surge"' in html
+
+    def test_individual_diagnostic_boundary_warning_ac17(self, client: TestClient) -> None:
+        """Verify physiological boundary warning indicator markup is present (AC-1.7)."""
+        response = client.get("/")
+        assert response.status_code == 200
+        html = response.text
+
+        assert 'id="boundary-warning"' in html
+        assert 'id="excess-hours-msg"' in html
+
+    def test_individual_diagnostic_interventions_container_ac15(self, client: TestClient) -> None:
+        """Verify clinical interventions list container is present (AC-1.5, PAR-5)."""
+        response = client.get("/")
+        assert response.status_code == 200
+        html = response.text
+
+        assert 'id="intervention-list"' in html
+        assert "Recommended Clinical Interventions" in html
+
+    def test_no_misspelled_addiciton_par6(self, client: TestClient) -> None:
+        """Verify absence of legacy typo 'ADDICITON' across UI templates, scripts, and API responses (PAR-6)."""
+        # Template markup check
+        html = client.get("/").text
+        assert "ADDICITON" not in html
+        assert "addiciton" not in html
+
+        # JS scripts check
+        app_js = client.get("/static/js/app.js").text
+        assert "ADDICITON" not in app_js
+        assert "addiciton" not in app_js
+
+        charts_js = client.get("/static/js/charts.js").text
+        assert "ADDICITON" not in charts_js
+        assert "addiciton" not in charts_js
+
+        # API payload check
+        resp = client.post(
+            "/api/predict",
+            json={
+                "age": 25,
+                "gender": "Male",
+                "stress_level": "High",
+                "academic_work_impact": "Yes",
+                "daily_screen_time_hours": 10.0,
+                "sleep_hours": 5.0,
+                "social_media_hours": 4.0,
+                "gaming_hours": 2.0,
+                "work_study_hours": 2.0,
+                "app_opens_per_day": 120,
+                "weekend_screen_time": 12.0,
+                "notifications_per_day": 180,
+                "decision_threshold": 0.50,
+            },
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert "ADDICITON" not in str(data)
+        assert data["classification"] == "ADDICTION DETECTED"
+
+
+

@@ -430,7 +430,7 @@ body {
     color: var(--text-3);
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    margin-top: 1rem;
+    margin-top: 1.25rem;
     margin-bottom: 0;
     text-align: center;
 }
@@ -463,12 +463,14 @@ body {
     border: 1px solid var(--low-risk-border);
 }
 
+.status-pill-mod,
 .status-pill-amber {
     background: var(--amber-bg);
     color: var(--amber);
     border: 1px solid var(--amber-border);
 }
 
+.status-pill-high,
 .status-pill-danger {
     background: var(--danger-bg);
     color: var(--danger);
@@ -502,12 +504,14 @@ body {
     border: 1px solid var(--low-risk-border);
 }
 
+.badge-mod,
 .badge-amber {
     background: var(--amber-bg);
     color: var(--amber);
     border: 1px solid var(--amber-border);
 }
 
+.badge-high,
 .badge-danger {
     background: var(--danger-bg);
     color: var(--danger);
