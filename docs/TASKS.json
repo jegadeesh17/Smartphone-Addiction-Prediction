@@ -34,7 +34,7 @@
           ],
           "files_to_modify": [],
           "acceptance_criteria": "SPEC AC-1.4 (exact ratio math), AC-1.5 (all 4 recommendation triggers fire when thresholds exceeded), AC-1.6 (HTTP 422 validation errors on bounds violation), PAR-2, PAR-4, PAR-5. Verified by 'pytest -q tests/test_schemas.py tests/test_recommendations.py'.",
-          "status": "pending"
+          "status": "completed"
         },
         {
           "id": "M1-TASK-03",
