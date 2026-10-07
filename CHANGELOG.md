@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Built modular FastAPI asynchronous application with `/health` and `/api/predict` endpoints (`src/main.py`, `src/config.py`, `src/api/health.py`, `src/api/predict.py`) (M1-TASK-05).
 - Established editorial design tokens, responsive app shell, and multi-model 5-fold CV benchmark table (`src/static/css/tokens.css`, `src/static/css/style.css`, `src/static/css/app.css`, `src/templates/index.html`) (M1-TASK-06).
 - Built Individual Diagnostic view with reactive 220-degree SVG risk gauge, ratio cards, dynamic interventions, and 24h physiological limit warning alert (`src/static/js/app.js`, `src/static/js/charts.js`) (M1-TASK-07).
+- Pre-aggregated population cohort distributions and 2D density grid cache from 691,369 participant records (`scripts/generate_cohort_cache.py`, `data/cohort_summary.json`) (M2-TASK-01).
+- Implemented in-memory Cohort Analytics Service and empirical personal quantile overlay logic (`src/cohort_service.py`, `src/schemas.py`) (M2-TASK-02).
+- Implemented Cohort Analytics API router and REST endpoints (`/api/analytics/cohorts`, `/api/analytics/distributions/screen-sleep-matrix`, `/api/analytics/distributions/benchmark-overlay`) with 422 input validation (`src/api/analytics.py`) (M2-TASK-03).
+- Built Population Cohort Analytics Explorer UI view, 2D Screen-vs-Sleep joint density heatmap, and personal quantile benchmark progress tracks (`src/templates/index.html`, `src/static/js/app.js`, `src/static/js/charts.js`, `src/static/css/style.css`) (M2-TASK-04).
 
 ### Fixed
 - Decoupled classification threshold ($\tau$) from intrinsic severity and risk tier mapping per SPEC AC-1.1, PAR-3, and PAR-4.

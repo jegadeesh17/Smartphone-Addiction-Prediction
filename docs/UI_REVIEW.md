@@ -44,3 +44,42 @@
 - **Contrast**: Text contrast ratios meet or exceed WCAG AA standards (Heading: 15.9:1 AAA, Secondary: 6.08:1 AA, Captions: 5.75:1 AA, Gold accent: 4.8:1+ AA).
 - **Responsive Fluidity**: Clean 1-column stack on 390px mobile viewports with >=44px touch targets and zero horizontal scroll.
 
+
+---
+
+## Milestone M2: Population Cohort Analytics Explorer & 2D Density Heatmap
+- **Date**: 2026-10-07
+- **Verdict**: APPROVED
+- **Test Command**: `pytest -q` -> exit code 0 (224 passed)
+- **Screenshots**:
+  - `.ui-review/M2/cohorts-desktop.png`
+  - `.ui-review/M2/cohorts-high-stress-desktop.png`
+  - `.ui-review/M2/cohorts-mobile.png`
+  - `.ui-review/M2/cohorts-high-stress-mobile.png`
+
+### Assessment Summary
+
+#### 1. Design Craft & Tokens Fidelity
+- Exact adherence to `DESIGN.md` editorial tokens: warm parchment background (`--bg: #F6F3EA`), container surfaces (`--panel: #FFFDF7`), primary brand gold (`--gold: #92631C`), and high-contrast slate text (`--text-1: #16202F`).
+- Headings use `Source Serif 4`; data/controls use `IBM Plex Sans` with tabular figures (`tabular-nums`).
+- Zero AI slop tells: no glowing orbs, no backdrop blurs, no 3px side borders, steady status telemetry indicators.
+
+#### 2. Population Cohort Analytics View (#tab-cohorts)
+- Segmented button groups for Primary Dimension (`Age Bracket`, `Gender`, `Stress Level`, `Academic Impact`) and Condition on Stress (`All`, `Low`, `Medium`, `High`).
+- 4 responsive summary cards display Total Cohort Records (adjusting dynamically when filtered), Overall Addiction Prevalence (70.9%), Mean Daily Screen Time (7.64 hrs), and Mean Sleep Duration (6.80 hrs).
+- Sub-cohort comparative cards: 4-column responsive grid displaying each demographic segment with sample count, risk prevalence badge (`--low-risk`, `--amber`, `--danger`), and digital time allocations.
+
+#### 3. 2D Screen-Time vs Sleep-Duration Joint Density & Addiction Heatmap
+- Complete 6x5 matrix (6 Screen bins by 5 Sleep bins).
+- Token color scale adheres strictly to tokens (`--low-risk` green for <40%, `--amber` for 40-70%, `--danger` crimson for >=70%).
+- Encapsulated within `.heatmap-wrapper` (`overflow-x: auto; min-width: 520px`) ensuring smooth horizontal panning on mobile viewports (<390px) without horizontal layout blowout.
+- Accessible tooltips (`title` and `aria-label`) announce participant counts and exact rates.
+
+#### 4. Personal Quantile Benchmark Overlays
+- 4 horizontal benchmark tracks for Daily Screen Time, Sleep Duration, App Opens, and Notifications Received.
+- Tracks fill smoothly based on the active profile's empirical ranking against 691,369 participants with explicit narrative labels (`47th percentile in screen time`, `50th percentile in sleep duration`).
+
+#### 5. Accessibility (WCAG 2.2 AA) & Responsiveness
+- High contrast compliant across all panels and status pills.
+- Universal `:focus-visible` ring across segmented controls and tab buttons.
+- Touch target heights meet or exceed 44px standard on viewports down to 390px.

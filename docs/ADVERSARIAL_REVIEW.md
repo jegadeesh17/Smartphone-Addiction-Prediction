@@ -43,3 +43,26 @@ A comprehensive adversarial re-audit of Milestone M1 was conducted following the
 - Full test suite execution: `pytest -q` exited with code 0 (`164 passed in 18.70s`).
 - Sub-20ms inference latency benchmark confirmed: LightGBM Fold 1 p95 latency is $< 2.5\text{ms}$.
 - Zero regression against raw datasets (`data/train.csv` and `data/test.csv` immutable).
+
+---
+
+## Milestone M2: Population Cohort Analytics & 2D Density Heatmap
+- **Date**: 2026-10-07
+- **Verdict**: APPROVED
+- **Test Command**: `pytest -q` -> exit code 0 (224 passed in 41.56s)
+
+### Summary of Evaluation
+Milestone M2 was audited across all specification requirements (Journey 2, AC-2.1 through AC-2.5), architectural constraints (ADR-0003 hybrid in-memory analytical cache), schema contracts, data immutability, error handling, performance SLAs, and regression invariants.
+1. **Journey 2 & Acceptance Criteria (AC-2.1 – AC-2.5)**:
+   - `GET /api/analytics/cohorts` returns HTTP 200 with all 4 primary demographic dimensions (`age_bracket`, `gender`, `stress_level`, `academic_work_impact`) with full sample metrics.
+   - Conditioned slicing on `filter_stress` and `filter_gender` verified against 691,369 training records.
+   - `GET /api/analytics/distributions/screen-sleep-matrix` delivers 6x5 matrix (30 cells) with joint density and addiction rates summing to ~100%.
+   - `POST /api/analytics/distributions/benchmark-overlay` delivers personal empirical quantile rankings against 691k population curves.
+   - Invalid dimension query parameters return HTTP 422 Unprocessable Entity with explicit list of permissible dimensions.
+2. **Data Immutability (REG-3)**:
+   - Zero modifications to source datasets (`data/train.csv` and `data/test.csv`).
+3. **Performance Invariants (ADR-0003)**:
+   - In-memory lookups execute in ~0.05ms (exceeding sub-2ms SLA).
+   - In-memory client caching eliminates redundant network traffic.
+4. **M1 Regression Check**:
+   - Zero regressions on M1 endpoints and test suites; full test suite (224 tests) passes with exit code 0.

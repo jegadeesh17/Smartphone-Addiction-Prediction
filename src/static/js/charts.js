@@ -248,7 +248,7 @@
             const count = (c.sample_count !== undefined)
                 ? c.sample_count
                 : (c.metrics && c.metrics.count !== undefined ? c.metrics.count : 0);
-            const countFormatted = Number(count).toLocaleString();
+            const countFormatted = Number(count).toLocaleString('en-US');
 
             const prev = (c.addiction_prevalence !== undefined)
                 ? c.addiction_prevalence

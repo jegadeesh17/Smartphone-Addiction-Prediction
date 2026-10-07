@@ -11,6 +11,6 @@
 - [x] Phase 2.3: docs/TASKS.json
 - [x] Phase 2.4: Setup (tools checked, credentials listed, user confirmed)
 - [x] Phase 3.1: M1 built, verified and committed per task, reviewed (code, and UI for ui projects), UAT accepted, CHANGELOG updated
-- [ ] Phase 3.2: M2 built, verified and committed per task, reviewed (code, and UI for ui projects), UAT accepted, CHANGELOG updated
+- [x] Phase 3.2: M2 built, verified and committed per task, reviewed (code, and UI for ui projects), UAT accepted, CHANGELOG updated
 - [ ] Phase 3.3: M3 built, verified and committed per task, reviewed (code, and UI for ui projects), UAT accepted, CHANGELOG updated
 - [ ] Phase 4: Final test run, README, and handover
