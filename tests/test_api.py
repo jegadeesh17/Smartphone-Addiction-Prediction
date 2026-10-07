@@ -20,6 +20,7 @@ import numpy as np
 import pytest
 from fastapi.testclient import TestClient
 
+from src.api.predict import clear_batch_export_cache
 from src.config import Settings, get_settings
 from src.inference import reset_inference_engine
 from src.main import app
@@ -36,10 +37,12 @@ def client() -> TestClient:
 def clean_engine_and_overrides() -> None:
     """Reset singletons and FastAPI dependency overrides after each test."""
     reset_inference_engine()
+    clear_batch_export_cache()
     app.dependency_overrides.clear()
     get_settings.cache_clear()
     yield
     reset_inference_engine()
+    clear_batch_export_cache()
     app.dependency_overrides.clear()
     get_settings.cache_clear()
 
@@ -1056,6 +1059,116 @@ class TestWhatIfAndOptimizerIntegration:
             json={"target_threshold": 2.0},
         )
         assert response.status_code == 422
+
+
+# ==============================================================================
+# 5. Batch CSV Prediction & Export Endpoints (AC-3.3, AC-3.4, AC-3.5, AC-3.6)
+# ==============================================================================
+
+
+class TestBatchEndpoints:
+    """Integration tests for batch CSV upload and export endpoints."""
+
+    @staticmethod
+    def _create_sample_csv(n_rows: int = 50) -> bytes:
+        """Generate valid synthetic CSV bytes for batch testing."""
+        rows = [
+            "participant_id,age,gender,stress_level,academic_work_impact,"
+            "daily_screen_time_hours,social_media_hours,gaming_hours,"
+            "work_study_hours,weekend_screen_time,sleep_hours,"
+            "notifications_per_day,app_opens_per_day"
+        ]
+        for i in range(n_rows):
+            is_high = i % 2 == 0
+            rows.append(
+                f"P-{1000 + i},{20 + (i % 12)},{'Female' if i % 2 == 0 else 'Male'},"
+                f"{'High' if is_high else 'Low'},{'Yes' if is_high else 'No'},"
+                f"{9.0 if is_high else 4.0},{3.5 if is_high else 1.5},{1.5 if is_high else 0.5},"
+                f"{2.5},{11.0 if is_high else 5.5},{5.5 if is_high else 7.5},"
+                f"{190 if is_high else 70},{130 if is_high else 50}"
+            )
+        return "\n".join(rows).encode("utf-8")
+
+    def test_batch_lifecycle_upload_and_export(self, client: TestClient) -> None:
+        """Verify full lifecycle: upload 50-row CSV, inspect response, download export (AC-3.3, AC-3.6)."""
+        csv_bytes = self._create_sample_csv(50)
+
+        # 1. Upload
+        upload_resp = client.post(
+            "/api/predict/batch",
+            files={"file": ("cohort_test.csv", csv_bytes, "text/csv")},
+        )
+        assert upload_resp.status_code == 200
+        data = upload_resp.json()
+
+        assert data["total_records"] == 50
+        assert data["processed_records"] == 50
+        assert 0 <= data["addiction_count"] <= 50
+        assert 0.0 <= data["addiction_prevalence_pct"] <= 100.0
+        assert bool(data["download_token"])
+        assert len(data["sample_records"]) == 20
+        assert len(data["preview_rows"]) == 20
+
+        # 2. Export
+        token = data["download_token"]
+        export_resp = client.get(f"/api/predict/batch/export?token={token}")
+        assert export_resp.status_code == 200
+        assert export_resp.headers["content-type"].startswith("text/csv")
+        assert 'attachment; filename="diagnostic_report.csv"' in export_resp.headers["content-disposition"]
+
+        # 3. Validate export contents
+        csv_text = export_resp.content.decode("utf-8")
+        assert "participant_id" in csv_text
+        assert "predicted_probability" in csv_text
+        assert "classification" in csv_text
+        assert "screen_to_sleep_ratio" in csv_text
+        assert "primary_intervention" in csv_text
+
+    def test_batch_missing_required_column_returns_422(self, client: TestClient) -> None:
+        """Verify upload missing daily_screen_time_hours returns HTTP 422 with header details (AC-3.4)."""
+        header = "age,gender,stress_level,academic_work_impact,social_media_hours,gaming_hours,work_study_hours,weekend_screen_time,sleep_hours,notifications_per_day,app_opens_per_day\n"
+        row = "25,Male,Medium,Yes,3.5,1.2,2.5,9.5,6.8,140,100\n"
+        content = (header + row).encode("utf-8")
+
+        response = client.post(
+            "/api/predict/batch",
+            files={"file": ("missing_screen.csv", content, "text/csv")},
+        )
+        assert response.status_code == 422
+        assert "daily_screen_time_hours" in str(response.json()["detail"])
+
+    def test_batch_exceeds_10000_rows_returns_413(self, client: TestClient) -> None:
+        """Verify upload exceeding 10,000 rows returns HTTP 413 Payload Too Large (AC-3.5)."""
+        header = "age,gender,stress_level,academic_work_impact,daily_screen_time_hours,social_media_hours,gaming_hours,work_study_hours,weekend_screen_time,sleep_hours,notifications_per_day,app_opens_per_day\n"
+        row = "25,Male,Medium,Yes,7.5,3.5,1.2,2.5,9.5,6.8,140,100\n"
+        content = (header + row * 10_001).encode("utf-8")
+
+        response = client.post(
+            "/api/predict/batch",
+            files={"file": ("too_large.csv", content, "text/csv")},
+        )
+        assert response.status_code == 413
+        assert response.json()["detail"] == "Batch upload exceeds maximum limit of 10,000 rows"
+
+    def test_batch_export_invalid_token_returns_404(self, client: TestClient) -> None:
+        """Verify invalid token on export returns HTTP 404."""
+        response = client.get("/api/predict/batch/export?token=invalid-export-token")
+        assert response.status_code == 404
+        assert response.json()["detail"] == "Export token not found or expired"
+
+    def test_batch_upload_mock_mode(self, client: TestClient) -> None:
+        """Verify batch endpoint functions correctly when USE_MOCK_MODEL is active."""
+        mock_settings = Settings(USE_MOCK_MODEL=True)
+        app.dependency_overrides[get_settings] = lambda: mock_settings
+
+        csv_bytes = self._create_sample_csv(20)
+        response = client.post(
+            "/api/predict/batch",
+            files={"file": ("mock_batch.csv", csv_bytes, "text/csv")},
+        )
+        assert response.status_code == 200
+        assert response.json()["total_records"] == 20
+
 
 
 

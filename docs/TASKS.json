@@ -216,7 +216,7 @@
             "tests/test_api.py"
           ],
           "acceptance_criteria": "SPEC AC-3.3 (batch scoring execution), AC-3.4 (header validation 422 error), AC-3.5 (10,000 row ceiling 413 error), AC-3.6 (export download returns diagnostic CSV attachment). Verified by 'pytest -q tests/test_batch.py'.",
-          "status": "pending"
+          "status": "completed"
         },
         {
           "id": "M3-TASK-03",

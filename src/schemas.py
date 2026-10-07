@@ -1,6 +1,6 @@
 """Pydantic v2 domain schemas and data contracts for Smartphone Addiction Prediction platform."""
 
-from typing import Any, Literal, Optional
+from typing import Any, Literal, Optional, Union
 from pydantic import (
     AliasChoices,
     BaseModel,
@@ -779,4 +779,98 @@ class HabitOptimizeResponse(BaseModel):
         ...,
         description="Recommended optimized behavioral profile",
     )
+
+
+class BatchScoringRecord(BaseModel):
+    """Individual participant prediction record within a batch diagnostic evaluation."""
+
+    model_config = ConfigDict(extra="allow", populate_by_name=True)
+
+    row_index: int = Field(..., description="Zero-indexed row number from uploaded CSV")
+    age: Optional[int] = Field(default=None, description="Participant age")
+    gender: Optional[str] = Field(default=None, description="Participant gender")
+    stress_level: Optional[str] = Field(default=None, description="Reported stress level")
+    academic_work_impact: Optional[str] = Field(default=None, description="Academic/work impact")
+    daily_screen_time_hours: Optional[float] = Field(
+        default=None,
+        validation_alias=AliasChoices("daily_screen_time_hours", "daily_screen_time"),
+        description="Daily screen time hours",
+    )
+    social_media_hours: Optional[float] = Field(default=None, description="Daily social media hours")
+    gaming_hours: Optional[float] = Field(default=None, description="Daily gaming hours")
+    work_study_hours: Optional[float] = Field(default=None, description="Daily work/study hours")
+    weekend_screen_time: Optional[float] = Field(
+        default=None,
+        validation_alias=AliasChoices("weekend_screen_time", "weekend_screen_time_hours"),
+        description="Weekend screen time hours",
+    )
+    sleep_hours: Optional[float] = Field(
+        default=None,
+        validation_alias=AliasChoices("sleep_hours", "sleep_duration_hours"),
+        description="Daily sleep hours",
+    )
+    notifications_per_day: Optional[int] = Field(default=None, description="Daily notifications")
+    app_opens_per_day: Optional[int] = Field(default=None, description="Daily app opens")
+    predicted_probability: float = Field(
+        ...,
+        validation_alias=AliasChoices("predicted_probability", "probability"),
+        description="Predicted addiction risk probability [0.0, 1.0]",
+    )
+    prediction: int = Field(..., description="Binary classification (1 = addiction detected, 0 = healthy)")
+    classification: str = Field(..., description="Classification label ('ADDICTION DETECTED' or 'HEALTHY')")
+    status_label: str = Field(..., description="Authoritative clinical status label")
+    risk_tier: str = Field(..., description="Risk tier ('HIGH', 'MODERATE', 'LOW')")
+    ratios: Optional[Union[dict[str, Any], BehavioralMetrics]] = Field(
+        default=None, description="Derived behavioral ratios"
+    )
+    primary_intervention: str = Field(
+        default="Balanced Routine",
+        description="Top-priority clinical intervention recommendation",
+    )
+    screen_to_sleep_ratio: Optional[float] = Field(
+        default=None, description="Direct screen-to-sleep ratio indicator"
+    )
+
+
+class BatchPredictionResponse(BaseModel):
+    """Aggregate summary response from a batch CSV scoring execution."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    total_records: int = Field(..., description="Total rows in the uploaded CSV dataset")
+    processed_records: int = Field(..., description="Successfully scored rows")
+    addiction_count: int = Field(..., description="Total participants classified as addicted")
+    addiction_prevalence_pct: float = Field(
+        ...,
+        ge=0.0,
+        le=100.0,
+        description="Percentage of cohort classified as addicted [0.0, 100.0]",
+    )
+    download_token: str = Field(
+        ...,
+        description="Cryptographic or UUID token for retrieving full enriched CSV export",
+    )
+    sample_records: list[BatchScoringRecord] = Field(
+        ...,
+        description="First 20 preview records of scored participants",
+    )
+    latency_ms: float = Field(..., ge=0.0, description="End-to-end processing latency in ms")
+    high_risk_pct: Optional[float] = Field(
+        default=None,
+        description="Percentage of cohort categorized in HIGH risk tier [0.0, 100.0]",
+    )
+    mean_screen_to_sleep: Optional[float] = Field(
+        default=None,
+        description="Cohort average screen-to-sleep ratio",
+    )
+    preview_rows: Optional[list[BatchScoringRecord]] = Field(
+        default=None,
+        description="Alias for sample_records supporting frontend table rendering",
+    )
+
+    @model_validator(mode="after")
+    def _populate_preview_alias(self) -> Self:
+        if self.preview_rows is None:
+            self.preview_rows = self.sample_records
+        return self
 
