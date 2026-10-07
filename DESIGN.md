@@ -9,15 +9,15 @@ Design tokens, typography, component geometry, and interaction standards for the
 ```css
 :root {
     /* Canvas & Surfaces */
-    --bg: #F6F3EA;             /* Warm editorial parchment background */
-    --panel: #FFFDF7;          /* Card surface container */
-    --panel-subtle: #F9F7F0;   /* Secondary recessed surface */
-    --field-bg: #F8F6EF;       /* Form input background */
+    --bg: #F3F5F9;             /* Cool editorial paper background */
+    --panel: #FFFFFF;          /* Card surface container */
+    --panel-subtle: #F7F8FB;   /* Secondary recessed surface */
+    --field-bg: #F5F7FA;       /* Form input background */
     
     /* Borders & Dividers */
     --line: rgba(43, 74, 134, 0.22);       /* Indigo-tinted hairline border */
     --line-soft: rgba(22, 32, 47, 0.08);   /* Subtle slate divider */
-    --track: #DAD4C2;                      /* Slider track fill */
+    --track: #D5DAE4;                      /* Slider track fill */
     
     /* Brand Accents */
     --gold: #2B4A86;           /* Primary brand accent / highlight */

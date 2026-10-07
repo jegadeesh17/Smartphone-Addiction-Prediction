@@ -1318,9 +1318,9 @@ class TestFrontendCraftAndAccessibility:
         tokens_css = client.get("/static/css/tokens.css").text
 
         # Canvas and surfaces
-        assert "--bg: #F6F3EA" in tokens_css
-        assert "--panel: #FFFDF7" in tokens_css
-        assert "--panel-subtle: #F9F7F0" in tokens_css
+        assert "--bg: #F3F5F9" in tokens_css
+        assert "--panel: #FFFFFF" in tokens_css
+        assert "--panel-subtle: #F7F8FB" in tokens_css
 
         # Brand accent token (indigo) with high contrast (>= 4.5:1 on light panels)
         assert "--gold: #2B4A86" in tokens_css

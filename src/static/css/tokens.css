@@ -9,18 +9,18 @@
     /* ----------------------------------------------------------------------
        Canvas & Surfaces (Warm Editorial Parchment)
        ---------------------------------------------------------------------- */
-    --bg: #F6F3EA;             /* Warm editorial parchment background */
-    --panel: #FFFDF7;          /* Card surface container */
-    --panel-subtle: #F9F7F0;   /* Secondary recessed surface */
-    --field-bg: #F8F6EF;       /* Form input background */
-    --ink-white: #FFFDF7;      /* Clean surface ink on dark/colored badges */
+    --bg: #F3F5F9;             /* Cool editorial paper background */
+    --panel: #FFFFFF;          /* Card surface container */
+    --panel-subtle: #F7F8FB;   /* Secondary recessed surface */
+    --field-bg: #F5F7FA;       /* Form input background */
+    --ink-white: #FFFFFF;      /* Clean surface ink on dark/colored badges */
 
     /* ----------------------------------------------------------------------
        Borders & Dividers
        ---------------------------------------------------------------------- */
     --line: rgba(43, 74, 134, 0.22);       /* Indigo-tinted hairline border */
     --line-soft: rgba(22, 32, 47, 0.08);   /* Subtle slate divider */
-    --track: #DAD4C2;                      /* Slider track fill */
+    --track: #D5DAE4;                      /* Slider track fill */
     --heatmap-border: rgba(255, 255, 255, 0.2);
 
     /* ----------------------------------------------------------------------
@@ -30,7 +30,7 @@
     --gold-hover: #1F3768;     /* Interactive button hover */
     --gold-subtle: rgba(43, 74, 134, 0.12); /* Subtle tint for active items */
     --gold-highlight: rgba(43, 74, 134, 0.08); /* Table active row tint */
-    --ink-on-gold: #FFFDF7;    /* Contrast text on gold buttons */
+    --ink-on-gold: #FFFFFF;    /* Contrast text on gold buttons */
 
     /* ----------------------------------------------------------------------
        Typography Inks (WCAG 2.2 AA compliant across all backgrounds)
