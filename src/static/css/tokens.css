@@ -24,33 +24,33 @@
     --heatmap-border: rgba(255, 255, 255, 0.2);
 
     /* ----------------------------------------------------------------------
-       Brand Accents (WCAG AA Compliant >= 4.5:1 on light panels)
+       Brand Accents (WCAG 2.2 AA Compliant >= 4.5:1 on light panels & canvas)
        ---------------------------------------------------------------------- */
-    --gold: #92631C;           /* Primary brand accent / highlight (WCAG AA compliant) */
-    --gold-hover: #784F14;     /* Interactive button hover */
-    --gold-subtle: rgba(146, 99, 28, 0.12); /* Subtle tint for active items */
-    --gold-highlight: rgba(146, 99, 28, 0.08); /* Table active row tint */
-    --ink-on-gold: #15202F;    /* Contrast text on gold buttons */
+    --gold: #7E5920;           /* Primary brand accent / highlight (WCAG AA compliant >= 5.2:1) */
+    --gold-hover: #69440F;     /* Interactive button hover */
+    --gold-subtle: rgba(126, 89, 32, 0.12); /* Subtle tint for active items */
+    --gold-highlight: rgba(126, 89, 32, 0.08); /* Table active row tint */
+    --ink-on-gold: #FFFDF7;    /* Contrast text on gold buttons */
 
     /* ----------------------------------------------------------------------
-       Typography Inks
+       Typography Inks (WCAG 2.2 AA compliant across all backgrounds)
        ---------------------------------------------------------------------- */
-    --text-1: #16202F;         /* High-contrast slate heading ink */
-    --text-2: #55617A;         /* Secondary descriptive text */
-    --text-3: #5A657B;         /* Accessible caption & metadata ink (>= 4.5:1 on light panels) */
+    --text-1: #16202F;         /* High-contrast slate heading ink (>= 14:1) */
+    --text-2: #55617A;         /* Secondary descriptive text (>= 5.1:1) */
+    --text-3: #525E73;         /* Accessible caption & metadata ink (>= 4.8:1 on panel & canvas) */
 
     /* ----------------------------------------------------------------------
        Status & Severity Tiers
        ---------------------------------------------------------------------- */
-    --low-risk: #1E7E34;       /* Healthy green status */
+    --low-risk: #1E7E34;       /* Healthy green status (>= 4.7:1) */
     --low-risk-bg: #EAF7EE;    /* Soft green pill background */
     --low-risk-border: rgba(30, 126, 52, 0.25);
 
-    --amber: #A15B16;          /* Moderate/at-risk amber status */
+    --amber: #8A4C0E;          /* Moderate/at-risk amber status (>= 4.9:1) */
     --amber-bg: #FDF4E7;       /* Soft amber pill background */
-    --amber-border: rgba(161, 91, 22, 0.25);
+    --amber-border: rgba(138, 76, 14, 0.25);
 
-    --danger: #9C3F2C;         /* High-risk crimson status */
+    --danger: #9C3F2C;         /* High-risk crimson status (>= 5.1:1) */
     --danger-bg: #FDF0ED;      /* Soft danger pill background */
     --danger-border: rgba(156, 63, 44, 0.25);
 
@@ -81,7 +81,7 @@
     --radius-pill: 999px;
     --shadow-card: 0 1px 3px rgba(22, 32, 47, 0.04), 0 1px 2px rgba(22, 32, 47, 0.02);
     --shadow-header: 0 1px 4px rgba(22, 32, 47, 0.03);
-    --shadow-mark: 0 1px 3px rgba(146, 99, 28, 0.2);
+    --shadow-mark: 0 1px 3px rgba(126, 89, 32, 0.2);
     --shadow-thumb: 0 1px 3px rgba(22, 32, 47, 0.2);
     --shadow-pill: 0 1px 2px rgba(22, 32, 47, 0.08);
 }

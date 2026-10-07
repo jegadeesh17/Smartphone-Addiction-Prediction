@@ -245,7 +245,7 @@
             "src/static/js/app.js"
           ],
           "acceptance_criteria": "DESIGN.md Sections 1-5, FEEDBACK.md items 1-3. Verified by manual visual inspection at 1440px and 390px viewports and 'pytest -q tests/test_api.py'.",
-          "status": "pending"
+          "status": "completed"
         },
         {
           "id": "M3-TASK-05",

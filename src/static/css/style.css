@@ -29,8 +29,23 @@ body {
     line-height: 1.5;
 }
 
-/* Accessibility Focus Ring (WCAG 2.1 AA) */
+/* Accessibility Focus Ring (WCAG 2.2 AA) */
 :focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+.tab-button:focus-visible,
+.segment-btn:focus-visible,
+.range-slider:focus-visible,
+.btn-primary:focus-visible,
+.btn-secondary:focus-visible,
+.dropzone-container:focus-visible,
+.heatmap-cell:focus-visible,
+.toast-close:focus-visible {
     outline: 2px solid var(--gold);
     outline-offset: 2px;
 }
@@ -111,6 +126,7 @@ body {
     border: 1px solid var(--line-soft);
     border-radius: var(--radius-pill);
     font-weight: 500;
+    font-variant-numeric: tabular-nums;
 }
 
 .status-indicator-static {
@@ -130,6 +146,7 @@ body {
     gap: 4px;
     border-top: 1px solid var(--line-soft);
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
 }
 
@@ -142,6 +159,7 @@ body {
     border: none;
     border-bottom: 2px solid transparent;
     padding: 12px 18px;
+    min-height: 44px;
     font-family: var(--font-sans);
     font-size: 0.875rem;
     font-weight: 500;
@@ -454,6 +472,7 @@ body {
     display: inline-flex;
     align-items: center;
     gap: 6px;
+    font-variant-numeric: tabular-nums;
     transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
@@ -496,6 +515,7 @@ body {
     display: inline-flex;
     align-items: center;
     gap: 6px;
+    font-variant-numeric: tabular-nums;
 }
 
 .badge-low {
@@ -567,6 +587,7 @@ body {
     align-items: center;
     gap: 4px;
     font-weight: 500;
+    font-variant-numeric: tabular-nums;
 }
 
 .target-met {
@@ -616,6 +637,7 @@ body {
    -------------------------------------------------------------------------- */
 .benchmark-table-wrapper {
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
     margin-top: 12px;
 }
 
@@ -638,6 +660,7 @@ body {
     text-transform: uppercase;
     font-size: 0.725rem;
     letter-spacing: 0.05em;
+    font-variant-numeric: tabular-nums;
 }
 
 .styled-table td {
@@ -887,6 +910,11 @@ body {
     font-size: 0.75rem;
     color: var(--text-3);
     display: block;
+    font-variant-numeric: tabular-nums;
+}
+
+.quantile-subtext strong {
+    font-variant-numeric: tabular-nums;
 }
 
 /* --------------------------------------------------------------------------
@@ -1174,6 +1202,112 @@ body {
 }
 
 /* --------------------------------------------------------------------------
+   Toast Notifications (Offline, Graceful Fallback, System Status)
+   -------------------------------------------------------------------------- */
+.toast-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 380px;
+    width: calc(100% - 48px);
+    pointer-events: none;
+}
+
+.toast {
+    pointer-events: auto;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    box-shadow: 0 4px 16px rgba(22, 32, 47, 0.12);
+    padding: 14px 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    animation: toast-slide-in 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.toast.toast-dismissing {
+    opacity: 0;
+    transform: translateY(8px);
+}
+
+.toast-icon {
+    font-size: 1.1rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    line-height: 1;
+    margin-top: 1px;
+}
+
+.toast-warning .toast-icon {
+    color: var(--amber);
+}
+
+.toast-danger .toast-icon {
+    color: var(--danger);
+}
+
+.toast-info .toast-icon {
+    color: var(--gold);
+}
+
+.toast-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.toast-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-1);
+    margin-bottom: 2px;
+    line-height: 1.3;
+}
+
+.toast-message {
+    font-size: 0.8rem;
+    color: var(--text-2);
+    line-height: 1.4;
+    font-variant-numeric: tabular-nums;
+}
+
+.toast-close {
+    background: transparent;
+    border: none;
+    color: var(--text-3);
+    cursor: pointer;
+    font-size: 1.1rem;
+    line-height: 1;
+    padding: 4px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    min-height: 24px;
+}
+
+.toast-close:hover {
+    color: var(--text-1);
+}
+
+@keyframes toast-slide-in {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* --------------------------------------------------------------------------
    Responsive Layout & Mobile Hardening (Down to 390px)
    -------------------------------------------------------------------------- */
 @media (max-width: 1024px) {
@@ -1188,6 +1322,9 @@ body {
 @media (max-width: 640px) {
     .main-workspace {
         padding: 16px;
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
     }
     .header-top {
         flex-direction: column;
@@ -1200,6 +1337,15 @@ body {
     }
     .nav-tab-container {
         padding: 0 16px;
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+    .tab-button {
+        min-height: 44px;
+        padding: 12px 14px;
+        flex-shrink: 0;
     }
     .panel {
         padding: 16px;
@@ -1224,6 +1370,12 @@ body {
     .cohort-slicing-bar .segmented-control {
         width: 100%;
         overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+    .cohort-slicing-bar .segment-btn {
+        flex: 0 0 auto;
+        white-space: nowrap;
     }
     .quantile-grid {
         grid-template-columns: 1fr;
@@ -1231,16 +1383,41 @@ body {
     .heatmap-container {
         padding: 16px;
     }
+    .heatmap-wrapper,
+    .benchmark-table-wrapper,
+    .batch-table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        width: 100%;
+        max-width: 100%;
+    }
     .range-slider {
         height: 8px;
+        padding: 18px 0; /* Creates an accessible 44px tap zone */
+        margin: 2px 0;
+    }
+    .range-slider::-webkit-slider-thumb {
+        width: 26px;
+        height: 26px;
+    }
+    .range-slider::-moz-range-thumb {
+        width: 26px;
+        height: 26px;
     }
     .segment-btn {
         min-height: 44px; /* Accessible 44px touch target */
+        padding: 10px 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
     }
     .btn-primary, .btn-secondary {
         width: 100%;
         justify-content: center;
         min-height: 44px; /* Accessible 44px touch target */
+        padding: 12px 18px;
+        display: inline-flex;
+        align-items: center;
     }
     .footer-content {
         flex-direction: column;
@@ -1254,14 +1431,33 @@ body {
     .comparison-arrow {
         transform: rotate(90deg);
     }
+    .toast-container {
+        bottom: 16px;
+        right: 16px;
+        left: 16px;
+        width: auto;
+        max-width: none;
+    }
 }
 
-/* Prefers Reduced Motion Invariant */
+/* Prefers Reduced Motion Invariant (WCAG 2.2 AA) */
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
         scroll-behavior: auto !important;
+    }
+    .gauge-meter,
+    .quantile-fill,
+    .spinner,
+    .toast,
+    .heatmap-cell,
+    .tab-button,
+    .segment-btn,
+    .status-pill,
+    .delta-badge {
+        transition: none !important;
+        animation: none !important;
     }
 }

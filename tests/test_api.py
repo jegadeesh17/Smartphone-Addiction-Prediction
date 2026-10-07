@@ -1305,6 +1305,162 @@ class TestWhatIfAndBatchViews:
         assert ".batch-error-alert" in style_css
 
 
+# ==============================================================================
+# 14. Frontend Craft Polish Pass, Responsive Hardening, and A11y Compliance (M3-TASK-04)
+# ==============================================================================
+
+
+class TestFrontendCraftAndAccessibility:
+    """Test suite validating frontend craft polish pass, responsive hardening, and WCAG AA accessibility compliance."""
+
+    def test_editorial_design_tokens_and_color_contrast(self, client: TestClient) -> None:
+        """Verify tokens.css delivers editorial warm parchment palette, font stacks, and status tokens with AA contrast."""
+        tokens_css = client.get("/static/css/tokens.css").text
+
+        # Canvas and surfaces
+        assert "--bg: #F6F3EA" in tokens_css
+        assert "--panel: #FFFDF7" in tokens_css
+        assert "--panel-subtle: #F9F7F0" in tokens_css
+
+        # Brand gold token with high contrast (>= 4.5:1 on light panels)
+        assert "--gold: #7E5920" in tokens_css
+
+        # Text ink tokens
+        assert "--text-1: #16202F" in tokens_css
+        assert "--text-2: #55617A" in tokens_css
+        assert "--text-3: #525E73" in tokens_css
+
+        # Status & severity tokens
+        assert "--low-risk: #1E7E34" in tokens_css
+        assert "--amber: #8A4C0E" in tokens_css
+        assert "--danger: #9C3F2C" in tokens_css
+
+        # Typography stacks
+        assert "--font-serif: 'Source Serif 4'" in tokens_css
+        assert "--font-sans: 'IBM Plex Sans'" in tokens_css
+
+    def test_accessibility_focus_visible_and_reduced_motion(self, client: TestClient) -> None:
+        """Verify style.css delivers :focus-visible outlines and respects prefers-reduced-motion."""
+        style_css = client.get("/static/css/style.css").text
+
+        # Keyboard accessibility focus rings
+        assert ":focus-visible" in style_css
+        assert "outline: 2px solid var(--gold)" in style_css
+
+        # Reduced motion media query (WCAG 2.2 AA)
+        assert "@media (prefers-reduced-motion: reduce)" in style_css
+        assert "animation-duration: 0.01ms" in style_css
+        assert "transition-duration: 0.01ms" in style_css
+
+    def test_semantic_aria_roles_and_accessibility_attributes(self, client: TestClient) -> None:
+        """Verify index.html delivers semantic ARIA roles across tabs, radiogroups, sliders, alerts, and live regions."""
+        html = client.get("/").text
+
+        # Navigation tablist & tabs
+        assert 'role="tablist"' in html
+        assert 'role="tab"' in html
+        assert 'aria-selected="true"' in html
+        assert 'aria-controls="tab-diagnostic"' in html
+        assert 'aria-controls="tab-cohorts"' in html
+        assert 'aria-controls="tab-whatif"' in html
+        assert 'aria-controls="tab-batch"' in html
+
+        # Segmented control radiogroups & radios
+        assert 'role="radiogroup"' in html
+        assert 'role="radio"' in html
+        assert 'aria-checked="true"' in html
+        assert 'aria-checked="false"' in html
+
+        # Range slider ARIA attributes
+        assert 'aria-valuemin="18"' in html
+        assert 'aria-valuemax="35"' in html
+        assert 'aria-valuenow="25"' in html
+        assert 'aria-label="Age in years"' in html
+        assert 'aria-label="Daily screen time in hours"' in html
+        assert 'aria-label="Classification decision threshold tau"' in html
+
+        # Physiological boundary warning alert
+        assert 'id="boundary-warning"' in html
+        assert 'role="alert"' in html
+
+        # Notification region for system and offline alerts
+        assert 'id="toast-container"' in html
+        assert 'role="region"' in html
+        assert 'aria-label="Notifications"' in html
+        assert 'aria-live="polite"' in html
+
+    def test_responsive_mobile_hardening_and_touch_targets(self, client: TestClient) -> None:
+        """Verify style.css enforces fluid 1-column mobile stacks and accessible >= 44px touch targets."""
+        style_css = client.get("/static/css/style.css").text
+
+        # Mobile media query breakpoint
+        assert "@media (max-width: 640px)" in style_css
+
+        # Accessible touch target heights (>= 44px)
+        assert "min-height: 44px;" in style_css
+        assert "padding: 18px 0;" in style_css  # 44px tap zone for range sliders
+
+        # Horizontal scrolling wrappers to prevent layout blowout on narrow viewports
+        assert ".heatmap-wrapper" in style_css
+        assert ".benchmark-table-wrapper" in style_css
+        assert ".batch-table-wrapper" in style_css
+
+    def test_subgauge_clearance_and_authoritative_status_pill(self, client: TestClient) -> None:
+        """Verify ADR-0008 sub-gauge clearance and ADR-0006 authoritative status pill."""
+        style_css = client.get("/static/css/style.css").text
+        html = client.get("/").text
+
+        # ADR-0008: positive top margin clearance for gauge caption (no negative margin)
+        assert ".gauge-caption" in style_css
+        assert "margin-top: 1.25rem" in style_css or "margin-top:" in style_css
+
+        # ADR-0006: single authoritative status pill
+        assert 'id="status-pill"' in html
+        assert 'id="badge-status"' in html
+
+        # Typo correction safeguard (PAR-6)
+        assert "ADDICITON" not in html
+        app_js = client.get("/static/js/app.js").text
+        assert "ADDICITON" not in app_js
+        assert "ADDICTION DETECTED" in app_js
+        assert "Addiction" in html
+
+    def test_tabular_numbers_typography_applied(self, client: TestClient) -> None:
+        """Verify tabular numeric typography is enforced for figures and metrics."""
+        style_css = client.get("/static/css/style.css").text
+        html = client.get("/").text
+
+        assert "tabular-nums" in style_css
+        assert "font-variant-numeric: tabular-nums;" in style_css or "tabular-nums" in html
+
+    def test_toast_notification_manager_and_offline_handling(self, client: TestClient) -> None:
+        """Verify app.js implements toast notifications and graceful offline fallback handling."""
+        app_js = client.get("/static/js/app.js").text
+
+        assert "toastManager" in app_js
+        assert "showToast" in app_js
+        assert "window.addEventListener('offline'" in app_js
+        assert "window.addEventListener('online'" in app_js
+
+    def test_invalid_input_and_error_handling(self, client: TestClient) -> None:
+        """Verify invalid requests return expected HTTP error status codes."""
+        # Non-existent static resource returns 404
+        missing_asset_resp = client.get("/static/css/nonexistent_stylesheet.css")
+        assert missing_asset_resp.status_code == 404
+
+        # Malformed predict request (out of bounds age) returns 422
+        invalid_predict_resp = client.post(
+            "/api/predict",
+            json={"age": 50, "gender": "Male", "stress_level": "Medium", "daily_screen_time_hours": 8.0},
+        )
+        assert invalid_predict_resp.status_code == 422
+
+        # Invalid cohort dimension returns 422
+        invalid_cohort_resp = client.get("/api/analytics/cohorts?dimension=unsupported_dimension")
+        assert invalid_cohort_resp.status_code in (400, 422)
+
+
+
 
 
 

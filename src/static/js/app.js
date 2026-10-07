@@ -168,8 +168,85 @@
         batchHighRiskRate: document.getElementById('batch-high-risk-rate'),
         batchMeanSS: document.getElementById('batch-mean-ss'),
         batchTableBody: document.getElementById('batch-table-body'),
-        btnExportCsv: document.getElementById('btn-export-csv')
+        btnExportCsv: document.getElementById('btn-export-csv'),
+
+        // Toast Container
+        toastContainer: document.getElementById('toast-container')
     };
+
+    // -------------------------------------------------------------------------
+    // Toast Notification Manager (Accessible Live Alerts & Offline Feedback)
+    // -------------------------------------------------------------------------
+    const toastManager = (function () {
+        let lastToastTime = 0;
+        let lastToastMessage = '';
+        const THROTTLE_MS = 3500;
+
+        function showToast(title, message, type = 'warning', duration = 4000) {
+            const now = Date.now();
+            if (message === lastToastMessage && now - lastToastTime < THROTTLE_MS && type !== 'danger') {
+                return; // Throttles repeat toasts from rapid slider inputs
+            }
+            lastToastTime = now;
+            lastToastMessage = message;
+
+            const container = dom.toastContainer || document.getElementById('toast-container');
+            if (!container) return;
+
+            const toast = document.createElement('div');
+            toast.className = 'toast toast-' + type;
+            toast.setAttribute('role', type === 'danger' ? 'alert' : 'status');
+
+            const iconMap = {
+                warning: '!',
+                danger: '✕',
+                info: 'ℹ',
+                success: '✓'
+            };
+            const icon = iconMap[type] || 'ℹ';
+
+            toast.innerHTML =
+                '<span class="toast-icon" aria-hidden="true">' + icon + '</span>' +
+                '<div class="toast-content">' +
+                    '<div class="toast-title">' + escapeHtml(title) + '</div>' +
+                    '<div class="toast-message">' + escapeHtml(message) + '</div>' +
+                '</div>' +
+                '<button type="button" class="toast-close" aria-label="Dismiss notification">&times;</button>';
+
+            const closeBtn = toast.querySelector('.toast-close');
+            let timer = null;
+
+            function dismiss() {
+                if (timer) clearTimeout(timer);
+                toast.classList.add('toast-dismissing');
+                setTimeout(function () {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 200);
+            }
+
+            if (closeBtn) {
+                closeBtn.addEventListener('click', dismiss);
+            }
+
+            if (duration > 0) {
+                timer = setTimeout(dismiss, duration);
+            }
+
+            container.appendChild(toast);
+        }
+
+        function escapeHtml(str) {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        return { showToast };
+    })();
 
     // -------------------------------------------------------------------------
     // Initialization
@@ -180,6 +257,8 @@
         bindCohortControls();
         bindWhatIfControls();
         bindBatchControls();
+        bindA11yKeyboard();
+        bindNetworkMonitoring();
         checkSystemHealth();
 
         // Initial evaluation
@@ -189,6 +268,40 @@
         loadHeatmapMatrix();
         updateBenchmarkOverlay();
         runWhatIfSimulation();
+    }
+
+    // -------------------------------------------------------------------------
+    // Accessible Radiogroup Keyboard & Network Monitor Listeners
+    // -------------------------------------------------------------------------
+    function bindA11yKeyboard() {
+        document.querySelectorAll('.segmented-control[role="radiogroup"]').forEach(function (group) {
+            const items = Array.from(group.querySelectorAll('.segment-btn[role="radio"]'));
+            items.forEach(function (item, idx) {
+                item.addEventListener('keydown', function (e) {
+                    let targetIdx = null;
+                    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                        targetIdx = (idx + 1) % items.length;
+                    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                        targetIdx = (idx - 1 + items.length) % items.length;
+                    }
+                    if (targetIdx !== null) {
+                        e.preventDefault();
+                        items[targetIdx].click();
+                        items[targetIdx].focus();
+                    }
+                });
+            });
+        });
+    }
+
+    function bindNetworkMonitoring() {
+        window.addEventListener('offline', function () {
+            toastManager.showToast('Network Disconnected', 'Working offline. Local fallback heuristic will evaluate inputs.', 'warning');
+        });
+        window.addEventListener('online', function () {
+            toastManager.showToast('Connection Restored', 'Reconnected to analytical backend server.', 'info');
+            triggerDiagnosticPrediction();
+        });
     }
 
     // -------------------------------------------------------------------------
@@ -328,6 +441,8 @@
                 const isInt = (cfg.key === 'age' || cfg.key === 'notifications_per_day' || cfg.key === 'app_opens_per_day');
                 state.profile[cfg.key] = isInt ? Math.round(rawVal) : rawVal;
 
+                cfg.input.setAttribute('aria-valuenow', rawVal);
+
                 if (cfg.readout) {
                     cfg.readout.textContent = cfg.format(rawVal);
                 }
@@ -457,6 +572,7 @@
             renderDiagnosticOutput(data);
         } catch (err) {
             // Graceful client fallback matching ADR-0007 centered logit
+            toastManager.showToast('Offline Mode Active', 'Prediction API unreachable. Calibrated local baseline model active.', 'warning');
             const fallbackData = computeClientFallback(state.profile);
             state.lastProbability = fallbackData.probability;
             renderDiagnosticOutput(fallbackData);
@@ -895,6 +1011,7 @@
             const data = await resp.json();
             renderWhatIfOutput(data);
         } catch (err) {
+            toastManager.showToast('Local Simulation Active', 'What-If calculation fell back to calibrated baseline model.', 'info');
             // Local simulation fallback conforming to ADR-0007
             const baseProb = state.lastProbability;
             const delta = (state.whatIf.delta_recreation * 0.04) - (state.whatIf.delta_sleep * 0.05) + (state.whatIf.delta_opens * 0.001);
@@ -1051,6 +1168,7 @@
             }
             dom.optimalTargetText.textContent = pathwayText;
         } catch (err) {
+            toastManager.showToast('Offline Target Solver', 'Applied calibrated lifestyle recommendation offline.', 'info');
             optimalPrescription = {
                 target_screen_time_reduction_hours: 1.5,
                 target_sleep_increase_hours: 1.0,
