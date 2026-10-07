@@ -200,7 +200,7 @@
             "tests/test_api.py"
           ],
           "acceptance_criteria": "SPEC AC-3.1 (counterfactual delta evaluation returns simulated probability < baseline when habits improve), AC-3.2 (automated optimal habit target returns achievable reduction pathway). Verified by 'pytest -q tests/test_whatif.py'.",
-          "status": "pending"
+          "status": "completed"
         },
         {
           "id": "M3-TASK-02",

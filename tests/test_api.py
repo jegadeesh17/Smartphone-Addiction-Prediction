@@ -895,6 +895,170 @@ class TestCohortAnalyticsView:
         assert "/api/analytics/distributions/benchmark-overlay" in app_js
 
 
+# ==============================================================================
+# 11. Counterfactual What-If Simulation and Habit Optimizer (M3-TASK-01, AC-3.1, AC-3.2)
+# ==============================================================================
+
+
+class TestWhatIfAndOptimizerIntegration:
+    """Integration test suite for POST /api/analytics/what-if and /what-if/optimize endpoints."""
+
+    def test_whatif_habit_improvement_scenario(self, client: TestClient) -> None:
+        """Verify counterfactual What-If scenario evaluation returns risk delta < 0 (AC-3.1)."""
+        payload = {
+            "baseline_profile": {
+                "age": 25,
+                "gender": "Male",
+                "stress_level": "Medium",
+                "academic_work_impact": "Yes",
+                "daily_screen_time_hours": 8.0,
+                "social_media_hours": 3.5,
+                "gaming_hours": 1.5,
+                "work_study_hours": 2.5,
+                "weekend_screen_time": 9.5,
+                "sleep_hours": 6.5,
+                "notifications_per_day": 140,
+                "app_opens_per_day": 100,
+                "decision_threshold": 0.50,
+            },
+            "delta_social_media_hours": -2.0,
+            "delta_sleep_hours": 1.5,
+            "delta_app_opens_per_day": -30,
+        }
+        response = client.post("/api/analytics/what-if", json=payload)
+        assert response.status_code == 200
+        data = response.json()
+
+        assert 0.76 <= data["baseline_probability"] <= 0.80
+        assert data["simulated_probability"] < data["baseline_probability"]
+        assert data["risk_delta"] < 0.0
+        assert data["baseline_classification"] == "ADDICTION DETECTED"
+        assert data["simulated_classification"] in ("HEALTHY", "ADDICTION DETECTED")
+        assert "screen_to_sleep_ratio" in data["simulated_ratios"]
+        assert "recreational_share" in data["simulated_ratios"]
+        assert data["simulated_ratios"]["screen_to_sleep_ratio"] < data["baseline_ratios"]["screen_to_sleep_ratio"]
+
+    def test_whatif_worsening_habits_scenario(self, client: TestClient) -> None:
+        """Verify worsening habits increases simulated probability and risk delta > 0."""
+        payload = {
+            "baseline_profile": {
+                "daily_screen_time_hours": 5.0,
+                "sleep_hours": 7.5,
+                "app_opens_per_day": 50,
+                "notifications_per_day": 60,
+            },
+            "delta_daily_screen_time_hours": 3.5,
+            "delta_sleep_hours": -2.0,
+            "delta_app_opens_per_day": 40,
+            "delta_notifications_per_day": 50,
+        }
+        response = client.post("/api/analytics/what-if", json=payload)
+        assert response.status_code == 200
+        data = response.json()
+        assert data["simulated_probability"] > data["baseline_probability"]
+        assert data["risk_delta"] > 0.0
+
+    def test_whatif_boundary_clamping(self, client: TestClient) -> None:
+        """Verify boundary clamping enforces valid physiological ranges in simulated profile."""
+        payload = {
+            "baseline_profile": {
+                "daily_screen_time_hours": 6.0,
+                "sleep_hours": 7.0,
+            },
+            "delta_sleep_hours": -20.0,
+            "delta_daily_screen_time_hours": 30.0,
+            "delta_app_opens_per_day": -500,
+        }
+        response = client.post("/api/analytics/what-if", json=payload)
+        assert response.status_code == 200
+        sim = response.json()["simulated_profile"]
+        assert sim["sleep_hours"] == 1.0
+        assert sim["daily_screen_time_hours"] == 24.0
+        assert sim["app_opens_per_day"] == 0
+
+    def test_optimize_at_risk_profile(self, client: TestClient) -> None:
+        """Verify habit optimizer generates achievable pathway with projected_prob < tau (AC-3.2)."""
+        payload = {
+            "baseline_profile": {
+                "age": 25,
+                "gender": "Male",
+                "stress_level": "Medium",
+                "academic_work_impact": "Yes",
+                "daily_screen_time_hours": 8.0,
+                "social_media_hours": 3.5,
+                "gaming_hours": 1.5,
+                "work_study_hours": 2.5,
+                "weekend_screen_time": 9.5,
+                "sleep_hours": 6.5,
+                "notifications_per_day": 140,
+                "app_opens_per_day": 100,
+                "decision_threshold": 0.50,
+            },
+            "target_threshold": 0.50,
+        }
+        response = client.post("/api/analytics/what-if/optimize", json=payload)
+        assert response.status_code == 200
+        data = response.json()
+
+        assert data["baseline_probability"] >= 0.50
+        assert data["target_threshold"] == 0.50
+        assert data["target_screen_time_reduction_hours"] > 0.0
+        assert data["target_sleep_increase_hours"] > 0.0
+        assert data["projected_probability"] < 0.50
+        assert data["projected_classification"] == "HEALTHY"
+        assert data["achievable"] is True
+        assert len(data["recommended_pathway"]) >= 3
+
+    def test_optimize_already_healthy_profile(self, client: TestClient) -> None:
+        """Verify habit optimizer returns 0 reductions for already healthy profile."""
+        payload = {
+            "baseline_profile": {
+                "daily_screen_time_hours": 3.0,
+                "social_media_hours": 0.5,
+                "gaming_hours": 0.5,
+                "sleep_hours": 8.0,
+                "notifications_per_day": 30,
+                "app_opens_per_day": 25,
+                "decision_threshold": 0.50,
+            },
+            "target_threshold": 0.50,
+        }
+        response = client.post("/api/analytics/what-if/optimize", json=payload)
+        assert response.status_code == 200
+        data = response.json()
+
+        assert data["target_screen_time_reduction_hours"] == 0.0
+        assert data["target_sleep_increase_hours"] == 0.0
+        assert data["target_app_opens_reduction"] == 0
+        assert data["target_notifications_reduction"] == 0
+        assert data["projected_probability"] == data["baseline_probability"]
+        assert data["achievable"] is True
+
+    @pytest.mark.parametrize(
+        "invalid_body",
+        [
+            {"baseline_profile": {"age": 12}},  # age < 18
+            {"baseline_profile": {"daily_screen_time_hours": 26.0}},  # screen > 24
+            {"delta_app_opens_per_day": "bad_type"},
+        ],
+    )
+    def test_whatif_validation_errors_return_422(
+        self, client: TestClient, invalid_body: dict[str, Any]
+    ) -> None:
+        """Verify invalid what-if payload returns HTTP 422 Unprocessable Entity."""
+        response = client.post("/api/analytics/what-if", json=invalid_body)
+        assert response.status_code == 422
+
+    def test_optimize_validation_errors_return_422(self, client: TestClient) -> None:
+        """Verify invalid target threshold returns HTTP 422 Unprocessable Entity."""
+        response = client.post(
+            "/api/analytics/what-if/optimize",
+            json={"target_threshold": 2.0},
+        )
+        assert response.status_code == 422
+
+
+
 
 
 

@@ -555,3 +555,228 @@ class BenchmarkOverlayResponse(BaseModel):
     def sleep_duration_percentile(self) -> float:
         """Alias for sleep_hours_percentile conforming to SPEC AC-2.4."""
         return self.sleep_hours_percentile
+
+
+# ---------------------------------------------------------------------------
+# Counterfactual What-If Simulation & Habit Optimizer Schemas (Milestone 3)
+# ---------------------------------------------------------------------------
+
+class WhatIfRequest(BaseModel):
+    """Request payload for counterfactual What-If behavioral habit simulation."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    baseline_profile: BehavioralProfileInput = Field(
+        default_factory=BehavioralProfileInput,
+        description="Baseline behavioral profile to evaluate and adjust",
+    )
+    delta_daily_screen_time_hours: float = Field(
+        default=0.0,
+        description="Delta adjustment for weekday daily screen time in hours",
+    )
+    delta_social_media_hours: float = Field(
+        default=0.0,
+        description="Delta adjustment for social media usage in hours",
+    )
+    delta_gaming_hours: float = Field(
+        default=0.0,
+        description="Delta adjustment for gaming usage in hours",
+    )
+    delta_sleep_hours: float = Field(
+        default=0.0,
+        description="Delta adjustment for sleep duration in hours",
+    )
+    delta_app_opens_per_day: int = Field(
+        default=0,
+        description="Delta adjustment for daily app opens and unlock events",
+    )
+    delta_notifications_per_day: int = Field(
+        default=0,
+        description="Delta adjustment for daily notifications received",
+    )
+    delta_weekend_screen_time: float = Field(
+        default=0.0,
+        description="Delta adjustment for weekend screen time in hours",
+    )
+
+    @model_validator(mode="before")
+    @classmethod
+    def _coerce_flat_or_nested(cls, data: Any) -> Any:
+        """Allow both nested baseline_profile and flat payload representations."""
+        if isinstance(data, dict):
+            delta_keys = {
+                "delta_daily_screen_time_hours",
+                "delta_social_media_hours",
+                "delta_gaming_hours",
+                "delta_sleep_hours",
+                "delta_app_opens_per_day",
+                "delta_notifications_per_day",
+                "delta_weekend_screen_time",
+            }
+            if "baseline_profile" not in data:
+                profile_fields = {k: v for k, v in data.items() if k not in delta_keys}
+                delta_fields = {k: v for k, v in data.items() if k in delta_keys}
+                if profile_fields:
+                    return {"baseline_profile": profile_fields, **delta_fields}
+        return data
+
+
+class WhatIfResponse(BaseModel):
+    """Comparative diagnostic response returned by counterfactual What-If simulation."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    baseline_probability: float = Field(
+        ...,
+        ge=0.0,
+        le=1.0,
+        description="Baseline addiction risk probability [0.0, 1.0]",
+    )
+    simulated_probability: float = Field(
+        ...,
+        ge=0.0,
+        le=1.0,
+        description="Simulated addiction risk probability [0.0, 1.0]",
+    )
+    risk_delta: float = Field(
+        ...,
+        description="Risk probability change (simulated_probability - baseline_probability)",
+    )
+    baseline_classification: str = Field(
+        ...,
+        description="Baseline classification ('ADDICTION DETECTED' or 'HEALTHY')",
+    )
+    simulated_classification: str = Field(
+        ...,
+        description="Simulated classification ('ADDICTION DETECTED' or 'HEALTHY')",
+    )
+    baseline_status_label: str = Field(
+        ...,
+        description="Baseline authoritative status pill label",
+    )
+    simulated_status_label: str = Field(
+        ...,
+        description="Simulated authoritative status pill label",
+    )
+    baseline_ratios: dict[str, float] = Field(
+        ...,
+        description="Baseline behavioral ratios dictionary",
+    )
+    simulated_ratios: dict[str, float] = Field(
+        ...,
+        description="Simulated behavioral ratios dictionary",
+    )
+    simulated_profile: BehavioralProfileInput = Field(
+        ...,
+        description="Simulated behavioral profile following delta application and clamping",
+    )
+    interventions: list[str] = Field(
+        default_factory=list,
+        description="Actionable clinical digital hygiene recommendations for simulated profile",
+    )
+
+    @computed_field
+    @property
+    def risk_reduction_pct(self) -> float:
+        """Percentage point reduction in addiction risk probability."""
+        return round(-self.risk_delta * 100.0, 2)
+
+
+class HabitOptimizeRequest(BaseModel):
+    """Request payload to compute optimal habit modification pathway below threshold tau."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    baseline_profile: BehavioralProfileInput = Field(
+        default_factory=BehavioralProfileInput,
+        description="Baseline behavioral profile to optimize",
+    )
+    target_threshold: Optional[float] = Field(
+        default=None,
+        ge=0.05,
+        le=0.95,
+        description="Target classification decision threshold tau",
+    )
+    target_risk_tier: Optional[str] = Field(
+        default=None,
+        description="Optional target risk tier ('LOW' or 'MODERATE')",
+    )
+
+    @model_validator(mode="before")
+    @classmethod
+    def _coerce_flat_or_nested(cls, data: Any) -> Any:
+        """Allow both nested baseline_profile and flat payload representations."""
+        if isinstance(data, dict):
+            opt_keys = {"target_threshold", "target_risk_tier"}
+            if "baseline_profile" not in data:
+                profile_fields = {k: v for k, v in data.items() if k not in opt_keys}
+                opt_fields = {k: v for k, v in data.items() if k in opt_keys}
+                if profile_fields:
+                    return {"baseline_profile": profile_fields, **opt_fields}
+        return data
+
+
+class HabitOptimizeResponse(BaseModel):
+    """Optimized habit modification pathway to bring addiction risk below threshold tau."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    baseline_probability: float = Field(
+        ...,
+        ge=0.0,
+        le=1.0,
+        description="Baseline addiction risk probability [0.0, 1.0]",
+    )
+    target_threshold: float = Field(
+        ...,
+        ge=0.05,
+        le=0.95,
+        description="Target decision threshold tau",
+    )
+    target_screen_time_reduction_hours: float = Field(
+        ...,
+        ge=0.0,
+        description="Recommended reduction in weekday daily screen time in hours",
+    )
+    target_sleep_increase_hours: float = Field(
+        ...,
+        ge=0.0,
+        description="Recommended increase in daily sleep duration in hours",
+    )
+    target_app_opens_reduction: int = Field(
+        ...,
+        ge=0,
+        description="Recommended reduction in daily unlock events",
+    )
+    target_notifications_reduction: int = Field(
+        ...,
+        ge=0,
+        description="Recommended reduction in daily notification alerts",
+    )
+    projected_probability: float = Field(
+        ...,
+        ge=0.0,
+        le=1.0,
+        description="Projected addiction risk probability under optimized profile [0.0, 1.0]",
+    )
+    projected_classification: str = Field(
+        ...,
+        description="Projected classification ('HEALTHY' or 'ADDICTION DETECTED')",
+    )
+    projected_status_label: str = Field(
+        ...,
+        description="Projected authoritative status pill label",
+    )
+    achievable: bool = Field(
+        ...,
+        description="True if target threshold was successfully reached within physiological bounds",
+    )
+    recommended_pathway: list[str] = Field(
+        default_factory=list,
+        description="Actionable milestone steps detailing specific lifestyle modifications",
+    )
+    optimized_profile: BehavioralProfileInput = Field(
+        ...,
+        description="Recommended optimized behavioral profile",
+    )
+
