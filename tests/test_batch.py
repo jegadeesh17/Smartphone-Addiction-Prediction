@@ -338,3 +338,79 @@ class TestBatchAPI:
         )
         assert response.status_code == 200
         assert response.json()["total_records"] == 25
+
+
+# ==============================================================================
+# 3. Batch Hardening Tests (numeric coercion, bounds, byte cap, formula safety)
+# ==============================================================================
+
+BATCH_HEADER = (
+    "age,gender,stress_level,academic_work_impact,daily_screen_time_hours,social_media_hours,"
+    "gaming_hours,work_study_hours,weekend_screen_time,sleep_hours,notifications_per_day,app_opens_per_day\n"
+)
+GOOD_ROW = "25,Male,Medium,Yes,7.5,3.5,1.2,2.5,9.5,6.8,140,100\n"
+
+
+class TestBatchHardening:
+    """Regression tests for reviewer defects in the batch CSV path."""
+
+    def _post(self, client: TestClient, text: str):
+        return client.post(
+            "/api/predict/batch",
+            files={"file": ("t.csv", text.encode("utf-8"), "text/csv")},
+        )
+
+    @pytest.mark.parametrize("bad", ["abc", "inf", "-inf", "nan", ""])
+    def test_non_numeric_cell_returns_422_with_row_and_column(self, client: TestClient, bad: str) -> None:
+        bad_row = f"25,Male,Low,No,{bad},1,1,2,8,7,100,100\n"
+        response = self._post(client, BATCH_HEADER + GOOD_ROW + bad_row)
+        assert response.status_code == 422
+        detail = response.json()["detail"]
+        assert isinstance(detail, str)
+        assert "daily_screen_time_hours" in detail
+        assert "row(s) 2" in detail
+        assert "[" not in detail
+
+    def test_out_of_bounds_rows_return_422(self, client: TestClient) -> None:
+        rows = (
+            GOOD_ROW
+            + "25,Male,Low,No,5,1,1,2,8,0,100,100\n"
+            + "25,Male,Low,No,5,1,1,2,8,-3,100,100\n"
+            + "25,Male,Low,No,5,1,1,2,8,7,100,0\n"
+            + "17,Male,Low,No,5,1,1,2,8,7,100,10\n"
+        )
+        response = self._post(client, BATCH_HEADER + rows)
+        assert response.status_code == 422
+        detail = response.json()["detail"]
+        assert "sleep_hours" in detail and "row(s) 2, 3" in detail
+        assert "age" in detail and "row(s) 5" in detail
+        # app_opens_per_day=0 is within the schema bounds (ge=0) and must be accepted
+        assert "app_opens_per_day" not in detail
+
+    def test_zero_app_opens_accepted(self, client: TestClient) -> None:
+        response = self._post(client, BATCH_HEADER + "25,Male,Low,No,5,1,1,2,8,7,100,0\n")
+        assert response.status_code == 200
+
+    def test_byte_cap_returns_413_before_parsing(self, client: TestClient) -> None:
+        content = "x" * (5 * 1024 * 1024 + 1)
+        response = self._post(client, content)
+        assert response.status_code == 413
+        assert "5 MB" in response.json()["detail"]
+
+    def test_missing_columns_message_is_readable(self, client: TestClient) -> None:
+        text = "age,gender\n25,Male\n"
+        response = self._post(client, text)
+        assert response.status_code == 422
+        detail = response.json()["detail"]
+        assert detail.startswith("Missing required CSV columns: stress_level")
+        assert "[" not in detail and "'" not in detail
+
+    def test_export_neutralizes_formula_cells(self, client: TestClient) -> None:
+        header = "participant_id," + BATCH_HEADER
+        rows = "=SUM(A1),   25,Male,Low,No,5,1,1,2,8,7,100,100\n".replace("   ", "")
+        rows += "@cmd,25,Male,Low,No,5,1,1,2,8,7,100,100\n-1+2,25,Male,Low,No,5,1,1,2,8,7,100,100\n"
+        upload = self._post(client, header + rows)
+        assert upload.status_code == 200
+        export = client.get(f"/api/predict/batch/export?token={upload.json()['download_token']}")
+        ids = pd.read_csv(io.BytesIO(export.content), dtype=str)["participant_id"].tolist()
+        assert ids == ["'=SUM(A1)", "'@cmd", "'-1+2"]

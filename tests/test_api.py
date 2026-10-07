@@ -1398,7 +1398,7 @@ class TestFrontendCraftAndAccessibility:
 
         # Accessible touch target heights (>= 44px)
         assert "min-height: 44px;" in style_css
-        assert "padding: 18px 0;" in style_css  # 44px tap zone for range sliders
+        assert "height: 44px; /* 44px hit area" in style_css  # 44px tap zone for range sliders
 
         # Horizontal scrolling wrappers to prevent layout blowout on narrow viewports
         assert ".heatmap-wrapper" in style_css

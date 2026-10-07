@@ -55,6 +55,67 @@ def clear_batch_export_cache() -> None:
     _batch_export_cache.clear()
 
 
+MAX_UPLOAD_BYTES = 5 * 1024 * 1024
+BYTE_LIMIT_MESSAGE = "Batch upload exceeds maximum size of 5 MB"
+MAX_REPORTED_ROWS = 10
+
+# (accepted column names, min, max, integer-only) mirroring BehavioralProfileInput
+_NUMERIC_RULES: list[tuple[tuple[str, ...], float, float, bool]] = [
+    (("age",), 18, 35, True),
+    (("daily_screen_time_hours", "daily_screen_time"), 0.0, 24.0, False),
+    (("social_media_hours",), 0.0, 24.0, False),
+    (("gaming_hours",), 0.0, 24.0, False),
+    (("work_study_hours",), 0.0, 24.0, False),
+    (("weekend_screen_time", "weekend_screen_time_hours"), 0.0, 24.0, False),
+    (("sleep_hours", "sleep_duration_hours"), 1.0, 18.0, False),
+    (("notifications_per_day",), 0, 500, True),
+    (("app_opens_per_day",), 0, 500, True),
+]
+
+
+def _format_rows(mask: pd.Series) -> str:
+    rows = [str(i + 1) for i in range(len(mask)) if mask.iloc[i]]
+    shown = ", ".join(rows[:MAX_REPORTED_ROWS])
+    if len(rows) > MAX_REPORTED_ROWS:
+        shown += f" and {len(rows) - MAX_REPORTED_ROWS} more"
+    return shown
+
+
+def _coerce_and_validate_numeric(df: pd.DataFrame) -> tuple[pd.DataFrame, list[str]]:
+    """Coerce numeric columns and report offending 1-based data rows per column."""
+    df = df.copy()
+    problems: list[str] = []
+    for names, lo, hi, integer in _NUMERIC_RULES:
+        col = next((n for n in names if n in df.columns), None)
+        if col is None:
+            continue
+        num = pd.to_numeric(df[col], errors="coerce").replace([float("inf"), float("-inf")], float("nan"))
+        df[col] = num
+        bad = num.isna()
+        if bad.any():
+            problems.append(f"column '{col}' has missing or non-numeric values in row(s) {_format_rows(bad)}")
+        out = ~bad & ((num < lo) | (num > hi))
+        if integer:
+            out = out | (~bad & (num != num.round()))
+        if out.any():
+            kind = "whole number " if integer else ""
+            problems.append(
+                f"column '{col}' must be a {kind}value between {lo:g} and {hi:g} in row(s) {_format_rows(out)}"
+            )
+    return df, problems
+
+
+def _neutralize_formulas(df: pd.DataFrame) -> pd.DataFrame:
+    """Prefix string cells starting with = + - @ with a quote to block spreadsheet formula injection."""
+    df = df.copy()
+    for col in df.columns:
+        if df[col].dtype == object or pd.api.types.is_string_dtype(df[col]):
+            df[col] = df[col].map(
+                lambda v: "'" + v if isinstance(v, str) and v.startswith(("=", "+", "-", "@")) else v
+            )
+    return df
+
+
 @router.post("/api/predict", response_model=PredictionResponse)
 @router.post("/predict", response_model=PredictionResponse)
 def predict(
@@ -87,7 +148,12 @@ async def predict_batch(
     Validates mandatory header schemas (AC-3.4), enforces a 10,000 row upper limit (AC-3.5),
     vectorizes tabular inference, and stores an enriched diagnostic report for export (AC-3.6).
     """
-    content = await file.read()
+    # Enforce byte cap before parsing: never read more than MAX_UPLOAD_BYTES + 1 bytes
+    if file.size is not None and file.size > MAX_UPLOAD_BYTES:
+        raise HTTPException(status_code=413, detail=BYTE_LIMIT_MESSAGE)
+    content = await file.read(MAX_UPLOAD_BYTES + 1)
+    if len(content) > MAX_UPLOAD_BYTES:
+        raise HTTPException(status_code=413, detail=BYTE_LIMIT_MESSAGE)
     if not content or len(content.strip()) == 0:
         raise HTTPException(status_code=422, detail="Empty CSV file uploaded.")
 
@@ -136,7 +202,15 @@ async def predict_batch(
     if missing_cols:
         raise HTTPException(
             status_code=422,
-            detail=f"Missing required CSV columns: {missing_cols}",
+            detail=f"Missing required CSV columns: {', '.join(missing_cols)}",
+        )
+
+    # 3. Numeric coercion and physiological bounds (mirrors BehavioralProfileInput)
+    df, problems = _coerce_and_validate_numeric(df)
+    if problems:
+        raise HTTPException(
+            status_code=422,
+            detail="Invalid values in CSV: " + "; ".join(problems),
         )
 
     eff_threshold = threshold if threshold is not None else 0.50
@@ -149,7 +223,7 @@ async def predict_batch(
     df_enriched, response_payload = engine.batch_predict(df, default_threshold=eff_threshold)
 
     # Cache enriched CSV for export (AC-3.6)
-    csv_bytes = df_enriched.to_csv(index=False).encode("utf-8")
+    csv_bytes = _neutralize_formulas(df_enriched).to_csv(index=False).encode("utf-8")
     store_batch_export(response_payload.download_token, csv_bytes)
 
     return response_payload
