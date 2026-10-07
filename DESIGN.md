@@ -15,13 +15,13 @@ Design tokens, typography, component geometry, and interaction standards for the
     --field-bg: #F8F6EF;       /* Form input background */
     
     /* Borders & Dividers */
-    --line: rgba(150, 113, 45, 0.25);      /* Warm bronze hairline border */
+    --line: rgba(43, 74, 134, 0.22);       /* Indigo-tinted hairline border */
     --line-soft: rgba(22, 32, 47, 0.08);   /* Subtle slate divider */
     --track: #DAD4C2;                      /* Slider track fill */
     
     /* Brand Accents */
-    --gold: #9C6F28;           /* Primary brand accent / highlight */
-    --gold-hover: #7E5920;     /* Interactive button hover */
+    --gold: #2B4A86;           /* Primary brand accent / highlight */
+    --gold-hover: #1F3768;     /* Interactive button hover */
     --ink-on-gold: #15202F;    /* Contrast text on gold buttons */
     
     /* Typography Inks */

@@ -96,9 +96,15 @@ python src/train.py
 python src/ensemble.py
 ```
 
-### 4. Launch Interactive Risk Assessment Dashboard
+### 4. Launch the Analytical Dashboard (FastAPI)
 ```bash
-streamlit run app/app.py
+python -m uvicorn src.main:app
+```
+Open http://127.0.0.1:8000. Tabs: Individual Diagnostic, Population Analytics, What-If Simulator, Batch Diagnostics (CSV upload, up to 5 MB / 10,000 rows, with report export).
+
+### 5. Run the Test Suite
+```bash
+pytest -q
 ```
 
 ---

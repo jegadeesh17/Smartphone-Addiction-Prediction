@@ -18,7 +18,7 @@
     /* ----------------------------------------------------------------------
        Borders & Dividers
        ---------------------------------------------------------------------- */
-    --line: rgba(150, 113, 45, 0.25);      /* Warm bronze hairline border */
+    --line: rgba(43, 74, 134, 0.22);       /* Indigo-tinted hairline border */
     --line-soft: rgba(22, 32, 47, 0.08);   /* Subtle slate divider */
     --track: #DAD4C2;                      /* Slider track fill */
     --heatmap-border: rgba(255, 255, 255, 0.2);
@@ -26,10 +26,10 @@
     /* ----------------------------------------------------------------------
        Brand Accents (WCAG 2.2 AA Compliant >= 4.5:1 on light panels & canvas)
        ---------------------------------------------------------------------- */
-    --gold: #7E5920;           /* Primary brand accent / highlight (WCAG AA compliant >= 5.2:1) */
-    --gold-hover: #69440F;     /* Interactive button hover */
-    --gold-subtle: rgba(126, 89, 32, 0.12); /* Subtle tint for active items */
-    --gold-highlight: rgba(126, 89, 32, 0.08); /* Table active row tint */
+    --gold: #2B4A86;           /* Primary brand accent (deep indigo; token name kept for compatibility; >= 8:1 on panels) */
+    --gold-hover: #1F3768;     /* Interactive button hover */
+    --gold-subtle: rgba(43, 74, 134, 0.12); /* Subtle tint for active items */
+    --gold-highlight: rgba(43, 74, 134, 0.08); /* Table active row tint */
     --ink-on-gold: #FFFDF7;    /* Contrast text on gold buttons */
 
     /* ----------------------------------------------------------------------

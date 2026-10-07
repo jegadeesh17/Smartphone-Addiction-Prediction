@@ -1322,8 +1322,8 @@ class TestFrontendCraftAndAccessibility:
         assert "--panel: #FFFDF7" in tokens_css
         assert "--panel-subtle: #F9F7F0" in tokens_css
 
-        # Brand gold token with high contrast (>= 4.5:1 on light panels)
-        assert "--gold: #7E5920" in tokens_css
+        # Brand accent token (indigo) with high contrast (>= 4.5:1 on light panels)
+        assert "--gold: #2B4A86" in tokens_css
 
         # Text ink tokens
         assert "--text-1: #16202F" in tokens_css

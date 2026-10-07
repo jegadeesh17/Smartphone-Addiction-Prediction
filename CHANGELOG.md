@@ -26,6 +26,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Frontend craft polish pass, responsive hardening, 44px touch targets and accessibility compliance (M3-TASK-04).
 - Comprehensive regression safeguards and full pipeline verification (M3-TASK-05).
 
+### Changed
+- Brand accent changed from golden yellow to deep indigo (`--gold` token values in `tokens.css`; token name kept).
+
 ### Fixed
 - Decoupled classification threshold ($\tau$) from intrinsic severity and risk tier mapping per SPEC AC-1.1, PAR-3, and PAR-4.
 - Rendered single authoritative diagnostic verdict (`ADDICTION DETECTED` vs `HEALTHY PATTERN`) in UI status pill and narrative summary per ADR-0006.
