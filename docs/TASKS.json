@@ -133,7 +133,7 @@
           ],
           "files_to_modify": [],
           "acceptance_criteria": "SPEC AC-2.1, AC-2.3, REG-3, ADR-0003. Verified by running 'python scripts/generate_cohort_cache.py --validate' confirming non-empty cohort distributions, valid density grid, and schema integrity.",
-          "status": "pending"
+          "status": "completed"
         },
         {
           "id": "M2-TASK-02",

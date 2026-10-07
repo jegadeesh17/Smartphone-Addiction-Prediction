@@ -13,6 +13,7 @@ Thumbs.db
 data/*
 !data/.keep
 !data/priors.json
+!data/cohort_summary.json
 models/*
 !models/.keep
 catboost_info/

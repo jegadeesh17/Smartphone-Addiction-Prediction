@@ -105,8 +105,8 @@ class InferenceEngine:
         # 1. Feature transformation using cached population priors
         features_df = build_single_row_features(profile, self.priors)
 
-        # 2. LightGBM inference (class 1 probability)
-        probs = self.model.predict_proba(features_df)
+        # 2. LightGBM inference (class 1 probability, single thread for low latency)
+        probs = self.model.predict_proba(features_df, num_threads=1)
         prob = float(probs[0, 1])
         prob_rounded = round(prob, 4)
 
