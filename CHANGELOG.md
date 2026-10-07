@@ -20,7 +20,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Implemented Cohort Analytics API router and REST endpoints (`/api/analytics/cohorts`, `/api/analytics/distributions/screen-sleep-matrix`, `/api/analytics/distributions/benchmark-overlay`) with 422 input validation (`src/api/analytics.py`) (M2-TASK-03).
 - Built Population Cohort Analytics Explorer UI view, 2D Screen-vs-Sleep joint density heatmap, and personal quantile benchmark progress tracks (`src/templates/index.html`, `src/static/js/app.js`, `src/static/js/charts.js`, `src/static/css/style.css`) (M2-TASK-04).
 
+- Implemented counterfactual What-If simulation engine and habit optimizer (M3-TASK-01).
+- Implemented batch CSV diagnostic scoring, validation (row-level 422 errors, physiological bounds, 5 MB / 10,000-row caps) and report export with spreadsheet-formula sanitising (M3-TASK-02).
+- Built What-If Scenario Simulator and Batch Diagnostics UI views, including template CSV download and mobile card layout (M3-TASK-03).
+- Frontend craft polish pass, responsive hardening, 44px touch targets and accessibility compliance (M3-TASK-04).
+- Comprehensive regression safeguards and full pipeline verification (M3-TASK-05).
+
 ### Fixed
 - Decoupled classification threshold ($\tau$) from intrinsic severity and risk tier mapping per SPEC AC-1.1, PAR-3, and PAR-4.
 - Rendered single authoritative diagnostic verdict (`ADDICTION DETECTED` vs `HEALTHY PATTERN`) in UI status pill and narrative summary per ADR-0006.
 - Aligned behavioral ratio target thresholds for Avg Session Length (> 5.0 min) and Weekend Surge (< 2.0h) per SPEC Journey 1.
+- Batch scoring no longer returns HTTP 500 on non-numeric or infinite cells; invalid rows return a readable 422 naming rows and columns.

@@ -66,3 +66,21 @@ Milestone M2 was audited across all specification requirements (Journey 2, AC-2.
    - In-memory client caching eliminates redundant network traffic.
 4. **M1 Regression Check**:
    - Zero regressions on M1 endpoints and test suites; full test suite (224 tests) passes with exit code 0.
+
+---
+
+## Milestone M3: What-If Simulation, Batch Scoring & Craft Polish
+- **Date**: 2026-10-07
+- **Verdict**: APPROVED (after 1 rejected review)
+- **Test Command**: `pytest -q` -> exit code 0 (326 passed)
+
+### Review 1: REJECTED
+- Batch CSV with non-numeric or infinite cells returned HTTP 500 instead of a row-level 422.
+- No server-side physiological bounds on batch rows (negative or zero sleep accepted), inconsistent with `BehavioralProfileInput`.
+- Upload fully read and parsed before any byte cap.
+
+### Review 2: APPROVED
+- All three defects fixed in `src/api/predict.py` and verified by probe: 422 with row/column detail, bounds mirror the single-profile schema, 5 MB cap returns 413 before parsing.
+- Export cells starting with `=`, `+`, `-`, `@` are prefixed with `'`.
+- No regressions (326 tests pass).
+- Residual low-severity items (non-blocking): header-name and tab/CR formula injection not neutralised; categorical batch columns (`gender`, `stress_level`, `academic_work_impact`) not validated; export cache is per-process in-memory.

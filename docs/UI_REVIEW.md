@@ -83,3 +83,23 @@
 - High contrast compliant across all panels and status pills.
 - Universal `:focus-visible` ring across segmented controls and tab buttons.
 - Touch target heights meet or exceed 44px standard on viewports down to 390px.
+
+---
+
+## Milestone M3: What-If Simulator & Batch Diagnostics
+- **Date**: 2026-10-07
+- **Verdict**: APPROVED (after 1 rejected review)
+- **Test Command**: `pytest -q` -> exit code 0 (326 passed)
+- **Screenshots**: `.ui-review/M3/` (first review), `.ui-review/M3-rereview/` (after fixes); gitignored.
+
+### Review 1: REJECTED
+1. Mobile (390px) batch table hid Predicted Risk and Classification behind an un-cued horizontal scroll.
+2. Batch error showed a raw Python list repr with no recovery step.
+3. Desktop range sliders had a ~6px hit height (below 24px WCAG minimum and the 44px DESIGN.md rule).
+
+### Review 2: APPROVED
+- Batch results are stacked cards on mobile with risk and classification first; no horizontal overflow.
+- Errors show a readable title, message, recovery hint and a "Download template CSV" button.
+- All sliders (10 Diagnostic, 3 What-If) measure 44px at desktop and mobile.
+- No regressions, no JS exceptions.
+- Non-blocking: long column list in the error message, no scroll cue on the mobile tab bar, truncated mobile advisory text.
