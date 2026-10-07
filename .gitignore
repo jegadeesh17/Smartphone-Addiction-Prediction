@@ -17,3 +17,5 @@ models/*
 !models/.keep
 catboost_info/
 .pytest_cache/
+app/main.py
+app/static/
