@@ -1170,6 +1170,142 @@ class TestBatchEndpoints:
         assert response.json()["total_records"] == 20
 
 
+# ==============================================================================
+# 13. What-If Scenario Simulator & Batch Diagnostics UI Views (M3-TASK-03)
+# ==============================================================================
+
+
+class TestWhatIfAndBatchViews:
+    """Test suite validating UI template delivery, controls, and script wiring for M3-TASK-03."""
+
+    def test_whatif_tab_and_counterfactual_levers_markup(self, client: TestClient) -> None:
+        """Verify index.html delivers #tab-whatif with 3 interactive counterfactual sliders and buttons."""
+        response = client.get("/")
+        assert response.status_code == 200
+        html = response.text
+
+        # Tab container and panel
+        assert 'id="tab-btn-whatif"' in html
+        assert 'id="tab-whatif"' in html
+        assert 'role="tabpanel"' in html
+
+        # Counterfactual levers
+        assert 'id="lever-recreation-reduce"' in html
+        assert 'id="val-lever-recreation"' in html
+        assert 'id="lever-sleep-extend"' in html
+        assert 'id="val-lever-sleep"' in html
+        assert 'id="lever-opens-batch"' in html
+        assert 'id="val-lever-opens"' in html
+
+        # Optimal target generator controls
+        assert 'id="btn-generate-optimal"' in html
+        assert 'id="optimal-target-card"' in html
+        assert 'id="optimal-target-text"' in html
+        assert 'id="btn-apply-optimal"' in html
+
+    def test_whatif_comparison_cards_and_delta_badge_markup(self, client: TestClient) -> None:
+        """Verify What-If comparison cards, reactive risk delta badge, and metrics table markup."""
+        response = client.get("/")
+        assert response.status_code == 200
+        html = response.text
+
+        # Comparison cards
+        assert 'class="comparison-box"' in html
+        assert 'id="sim-baseline-prob"' in html
+        assert 'id="sim-baseline-badge"' in html
+        assert 'id="sim-counterfactual-prob"' in html
+        assert 'id="sim-counterfactual-badge"' in html
+
+        # Reactive risk delta badge
+        assert 'id="sim-delta-badge"' in html
+
+        # Behavioral metric comparison readouts
+        assert 'id="sim-base-ss"' in html
+        assert 'id="sim-new-ss"' in html
+        assert 'id="sim-base-rec"' in html
+        assert 'id="sim-new-rec"' in html
+        assert 'id="sim-base-screen"' in html
+        assert 'id="sim-new-screen"' in html
+        assert 'id="sim-base-sleep"' in html
+        assert 'id="sim-new-sleep"' in html
+
+        # Clinical status container
+        assert 'id="sim-interventions-list"' in html
+
+    def test_batch_tab_and_dropzone_markup(self, client: TestClient) -> None:
+        """Verify index.html delivers #tab-batch with CSV dropzone, demo loader, and state containers."""
+        response = client.get("/")
+        assert response.status_code == 200
+        html = response.text
+
+        # Tab button and panel
+        assert 'id="tab-btn-batch"' in html
+        assert 'id="tab-batch"' in html
+
+        # Dropzone and file input
+        assert 'id="batch-dropzone"' in html
+        assert 'id="batch-file-input"' in html
+        assert 'id="btn-load-demo-batch"' in html
+
+        # State containers
+        assert 'id="batch-loading"' in html
+        assert 'id="batch-error"' in html
+        assert 'id="batch-error-msg"' in html
+
+    def test_batch_summary_strip_and_preview_table_markup(self, client: TestClient) -> None:
+        """Verify batch cohort summary cards, CSV export trigger, and preview table markup."""
+        response = client.get("/")
+        assert response.status_code == 200
+        html = response.text
+
+        # Summary strip
+        assert 'class="batch-summary-strip"' in html
+        assert 'id="batch-total-records"' in html
+        assert 'id="batch-addiction-rate"' in html
+        assert 'id="batch-high-risk-rate"' in html
+        assert 'id="batch-mean-ss"' in html
+
+        # Export CSV trigger button
+        assert 'id="btn-export-csv"' in html
+
+        # Diagnostic preview table
+        assert 'id="batch-table"' in html
+        assert 'id="batch-table-body"' in html
+
+    def test_whatif_and_batch_client_script_wiring(self, client: TestClient) -> None:
+        """Verify app.js binds What-If simulation and batch CSV workflow interactions."""
+        app_js = client.get("/static/js/app.js").text
+
+        # What-If interactions and API calls
+        assert "runWhatIfSimulation" in app_js
+        assert "generateOptimalTarget" in app_js
+        assert "applyOptimalTargetToSliders" in app_js
+        assert "/api/analytics/what-if" in app_js
+        assert "/api/analytics/what-if/optimize" in app_js
+
+        # Batch upload interactions and API calls
+        assert "bindBatchControls" in app_js
+        assert "handleBatchUpload" in app_js
+        assert "renderBatchResults" in app_js
+        assert "generateAndSubmitDemoBatch" in app_js
+        assert "/api/predict/batch" in app_js
+        assert "/api/predict/batch/export" in app_js
+
+    def test_whatif_and_batch_css_styling_delivered(self, client: TestClient) -> None:
+        """Verify style.css delivers styles for What-If and Batch views."""
+        style_css = client.get("/static/css/style.css").text
+
+        assert ".comparison-box" in style_css
+        assert ".delta-badge" in style_css
+        assert ".delta-reduction" in style_css
+        assert ".delta-increase" in style_css
+        assert ".optimal-target-card" in style_css
+        assert ".dropzone-container" in style_css
+        assert ".batch-summary-strip" in style_css
+        assert ".batch-error-alert" in style_css
+
+
+
 
 
 

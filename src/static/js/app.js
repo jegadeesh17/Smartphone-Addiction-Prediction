@@ -837,16 +837,18 @@
         dom.leverRecreation.addEventListener('input', function (e) {
             state.whatIf.delta_recreation = parseFloat(e.target.value);
             if (dom.valLeverRecreation) {
-                dom.valLeverRecreation.textContent = state.whatIf.delta_recreation.toFixed(1) + ' hrs';
+                dom.valLeverRecreation.textContent = state.whatIf.delta_recreation.toFixed(2) + ' hrs';
             }
+            dom.leverRecreation.setAttribute('aria-valuenow', state.whatIf.delta_recreation);
             runWhatIfSimulation();
         });
 
         dom.leverSleep.addEventListener('input', function (e) {
             state.whatIf.delta_sleep = parseFloat(e.target.value);
             if (dom.valLeverSleep) {
-                dom.valLeverSleep.textContent = '+' + state.whatIf.delta_sleep.toFixed(1) + ' hrs';
+                dom.valLeverSleep.textContent = '+' + state.whatIf.delta_sleep.toFixed(2) + ' hrs';
             }
+            dom.leverSleep.setAttribute('aria-valuenow', state.whatIf.delta_sleep);
             runWhatIfSimulation();
         });
 
@@ -855,6 +857,7 @@
             if (dom.valLeverOpens) {
                 dom.valLeverOpens.textContent = state.whatIf.delta_opens + ' opens';
             }
+            dom.leverOpens.setAttribute('aria-valuenow', state.whatIf.delta_opens);
             runWhatIfSimulation();
         });
 
@@ -872,12 +875,12 @@
 
         try {
             const reqPayload = {
-                baseline: state.profile,
-                delta_social_media_hours: state.whatIf.delta_recreation * 0.7,
-                delta_gaming_hours: state.whatIf.delta_recreation * 0.3,
+                baseline_profile: state.profile,
+                delta_daily_screen_time_hours: state.whatIf.delta_recreation,
+                delta_social_media_hours: Math.round(state.whatIf.delta_recreation * 0.7 * 100) / 100,
+                delta_gaming_hours: Math.round(state.whatIf.delta_recreation * 0.3 * 100) / 100,
                 delta_sleep_hours: state.whatIf.delta_sleep,
-                delta_app_opens_per_day: state.whatIf.delta_opens,
-                delta_daily_screen_time_hours: 0.0
+                delta_app_opens_per_day: state.whatIf.delta_opens
             };
 
             const resp = await fetch('/api/analytics/what-if', {
@@ -886,27 +889,39 @@
                 body: JSON.stringify(reqPayload)
             });
 
-            if (!resp.ok) return;
+            if (!resp.ok) {
+                throw new Error('What-If simulation request failed');
+            }
             const data = await resp.json();
             renderWhatIfOutput(data);
         } catch (err) {
-            // Local simulation fallback
+            // Local simulation fallback conforming to ADR-0007
             const baseProb = state.lastProbability;
             const delta = (state.whatIf.delta_recreation * 0.04) - (state.whatIf.delta_sleep * 0.05) + (state.whatIf.delta_opens * 0.001);
             const simProb = Math.min(0.98, Math.max(0.02, baseProb + delta));
+            const simScreen = Math.max(0.5, state.profile.daily_screen_time_hours + state.whatIf.delta_recreation);
+            const simSleep = Math.min(18.0, Math.max(1.0, state.profile.sleep_hours + state.whatIf.delta_sleep));
+            const simRecHours = Math.max(0.0, (state.profile.social_media_hours + state.profile.gaming_hours + state.whatIf.delta_recreation));
+
             renderWhatIfOutput({
                 baseline_probability: baseProb,
                 simulated_probability: simProb,
                 risk_delta: simProb - baseProb,
+                baseline_classification: baseProb >= (state.profile.threshold || 0.5) ? 'ADDICTION DETECTED' : 'HEALTHY',
+                simulated_classification: simProb >= (state.profile.threshold || 0.5) ? 'ADDICTION DETECTED' : 'HEALTHY',
                 baseline_ratios: {
-                    screen_to_sleep: state.profile.daily_screen_time_hours / state.profile.sleep_hours,
-                    recreational_to_screen: (state.profile.social_media_hours + state.profile.gaming_hours) / state.profile.daily_screen_time_hours
+                    screen_to_sleep: state.profile.daily_screen_time_hours / (state.profile.sleep_hours + 1e-5),
+                    recreational_to_screen: (state.profile.social_media_hours + state.profile.gaming_hours) / (state.profile.daily_screen_time_hours + 1e-5)
                 },
                 simulated_ratios: {
-                    screen_to_sleep: Math.max(0.5, state.profile.daily_screen_time_hours + state.whatIf.delta_recreation) / (state.profile.sleep_hours + state.whatIf.delta_sleep),
-                    recreational_to_screen: Math.max(0.0, (state.profile.social_media_hours + state.profile.gaming_hours + state.whatIf.delta_recreation)) / state.profile.daily_screen_time_hours
+                    screen_to_sleep: simScreen / (simSleep + 1e-5),
+                    recreational_to_screen: simRecHours / (simScreen + 1e-5)
                 },
-                simulated_interventions: []
+                simulated_profile: {
+                    daily_screen_time_hours: simScreen,
+                    sleep_hours: simSleep
+                },
+                interventions: []
             });
         }
     }
@@ -917,25 +932,33 @@
         const basePct = (data.baseline_probability * 100).toFixed(1);
         const simPct = (data.simulated_probability * 100).toFixed(1);
         const deltaPct = Math.abs(data.risk_delta * 100).toFixed(1);
+        const threshold = state.profile.threshold || 0.50;
 
         dom.simBaselineProb.textContent = basePct + '%';
         if (dom.simBaselineBadge) {
-            dom.simBaselineBadge.className = data.baseline_probability >= state.profile.threshold ? 'badge badge-high' : 'badge badge-low';
-            dom.simBaselineBadge.textContent = data.baseline_probability >= state.profile.threshold ? 'Elevated' : 'Balanced';
+            const isBaseAddicted = data.baseline_classification
+                ? data.baseline_classification.toUpperCase().includes('ADDICTION')
+                : data.baseline_probability >= threshold;
+            dom.simBaselineBadge.className = 'badge ' + (isBaseAddicted ? 'badge-danger' : 'badge-low');
+            dom.simBaselineBadge.textContent = isBaseAddicted ? 'At-Risk' : 'Healthy';
         }
 
         dom.simCounterfactualProb.textContent = simPct + '%';
-        dom.simCounterfactualProb.style.color = data.simulated_probability < state.profile.threshold ? 'var(--low-risk)' : 'var(--danger)';
+        const isSimAddicted = data.simulated_classification
+            ? data.simulated_classification.toUpperCase().includes('ADDICTION')
+            : data.simulated_probability >= threshold;
+        dom.simCounterfactualProb.style.color = isSimAddicted ? 'var(--danger)' : 'var(--low-risk)';
+
         if (dom.simCounterfactualBadge) {
-            dom.simCounterfactualBadge.className = data.simulated_probability >= state.profile.threshold ? 'badge badge-high' : 'badge badge-low';
-            dom.simCounterfactualBadge.textContent = data.simulated_probability >= state.profile.threshold ? 'Elevated' : 'Balanced';
+            dom.simCounterfactualBadge.className = 'badge ' + (isSimAddicted ? 'badge-danger' : 'badge-low');
+            dom.simCounterfactualBadge.textContent = isSimAddicted ? 'At-Risk' : 'Healthy';
         }
 
         if (dom.simDeltaBadge) {
-            if (data.risk_delta < -0.001) {
+            if (data.risk_delta < -0.0005) {
                 dom.simDeltaBadge.className = 'delta-badge delta-reduction';
                 dom.simDeltaBadge.textContent = '-' + deltaPct + '% Risk Reduction';
-            } else if (data.risk_delta > 0.001) {
+            } else if (data.risk_delta > 0.0005) {
                 dom.simDeltaBadge.className = 'delta-badge delta-increase';
                 dom.simDeltaBadge.textContent = '+' + deltaPct + '% Risk Increase';
             } else {
@@ -945,27 +968,42 @@
         }
 
         if (data.baseline_ratios && data.simulated_ratios) {
-            if (dom.simBaseSS) dom.simBaseSS.textContent = Number(data.baseline_ratios.screen_to_sleep).toFixed(2) + 'x';
-            if (dom.simNewSS) dom.simNewSS.textContent = Number(data.simulated_ratios.screen_to_sleep).toFixed(2) + 'x';
-            if (dom.simBaseRec) dom.simBaseRec.textContent = (Number(data.baseline_ratios.recreational_to_screen) * 100).toFixed(1) + '%';
-            if (dom.simNewRec) dom.simNewRec.textContent = (Number(data.simulated_ratios.recreational_to_screen) * 100).toFixed(1) + '%';
+            const baseSS = data.baseline_ratios.screen_to_sleep ?? data.baseline_ratios.screen_to_sleep_ratio;
+            const simSS = data.simulated_ratios.screen_to_sleep ?? data.simulated_ratios.screen_to_sleep_ratio;
+            const baseRec = data.baseline_ratios.recreational_share ?? data.baseline_ratios.recreational_to_screen;
+            const simRec = data.simulated_ratios.recreational_share ?? data.simulated_ratios.recreational_to_screen;
+
+            if (dom.simBaseSS && baseSS != null) dom.simBaseSS.textContent = Number(baseSS).toFixed(2) + 'x';
+            if (dom.simNewSS && simSS != null) {
+                dom.simNewSS.textContent = Number(simSS).toFixed(2) + 'x';
+                dom.simNewSS.style.color = simSS < 1.0 ? 'var(--low-risk)' : (simSS <= 1.2 ? 'var(--amber)' : 'var(--danger)');
+            }
+            if (dom.simBaseRec && baseRec != null) dom.simBaseRec.textContent = (Number(baseRec) * 100).toFixed(1) + '%';
+            if (dom.simNewRec && simRec != null) {
+                dom.simNewRec.textContent = (Number(simRec) * 100).toFixed(1) + '%';
+                dom.simNewRec.style.color = simRec < 0.5 ? 'var(--low-risk)' : (simRec <= 0.6 ? 'var(--amber)' : 'var(--danger)');
+            }
         }
 
         if (dom.simBaseScreen) dom.simBaseScreen.textContent = state.profile.daily_screen_time_hours.toFixed(1) + 'h';
         if (dom.simNewScreen) {
-            const newScreen = Math.max(0.5, state.profile.daily_screen_time_hours + state.whatIf.delta_recreation);
-            dom.simNewScreen.textContent = newScreen.toFixed(1) + 'h';
+            const newScreen = data.simulated_profile && data.simulated_profile.daily_screen_time_hours != null
+                ? data.simulated_profile.daily_screen_time_hours
+                : Math.max(0.0, state.profile.daily_screen_time_hours + state.whatIf.delta_recreation);
+            dom.simNewScreen.textContent = Number(newScreen).toFixed(1) + 'h';
         }
 
         if (dom.simBaseSleep) dom.simBaseSleep.textContent = state.profile.sleep_hours.toFixed(1) + 'h';
         if (dom.simNewSleep) {
-            const newSleep = Math.min(14.0, state.profile.sleep_hours + state.whatIf.delta_sleep);
-            dom.simNewSleep.textContent = newSleep.toFixed(1) + 'h';
+            const newSleep = data.simulated_profile && data.simulated_profile.sleep_hours != null
+                ? data.simulated_profile.sleep_hours
+                : Math.min(18.0, Math.max(1.0, state.profile.sleep_hours + state.whatIf.delta_sleep));
+            dom.simNewSleep.textContent = Number(newSleep).toFixed(1) + 'h';
         }
 
         if (dom.simInterventionsList) {
             dom.simInterventionsList.innerHTML = '';
-            const recs = data.simulated_interventions || [];
+            const recs = data.interventions || data.simulated_interventions || [];
             if (recs.length > 0) {
                 recs.forEach(function (rec) {
                     const item = document.createElement('div');
@@ -990,20 +1028,33 @@
             const resp = await fetch('/api/analytics/what-if/optimize', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(state.profile)
+                body: JSON.stringify({ baseline_profile: state.profile })
             });
 
-            if (!resp.ok) return;
+            if (!resp.ok) {
+                throw new Error('Failed to compute optimal habit target');
+            }
             const data = await resp.json();
             optimalPrescription = data;
 
             dom.optimalTargetCard.style.display = 'block';
-            dom.optimalTargetText.textContent = data.summary;
+            let pathwayText = '';
+            if (Array.isArray(data.recommended_pathway) && data.recommended_pathway.length > 0) {
+                pathwayText = data.recommended_pathway.join(' • ');
+            } else if (data.summary) {
+                pathwayText = data.summary;
+            } else {
+                pathwayText = 'Recommended adjustment: Reduce daily screen time by ' +
+                    Number(data.target_screen_time_reduction_hours || 0).toFixed(1) + 'h, increase sleep by ' +
+                    Number(data.target_sleep_increase_hours || 0).toFixed(1) + 'h, and batch ' +
+                    (data.target_app_opens_reduction || 0) + ' app opens.';
+            }
+            dom.optimalTargetText.textContent = pathwayText;
         } catch (err) {
             optimalPrescription = {
-                target_screen_reduction: 1.5,
-                target_sleep_increase: 1.0,
-                target_opens_reduction: 30,
+                target_screen_time_reduction_hours: 1.5,
+                target_sleep_increase_hours: 1.0,
+                target_app_opens_reduction: 30,
                 summary: 'Recommended habit adjustments: Reduce recreational screen time by 1.5h, increase sleep by 1.0h, and batch notifications.'
             };
             dom.optimalTargetCard.style.display = 'block';
@@ -1014,22 +1065,35 @@
     function applyOptimalTargetToSliders() {
         if (!optimalPrescription) return;
 
-        state.whatIf.delta_recreation = -Math.abs(optimalPrescription.target_screen_reduction);
-        state.whatIf.delta_sleep = Math.abs(optimalPrescription.target_sleep_increase);
-        state.whatIf.delta_opens = -Math.abs(optimalPrescription.target_opens_reduction);
+        const screenRed = optimalPrescription.target_screen_time_reduction_hours !== undefined
+            ? optimalPrescription.target_screen_time_reduction_hours
+            : (optimalPrescription.target_screen_reduction || 0);
+        const sleepInc = optimalPrescription.target_sleep_increase_hours !== undefined
+            ? optimalPrescription.target_sleep_increase_hours
+            : (optimalPrescription.target_sleep_increase || 0);
+        const opensRed = optimalPrescription.target_app_opens_reduction !== undefined
+            ? optimalPrescription.target_app_opens_reduction
+            : (optimalPrescription.target_opens_reduction || 0);
+
+        state.whatIf.delta_recreation = -Math.abs(screenRed);
+        state.whatIf.delta_sleep = Math.abs(sleepInc);
+        state.whatIf.delta_opens = -Math.abs(opensRed);
 
         if (dom.leverRecreation && dom.valLeverRecreation) {
             dom.leverRecreation.value = state.whatIf.delta_recreation;
-            dom.valLeverRecreation.textContent = state.whatIf.delta_recreation.toFixed(1) + ' hrs';
+            dom.leverRecreation.setAttribute('aria-valuenow', state.whatIf.delta_recreation);
+            dom.valLeverRecreation.textContent = state.whatIf.delta_recreation.toFixed(2) + ' hrs';
         }
 
         if (dom.leverSleep && dom.valLeverSleep) {
             dom.leverSleep.value = state.whatIf.delta_sleep;
-            dom.valLeverSleep.textContent = '+' + state.whatIf.delta_sleep.toFixed(1) + ' hrs';
+            dom.leverSleep.setAttribute('aria-valuenow', state.whatIf.delta_sleep);
+            dom.valLeverSleep.textContent = '+' + state.whatIf.delta_sleep.toFixed(2) + ' hrs';
         }
 
         if (dom.leverOpens && dom.valLeverOpens) {
             dom.leverOpens.value = state.whatIf.delta_opens;
+            dom.leverOpens.setAttribute('aria-valuenow', state.whatIf.delta_opens);
             dom.valLeverOpens.textContent = state.whatIf.delta_opens + ' opens';
         }
 
@@ -1046,6 +1110,13 @@
             dom.batchFileInput.click();
         });
 
+        dom.batchDropzone.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                dom.batchFileInput.click();
+            }
+        });
+
         dom.batchDropzone.addEventListener('dragover', function (e) {
             e.preventDefault();
             dom.batchDropzone.classList.add('drag-over');
@@ -1058,13 +1129,13 @@
         dom.batchDropzone.addEventListener('drop', function (e) {
             e.preventDefault();
             dom.batchDropzone.classList.remove('drag-over');
-            if (e.dataTransfer.files.length > 0) {
+            if (e.dataTransfer && e.dataTransfer.files.length > 0) {
                 handleBatchUpload(e.dataTransfer.files[0]);
             }
         });
 
         dom.batchFileInput.addEventListener('change', function (e) {
-            if (e.target.files.length > 0) {
+            if (e.target.files && e.target.files.length > 0) {
                 handleBatchUpload(e.target.files[0]);
             }
         });
@@ -1080,13 +1151,15 @@
             dom.btnExportCsv.addEventListener('click', function () {
                 if (state.batch.downloadToken) {
                     window.location.href = '/api/predict/batch/export?token=' + encodeURIComponent(state.batch.downloadToken);
+                } else {
+                    showBatchError('No batch scoring results available to export. Please upload or score a dataset first.');
                 }
             });
         }
     }
 
     async function handleBatchUpload(file) {
-        if (!file.name.endsWith('.csv')) {
+        if (!file || (!file.name.toLowerCase().endsWith('.csv') && file.type !== 'text/csv')) {
             showBatchError('Please select a valid CSV file format.');
             return;
         }
@@ -1099,57 +1172,86 @@
         formData.append('file', file);
 
         try {
-            const resp = await fetch('/api/predict/batch', {
+            const url = '/api/predict/batch' + (state.profile.threshold ? '?threshold=' + encodeURIComponent(state.profile.threshold) : '');
+            const resp = await fetch(url, {
                 method: 'POST',
                 body: formData
             });
 
             if (dom.batchLoading) dom.batchLoading.style.display = 'none';
+
             if (!resp.ok) {
                 const errData = await resp.json().catch(function () { return {}; });
-                throw new Error(errData.detail || 'Batch processing failed');
+                let errorMsg = 'Batch processing failed';
+                if (resp.status === 413) {
+                    errorMsg = errData.detail || 'Batch upload exceeds maximum limit of 10,000 rows.';
+                } else if (resp.status === 422) {
+                    if (typeof errData.detail === 'string') {
+                        errorMsg = errData.detail;
+                    } else if (Array.isArray(errData.detail)) {
+                        errorMsg = errData.detail.map(function (e) {
+                            return (e.loc ? e.loc.join('.') + ': ' : '') + (e.msg || 'Validation error');
+                        }).join('; ');
+                    } else {
+                        errorMsg = 'Validation error: Missing or invalid CSV headers/data.';
+                    }
+                } else {
+                    errorMsg = errData.detail || ('Batch request failed with HTTP ' + resp.status);
+                }
+                showBatchError(errorMsg);
+                return;
             }
 
             const data = await resp.json();
             renderBatchResults(data);
         } catch (err) {
             if (dom.batchLoading) dom.batchLoading.style.display = 'none';
-            showBatchError(err.message || 'Error processing batch CSV.');
+            showBatchError(err.message || 'Error communicating with batch prediction service.');
         }
     }
 
     function generateAndSubmitDemoBatch() {
         const headers = [
-            'id', 'age', 'gender', 'stress_level', 'academic_work_impact',
+            'age', 'gender', 'stress_level', 'academic_work_impact',
             'daily_screen_time_hours', 'social_media_hours', 'gaming_hours',
             'work_study_hours', 'weekend_screen_time', 'sleep_hours',
             'notifications_per_day', 'app_opens_per_day'
         ];
 
-        const rows = [headers.join(',')];
-        for (let i = 1; i <= 20; i++) {
-            const isHigh = i % 2 === 0;
-            const age = 19 + (i % 14);
-            const gender = i % 3 === 0 ? 'Female' : (i % 3 === 1 ? 'Male' : 'Other');
-            const stress = isHigh ? 'High' : (i % 3 === 0 ? 'Medium' : 'Low');
-            const impact = isHigh ? 'Yes' : 'No';
-            const screen = isHigh ? (8.5 + (i * 0.2)).toFixed(1) : (4.0 + (i * 0.15)).toFixed(1);
-            const soc = (parseFloat(screen) * 0.4).toFixed(1);
-            const game = (parseFloat(screen) * 0.15).toFixed(1);
-            const work = (parseFloat(screen) * 0.3).toFixed(1);
-            const weekend = (parseFloat(screen) + 2.5).toFixed(1);
-            const sleep = isHigh ? (5.5 - (i * 0.05)).toFixed(1) : (7.5 + (i * 0.02)).toFixed(1);
-            const notifs = isHigh ? 180 + i * 2 : 70 + i;
-            const opens = isHigh ? 130 + i : 60 + i;
+        const demoProfiles = [
+            { age: 24, gender: 'Female', stress: 'High', impact: 'Yes', screen: 9.5, social: 4.8, gaming: 1.5, work: 2.2, weekend: 12.0, sleep: 5.2, notifs: 195, opens: 140 },
+            { age: 22, gender: 'Male', stress: 'High', impact: 'Yes', screen: 10.2, social: 3.5, gaming: 4.2, work: 1.8, weekend: 13.5, sleep: 4.8, notifs: 210, opens: 165 },
+            { age: 28, gender: 'Female', stress: 'Low', impact: 'No', screen: 4.2, social: 1.5, gaming: 0.2, work: 3.5, weekend: 5.5, sleep: 7.8, notifs: 65, opens: 45 },
+            { age: 26, gender: 'Male', stress: 'Medium', impact: 'No', screen: 5.8, social: 2.2, gaming: 1.0, work: 3.0, weekend: 7.0, sleep: 7.2, notifs: 95, opens: 70 },
+            { age: 21, gender: 'Other', stress: 'High', impact: 'Yes', screen: 8.8, social: 4.0, gaming: 2.0, work: 2.0, weekend: 11.0, sleep: 5.5, notifs: 175, opens: 125 },
+            { age: 31, gender: 'Female', stress: 'Low', impact: 'No', screen: 3.8, social: 1.2, gaming: 0.0, work: 4.0, weekend: 4.5, sleep: 8.0, notifs: 50, opens: 38 },
+            { age: 23, gender: 'Male', stress: 'High', impact: 'Yes', screen: 11.0, social: 5.0, gaming: 3.5, work: 1.5, weekend: 14.0, sleep: 4.5, notifs: 240, opens: 180 },
+            { age: 29, gender: 'Female', stress: 'Medium', impact: 'Yes', screen: 7.2, social: 3.2, gaming: 0.8, work: 3.0, weekend: 8.5, sleep: 6.5, notifs: 130, opens: 90 },
+            { age: 25, gender: 'Male', stress: 'Low', impact: 'No', screen: 4.5, social: 1.8, gaming: 0.5, work: 3.5, weekend: 6.0, sleep: 7.5, notifs: 75, opens: 55 },
+            { age: 20, gender: 'Female', stress: 'High', impact: 'Yes', screen: 9.0, social: 5.2, gaming: 1.0, work: 2.0, weekend: 11.5, sleep: 5.0, notifs: 185, opens: 135 },
+            { age: 33, gender: 'Male', stress: 'Low', impact: 'No', screen: 3.5, social: 1.0, gaming: 0.0, work: 4.5, weekend: 4.0, sleep: 8.2, notifs: 40, opens: 30 },
+            { age: 27, gender: 'Female', stress: 'Medium', impact: 'No', screen: 6.2, social: 2.8, gaming: 0.5, work: 3.2, weekend: 7.5, sleep: 6.8, notifs: 110, opens: 80 },
+            { age: 22, gender: 'Male', stress: 'High', impact: 'Yes', screen: 8.5, social: 3.8, gaming: 2.5, work: 1.8, weekend: 10.5, sleep: 5.4, notifs: 160, opens: 115 },
+            { age: 30, gender: 'Other', stress: 'Medium', impact: 'No', screen: 5.0, social: 2.0, gaming: 0.5, work: 3.8, weekend: 6.5, sleep: 7.4, notifs: 85, opens: 60 },
+            { age: 24, gender: 'Female', stress: 'High', impact: 'Yes', screen: 10.5, social: 6.0, gaming: 1.2, work: 2.0, weekend: 13.0, sleep: 4.6, notifs: 225, opens: 170 },
+            { age: 34, gender: 'Male', stress: 'Low', impact: 'No', screen: 4.0, social: 1.2, gaming: 0.2, work: 4.0, weekend: 5.0, sleep: 7.6, notifs: 60, opens: 42 },
+            { age: 19, gender: 'Male', stress: 'High', impact: 'Yes', screen: 9.8, social: 4.2, gaming: 3.2, work: 1.2, weekend: 12.5, sleep: 5.0, notifs: 200, opens: 150 },
+            { age: 27, gender: 'Female', stress: 'Low', impact: 'No', screen: 4.8, social: 2.0, gaming: 0.3, work: 3.5, weekend: 5.8, sleep: 7.7, notifs: 70, opens: 50 },
+            { age: 25, gender: 'Other', stress: 'Medium', impact: 'Yes', screen: 7.6, social: 3.6, gaming: 1.4, work: 2.5, weekend: 9.5, sleep: 6.2, notifs: 145, opens: 105 },
+            { age: 23, gender: 'Female', stress: 'High', impact: 'Yes', screen: 8.9, social: 4.5, gaming: 1.5, work: 2.2, weekend: 11.2, sleep: 5.3, notifs: 180, opens: 130 }
+        ];
 
-            rows.push([
-                'P-' + (1000 + i), age, gender, stress, impact,
-                screen, soc, game, work, weekend, sleep, notifs, opens
+        const csvLines = [headers.join(',')];
+        demoProfiles.forEach(function (p) {
+            csvLines.push([
+                p.age, p.gender, p.stress, p.impact,
+                p.screen, p.social, p.gaming, p.work,
+                p.weekend, p.sleep, p.notifs, p.opens
             ].join(','));
-        }
+        });
 
-        const blob = new Blob([rows.join('\n')], { type: 'text/csv' });
-        const file = new File([blob], 'demo_clinical_cohort.csv', { type: 'text/csv' });
+        const blob = new Blob([csvLines.join('\n')], { type: 'text/csv' });
+        const file = new File([blob], 'demo_cohort_20_records.csv', { type: 'text/csv' });
         handleBatchUpload(file);
     }
 
@@ -1171,33 +1273,46 @@
     function renderBatchResults(data) {
         state.batch.downloadToken = data.download_token;
 
-        if (dom.batchTotalRecords) dom.batchTotalRecords.textContent = data.total_records || '20';
-        if (dom.batchAddictionRate) dom.batchAddictionRate.textContent = (data.addiction_prevalence_pct || 65.0).toFixed(1) + '%';
-        if (dom.batchHighRiskRate) dom.batchHighRiskRate.textContent = (data.high_risk_pct || 45.0).toFixed(1) + '%';
-        if (dom.batchMeanSS) dom.batchMeanSS.textContent = (data.mean_screen_to_sleep || 1.24).toFixed(2) + 'x';
+        if (dom.batchTotalRecords) dom.batchTotalRecords.textContent = data.total_records != null ? data.total_records : '0';
+        if (dom.batchAddictionRate) dom.batchAddictionRate.textContent = (data.addiction_prevalence_pct != null ? Number(data.addiction_prevalence_pct).toFixed(1) : '0.0') + '%';
+        if (dom.batchHighRiskRate) dom.batchHighRiskRate.textContent = (data.high_risk_pct != null ? Number(data.high_risk_pct).toFixed(1) : '0.0') + '%';
+        if (dom.batchMeanSS) dom.batchMeanSS.textContent = (data.mean_screen_to_sleep != null ? Number(data.mean_screen_to_sleep).toFixed(2) : '0.00') + 'x';
 
-        if (dom.batchTableBody && Array.isArray(data.preview_rows)) {
+        const rows = data.preview_rows || data.sample_records || [];
+        if (dom.batchTableBody) {
             dom.batchTableBody.innerHTML = '';
-            data.preview_rows.forEach(function (r, idx) {
+            if (rows.length === 0) {
                 const tr = document.createElement('tr');
-                const isAddicted = r.classification === 'ADDICTION DETECTED';
-                const riskPct = ((r.predicted_probability || 0.5) * 100).toFixed(1);
-
-                tr.innerHTML =
-                    '<td>' + (idx + 1) + '</td>' +
-                    '<td>' + r.age + '</td>' +
-                    '<td>' + r.gender + '</td>' +
-                    '<td>' + parseFloat(r.daily_screen_time_hours).toFixed(1) + 'h</td>' +
-                    '<td>' + parseFloat(r.sleep_hours).toFixed(1) + 'h</td>' +
-                    '<td><strong>' + riskPct + '%</strong></td>' +
-                    '<td>' +
-                        '<span class="badge ' + (isAddicted ? 'badge-high' : 'badge-low') + '">' +
-                            (isAddicted ? 'Addiction' : 'Healthy') +
-                        '</span>' +
-                    '</td>' +
-                    '<td style="font-size: 0.775rem; color: var(--text-2);">' + (r.primary_intervention || 'Balanced Routine') + '</td>';
+                tr.innerHTML = '<td colspan="8" style="text-align: center; color: var(--text-3); padding: 20px;">No preview records available.</td>';
                 dom.batchTableBody.appendChild(tr);
-            });
+            } else {
+                rows.slice(0, 15).forEach(function (r, idx) {
+                    const tr = document.createElement('tr');
+                    const isAddicted = r.classification === 'ADDICTION DETECTED' || r.prediction === 1;
+                    const prob = r.predicted_probability != null ? r.predicted_probability : (r.probability || 0.5);
+                    const riskPct = (Number(prob) * 100).toFixed(1);
+                    const screenTime = r.daily_screen_time_hours != null ? Number(r.daily_screen_time_hours).toFixed(1) + 'h' : '--';
+                    const sleepTime = r.sleep_hours != null ? Number(r.sleep_hours).toFixed(1) + 'h' : '--';
+                    const age = r.age != null ? r.age : '--';
+                    const gender = r.gender || '--';
+                    const primaryAdvisory = r.primary_intervention || 'Balanced Routine';
+
+                    tr.innerHTML =
+                        '<td>' + (idx + 1) + '</td>' +
+                        '<td>' + age + '</td>' +
+                        '<td>' + gender + '</td>' +
+                        '<td>' + screenTime + '</td>' +
+                        '<td>' + sleepTime + '</td>' +
+                        '<td><strong>' + riskPct + '%</strong></td>' +
+                        '<td>' +
+                            '<span class="badge ' + (isAddicted ? 'badge-danger' : 'badge-low') + '">' +
+                                (isAddicted ? 'Addiction Detected' : 'Healthy Pattern') +
+                            '</span>' +
+                        '</td>' +
+                        '<td style="font-size: 0.8rem; color: var(--text-2);">' + primaryAdvisory + '</td>';
+                    dom.batchTableBody.appendChild(tr);
+                });
+            }
         }
 
         if (dom.batchResultsView) {

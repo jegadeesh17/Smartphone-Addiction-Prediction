@@ -230,7 +230,7 @@
             "src/static/css/style.css"
           ],
           "acceptance_criteria": "SPEC Journey 3, Journey 4, AC-3.1, AC-3.2, AC-3.3, AC-3.6. Verified by 'pytest -q tests/test_api.py' confirming template rendering and endpoint integration.",
-          "status": "pending"
+          "status": "completed"
         },
         {
           "id": "M3-TASK-04",

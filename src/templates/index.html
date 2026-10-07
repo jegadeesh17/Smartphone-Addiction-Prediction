@@ -489,7 +489,7 @@
                             <label for="lever-recreation-reduce" class="form-label">Recreational Screen Reduction</label>
                             <span class="form-value" id="val-lever-recreation">-1.5 hrs</span>
                         </div>
-                        <input type="range" id="lever-recreation-reduce" class="range-slider" min="-6.0" max="0.0" value="-1.5" step="0.25">
+                        <input type="range" id="lever-recreation-reduce" class="range-slider" min="-6.0" max="0.0" value="-1.5" step="0.25" aria-valuemin="-6.0" aria-valuemax="0.0" aria-valuenow="-1.5" aria-label="Recreational screen reduction in hours">
                     </div>
 
                     <div class="form-group">
@@ -497,7 +497,7 @@
                             <label for="lever-sleep-extend" class="form-label">Sleep Duration Extension</label>
                             <span class="form-value" id="val-lever-sleep">+1.0 hrs</span>
                         </div>
-                        <input type="range" id="lever-sleep-extend" class="range-slider" min="0.0" max="4.0" value="1.0" step="0.25">
+                        <input type="range" id="lever-sleep-extend" class="range-slider" min="0.0" max="4.0" value="1.0" step="0.25" aria-valuemin="0.0" aria-valuemax="4.0" aria-valuenow="1.0" aria-label="Sleep duration extension in hours">
                     </div>
 
                     <div class="form-group">
@@ -505,7 +505,7 @@
                             <label for="lever-opens-batch" class="form-label">App Open Batching / Reduction</label>
                             <span class="form-value" id="val-lever-opens">-30 opens</span>
                         </div>
-                        <input type="range" id="lever-opens-batch" class="range-slider" min="-80" max="0" value="-30" step="5">
+                        <input type="range" id="lever-opens-batch" class="range-slider" min="-80" max="0" value="-30" step="5" aria-valuemin="-80" aria-valuemax="0" aria-valuenow="-30" aria-label="App open batching reduction count">
                     </div>
 
                     <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line-soft);">
@@ -514,10 +514,10 @@
                         </button>
                     </div>
 
-                    <div id="optimal-target-card" style="display: none; margin-top: 16px; background: var(--low-risk-bg); border: 1px solid var(--low-risk-border); border-radius: var(--radius-md); padding: 14px;">
-                        <h3 style="color: var(--low-risk); font-size: 0.95rem; font-weight: 600; margin-bottom: 6px;">Optimal Intervention Pathway:</h3>
-                        <p id="optimal-target-text" style="font-size: 0.825rem; color: var(--text-1); line-height: 1.4;"></p>
-                        <button type="button" id="btn-apply-optimal" class="btn-secondary" style="margin-top: 10px; width: 100%; min-height: 36px; padding: 6px 12px; font-size: 0.8rem;">
+                    <div id="optimal-target-card" class="optimal-target-card" style="display: none;">
+                        <h3 class="optimal-target-title">Optimal Intervention Pathway:</h3>
+                        <p id="optimal-target-text" class="optimal-target-body"></p>
+                        <button type="button" id="btn-apply-optimal" class="btn-secondary" style="margin-top: 10px; width: 100%;">
                             Apply Target to Simulation Levers
                         </button>
                     </div>
@@ -532,30 +532,30 @@
 
                     <div class="comparison-box">
                         <div class="comparison-side">
-                            <span style="font-size: 0.75rem; color: var(--text-3); text-transform: uppercase;">Current Baseline</span>
-                            <div id="sim-baseline-prob" style="font-size: 1.75rem; font-weight: 700; color: var(--text-1);">72.4%</div>
+                            <span class="comparison-side-label">Current Baseline</span>
+                            <div id="sim-baseline-prob" class="comparison-side-prob">--%</div>
                             <span id="sim-baseline-badge" class="badge badge-danger">At-Risk</span>
                         </div>
-                        <div class="comparison-arrow">&rarr;</div>
+                        <div class="comparison-arrow" aria-hidden="true">&rarr;</div>
                         <div class="comparison-side">
-                            <span style="font-size: 0.75rem; color: var(--text-3); text-transform: uppercase;">Simulated Outcome</span>
-                            <div id="sim-counterfactual-prob" style="font-size: 1.75rem; font-weight: 700; color: var(--low-risk);">44.2%</div>
+                            <span class="comparison-side-label">Simulated Outcome</span>
+                            <div id="sim-counterfactual-prob" class="comparison-side-prob sim-highlight">--%</div>
                             <span id="sim-counterfactual-badge" class="badge badge-low">Healthy</span>
                         </div>
                     </div>
 
                     <div style="text-align: center; margin: 16px 0;">
                         <div id="sim-delta-badge" class="delta-badge delta-reduction">
-                            -28.2% Risk Reduction
+                            0.0% Risk Delta
                         </div>
                     </div>
 
-                    <table class="styled-table" style="margin-top: 16px;">
+                    <table class="styled-table" style="margin-top: 16px;" aria-label="Detailed behavioral metrics comparison">
                         <thead>
                             <tr>
-                                <th>Diagnostic Metric</th>
-                                <th>Baseline</th>
-                                <th>Counterfactual</th>
+                                <th scope="col">Diagnostic Metric</th>
+                                <th scope="col">Baseline</th>
+                                <th scope="col">Counterfactual</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -604,25 +604,27 @@
                 </div>
 
                 <!-- Dropzone Area -->
-                <div id="batch-dropzone" class="dropzone-container" tabindex="0" role="button" aria-label="CSV file dropzone">
+                <div id="batch-dropzone" class="dropzone-container" tabindex="0" role="button" aria-label="CSV file dropzone. Click or drag and drop a cohort CSV file here.">
                     <div class="dropzone-icon" aria-hidden="true">CSV</div>
                     <div class="dropzone-text">Click or Drag &amp; Drop Cohort CSV Here</div>
-                    <div class="dropzone-hint">Required columns: age, gender, daily_screen_time_hours, sleep_hours, etc.</div>
+                    <div class="dropzone-hint">Required columns: age, gender, stress_level, academic_work_impact, daily_screen_time_hours, sleep_hours, notifications_per_day, app_opens_per_day, etc.</div>
                     <input type="file" id="batch-file-input" class="file-input" accept=".csv" aria-label="Select CSV file for batch diagnosis">
                     
-                    <button type="button" id="btn-load-demo-batch" class="btn-secondary" style="margin-top: 8px;">
-                        Load Demo 20-Patient Clinical Cohort CSV
-                    </button>
+                    <div style="margin-top: 10px;">
+                        <button type="button" id="btn-load-demo-batch" class="btn-secondary">
+                            Load Demo 20-Patient Clinical Cohort CSV
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Loading State -->
-                <div id="batch-loading" class="state-container" style="display: none;">
-                    <div class="spinner"></div>
+                <div id="batch-loading" class="state-container" style="display: none;" role="status" aria-live="polite">
+                    <div class="spinner" aria-hidden="true"></div>
                     <p>Scoring batch records via LightGBM Fold 1 parallel pipeline...</p>
                 </div>
 
                 <!-- Error State -->
-                <div id="batch-error" class="boundary-warning" style="display: none;">
+                <div id="batch-error" class="boundary-warning batch-error-alert" style="display: none;" role="alert" aria-live="assertive">
                     <span id="batch-error-msg">Error message details</span>
                 </div>
 
@@ -637,7 +639,7 @@
                         <div class="metric-card">
                             <div class="metric-card-label">Cohort Addiction Rate</div>
                             <div class="metric-card-value" id="batch-addiction-rate">65.0%</div>
-                            <div class="metric-card-target" style="color: var(--amber);">Above National Norm</div>
+                            <div class="metric-card-target" style="color: var(--amber);">Cohort Prevalence</div>
                         </div>
                         <div class="metric-card">
                             <div class="metric-card-label">High-Risk Severe Share</div>
@@ -651,7 +653,7 @@
                         </div>
                     </div>
 
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
                         <h3 style="font-family: var(--font-serif); font-size: 1.1rem;">
                             Diagnostic Preview Table (Top 15 Rows)
                         </h3>
@@ -660,18 +662,18 @@
                         </button>
                     </div>
 
-                    <div class="benchmark-table-wrapper">
+                    <div class="benchmark-table-wrapper batch-table-wrapper">
                         <table class="styled-table" id="batch-table" aria-label="Batch diagnostic preview results">
                             <thead>
                                 <tr>
-                                    <th>#</th>
-                                    <th>Age</th>
-                                    <th>Gender</th>
-                                    <th>Daily Screen</th>
-                                    <th>Sleep</th>
-                                    <th>Predicted Risk</th>
-                                    <th>Classification</th>
-                                    <th>Primary Advisory</th>
+                                    <th scope="col">#</th>
+                                    <th scope="col">Age</th>
+                                    <th scope="col">Gender</th>
+                                    <th scope="col">Daily Screen</th>
+                                    <th scope="col">Sleep</th>
+                                    <th scope="col">Predicted Risk</th>
+                                    <th scope="col">Classification</th>
+                                    <th scope="col">Primary Advisory</th>
                                 </tr>
                             </thead>
                             <tbody id="batch-table-body">

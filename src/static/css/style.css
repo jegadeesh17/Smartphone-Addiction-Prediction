@@ -627,6 +627,9 @@ body {
 }
 
 .styled-table th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
     background: var(--panel-subtle);
     color: var(--text-2);
     font-weight: 600;
@@ -911,9 +914,32 @@ body {
     text-align: center;
 }
 
+.comparison-side-label {
+    font-size: 0.75rem;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.comparison-side-prob {
+    font-size: 1.85rem;
+    font-weight: 700;
+    color: var(--text-1);
+    font-variant-numeric: tabular-nums;
+    margin-bottom: 6px;
+}
+
+.comparison-side-prob.sim-highlight {
+    color: var(--low-risk);
+}
+
 .comparison-arrow {
     font-size: 1.5rem;
     color: var(--text-3);
+    user-select: none;
 }
 
 .delta-badge {
@@ -924,6 +950,8 @@ body {
     border-radius: var(--radius-pill);
     font-weight: 700;
     font-size: 0.9rem;
+    font-variant-numeric: tabular-nums;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
 .delta-reduction {
@@ -938,6 +966,28 @@ body {
     border: 1px solid var(--danger-border);
 }
 
+.optimal-target-card {
+    margin-top: 16px;
+    background: var(--low-risk-bg);
+    border: 1px solid var(--low-risk-border);
+    border-radius: var(--radius-md);
+    padding: 16px;
+}
+
+.optimal-target-title {
+    color: var(--low-risk);
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+    font-family: var(--font-sans);
+}
+
+.optimal-target-body {
+    font-size: 0.825rem;
+    color: var(--text-1);
+    line-height: 1.45;
+}
+
 /* --------------------------------------------------------------------------
    Tab 4: Batch CSV Diagnostics Styles
    -------------------------------------------------------------------------- */
@@ -948,14 +998,24 @@ body {
     padding: 40px 24px;
     text-align: center;
     cursor: pointer;
-    transition: border-color 0.2s ease, background-color 0.2s ease;
+    transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
     margin-bottom: 24px;
 }
 
-.dropzone-container:hover,
-.dropzone-container.drag-over {
+.dropzone-container:hover {
     border-color: var(--gold);
     background: var(--panel-subtle);
+}
+
+.dropzone-container.drag-over {
+    border-color: var(--gold);
+    background: var(--gold-subtle);
+    box-shadow: 0 0 0 3px var(--gold-subtle);
+}
+
+.dropzone-container:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
 }
 
 .dropzone-icon {
@@ -977,6 +1037,7 @@ body {
     font-size: 0.8rem;
     color: var(--text-3);
     margin-bottom: 16px;
+    line-height: 1.4;
 }
 
 .file-input {
@@ -988,6 +1049,45 @@ body {
     grid-template-columns: repeat(4, 1fr);
     gap: 16px;
     margin-bottom: 24px;
+}
+
+.batch-actions-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.batch-preview-heading {
+    font-family: var(--font-serif);
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-1);
+}
+
+.batch-table-wrapper {
+    max-height: 480px;
+    overflow-y: auto;
+    overflow-x: auto;
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-md);
+    background: var(--panel);
+}
+
+.batch-error-alert {
+    background: var(--danger-bg);
+    border: 1px solid var(--danger-border);
+    color: var(--danger);
+    border-radius: var(--radius-md);
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 /* Buttons */
@@ -1145,6 +1245,14 @@ body {
     .footer-content {
         flex-direction: column;
         align-items: flex-start;
+    }
+    .comparison-box {
+        flex-direction: column;
+        gap: 12px;
+        padding: 16px;
+    }
+    .comparison-arrow {
+        transform: rotate(90deg);
     }
 }
 
