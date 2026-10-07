@@ -371,22 +371,22 @@
             <div class="cohort-summary-grid">
                 <div class="metric-card">
                     <div class="metric-card-label">Total Cohort Records</div>
-                    <div class="metric-card-value">691,369</div>
-                    <div class="metric-card-target" style="color: var(--text-2);">Kaggle S6E8 Population</div>
+                    <div class="metric-card-value" id="cohort-total-records">691,369</div>
+                    <div class="metric-card-target" id="cohort-total-target" style="color: var(--text-2);">Kaggle S6E8 Population</div>
                 </div>
                 <div class="metric-card">
                     <div class="metric-card-label">Overall Addiction Prevalence</div>
-                    <div class="metric-card-value">70.9%</div>
-                    <div class="metric-card-target" style="color: var(--amber);">High Population Baseline</div>
+                    <div class="metric-card-value" id="cohort-overall-prevalence">70.9%</div>
+                    <div class="metric-card-target" id="cohort-prev-target" style="color: var(--amber);">High Population Baseline</div>
                 </div>
                 <div class="metric-card">
                     <div class="metric-card-label">Mean Daily Screen Time</div>
-                    <div class="metric-card-value">7.64 hrs</div>
+                    <div class="metric-card-value" id="cohort-mean-screen">7.64 hrs</div>
                     <div class="metric-card-target" style="color: var(--text-2);">Population Average</div>
                 </div>
                 <div class="metric-card">
                     <div class="metric-card-label">Mean Sleep Duration</div>
-                    <div class="metric-card-value">6.80 hrs</div>
+                    <div class="metric-card-value" id="cohort-mean-sleep">6.80 hrs</div>
                     <div class="metric-card-target" style="color: var(--text-2);">Population Average</div>
                 </div>
             </div>
@@ -408,8 +408,10 @@
                 <p style="font-size: 0.825rem; color: var(--text-2); margin-bottom: 12px;">
                     Color saturation indicates addiction prevalence rate within each demographic cell. Dark crimson indicates high risk concentration.
                 </p>
-                <div id="heatmap-grid" class="heatmap-grid">
-                    <!-- Dynamically populated via JS -->
+                <div class="heatmap-wrapper">
+                    <div id="heatmap-grid" class="heatmap-grid">
+                        <!-- Dynamically populated via JS -->
+                    </div>
                 </div>
             </div>
 
@@ -420,7 +422,7 @@
                     <span class="panel-subtitle">Your habits relative to 691,369 participants</span>
                 </div>
 
-                <div class="quantile-panel">
+                <div class="quantile-panel quantile-grid">
                     <div class="quantile-row">
                         <div class="label-row">
                             <span class="form-label">Daily Screen Time Ranking</span>
@@ -429,10 +431,10 @@
                         <div class="quantile-track">
                             <div class="quantile-fill" id="bar-quantile-screen" style="width: 78%;"></div>
                         </div>
-                        <span style="font-size: 0.75rem; color: var(--text-3);">Population Mean: 7.64 hrs/day | Your Input: <strong id="val-user-screen-echo">7.5h</strong></span>
+                        <span class="quantile-subtext">Population Mean: 7.64 hrs/day | Your Input: <strong id="val-user-screen-echo">7.5h</strong></span>
                     </div>
 
-                    <div class="quantile-row" style="margin-top: 16px;">
+                    <div class="quantile-row">
                         <div class="label-row">
                             <span class="form-label">Daily Sleep Duration Ranking</span>
                             <span class="form-value" id="val-quantile-sleep">45th Percentile</span>
@@ -440,7 +442,29 @@
                         <div class="quantile-track">
                             <div class="quantile-fill" id="bar-quantile-sleep" style="width: 45%;"></div>
                         </div>
-                        <span style="font-size: 0.75rem; color: var(--text-3);">Population Mean: 6.80 hrs/day | Your Input: <strong id="val-user-sleep-echo">6.8h</strong></span>
+                        <span class="quantile-subtext">Population Mean: 6.80 hrs/day | Your Input: <strong id="val-user-sleep-echo">6.8h</strong></span>
+                    </div>
+
+                    <div class="quantile-row">
+                        <div class="label-row">
+                            <span class="form-label">Daily App Opens Ranking</span>
+                            <span class="form-value" id="val-quantile-opens">50th Percentile</span>
+                        </div>
+                        <div class="quantile-track">
+                            <div class="quantile-fill" id="bar-quantile-opens" style="width: 50%;"></div>
+                        </div>
+                        <span class="quantile-subtext">Population Median: 104 opens/day | Your Input: <strong id="val-user-opens-echo">100</strong></span>
+                    </div>
+
+                    <div class="quantile-row">
+                        <div class="label-row">
+                            <span class="form-label">Daily Notifications Ranking</span>
+                            <span class="form-value" id="val-quantile-notifs">50th Percentile</span>
+                        </div>
+                        <div class="quantile-track">
+                            <div class="quantile-fill" id="bar-quantile-notifs" style="width: 50%;"></div>
+                        </div>
+                        <span class="quantile-subtext">Population Median: 149 alerts/day | Your Input: <strong id="val-user-notifs-echo">140</strong></span>
                     </div>
                 </div>
             </div>

@@ -178,7 +178,7 @@
             "src/static/css/style.css"
           ],
           "acceptance_criteria": "SPEC Journey 2, AC-2.1, AC-2.2, AC-2.3, AC-2.4. Verified by 'pytest -q tests/test_api.py' confirming template and analytics endpoint integration.",
-          "status": "pending"
+          "status": "completed"
         }
       ]
     },

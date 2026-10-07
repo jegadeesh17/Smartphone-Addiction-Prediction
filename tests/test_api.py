@@ -793,5 +793,108 @@ class TestCohortAnalyticsApi:
         assert "detail" in data or "error" in data
 
 
+# ==============================================================================
+# 10. Population Cohort Analytics Explorer UI View (M2-TASK-04, Journey 2)
+# ==============================================================================
+
+
+class TestCohortAnalyticsView:
+    """Test suite validating UI template delivery, controls, and script exports for M2-TASK-04."""
+
+    def test_cohort_tab_and_segmented_controls(self, client: TestClient) -> None:
+        """Verify index.html delivers #tab-cohorts with 4 primary dimension and stress filter buttons (AC-2.1, AC-2.2)."""
+        response = client.get("/")
+        assert response.status_code == 200
+        html = response.text
+
+        # Tab container
+        assert 'id="tab-cohorts"' in html
+        assert 'role="tabpanel"' in html
+
+        # Primary dimension segmented control buttons
+        assert 'data-cohort-dim="age_bracket"' in html
+        assert 'data-cohort-dim="gender"' in html
+        assert 'data-cohort-dim="stress_level"' in html
+        assert 'data-cohort-dim="academic_work_impact"' in html
+
+        # Stress condition filter buttons
+        assert 'data-stress-filter="All"' in html
+        assert 'data-stress-filter="Low"' in html
+        assert 'data-stress-filter="Medium"' in html
+        assert 'data-stress-filter="High"' in html
+
+    def test_cohort_summary_metrics_markup(self, client: TestClient) -> None:
+        """Verify population summary metrics cards are delivered in #tab-cohorts."""
+        response = client.get("/")
+        assert response.status_code == 200
+        html = response.text
+
+        assert 'id="cohort-total-records"' in html
+        assert 'id="cohort-overall-prevalence"' in html
+        assert 'id="cohort-mean-screen"' in html
+        assert 'id="cohort-mean-sleep"' in html
+
+    def test_cohort_cards_container_markup(self, client: TestClient) -> None:
+        """Verify dynamic demographic sub-cohort card container markup is delivered."""
+        response = client.get("/")
+        assert response.status_code == 200
+        html = response.text
+
+        assert 'id="cohort-cards-container"' in html
+        assert 'class="cohort-card-grid"' in html
+
+    def test_heatmap_container_and_grid_markup(self, client: TestClient) -> None:
+        """Verify 2D Screen vs Sleep Joint Density Heatmap markup is delivered (AC-2.3)."""
+        response = client.get("/")
+        assert response.status_code == 200
+        html = response.text
+
+        assert 'class="heatmap-container"' in html
+        assert 'class="heatmap-wrapper"' in html
+        assert 'id="heatmap-grid"' in html
+        assert "2D Joint Density &amp; Addiction Heatmap" in html or "2D Joint Density" in html
+
+    def test_quantile_overlay_panel_markup(self, client: TestClient) -> None:
+        """Verify personal quantile benchmark overlay panel and ranking tracks are delivered (AC-2.4)."""
+        response = client.get("/")
+        assert response.status_code == 200
+        html = response.text
+
+        # Quantile metric value and progress bar IDs
+        assert 'id="val-quantile-screen"' in html
+        assert 'id="bar-quantile-screen"' in html
+        assert 'id="val-user-screen-echo"' in html
+
+        assert 'id="val-quantile-sleep"' in html
+        assert 'id="bar-quantile-sleep"' in html
+        assert 'id="val-user-sleep-echo"' in html
+
+        assert 'id="val-quantile-opens"' in html
+        assert 'id="bar-quantile-opens"' in html
+        assert 'id="val-user-opens-echo"' in html
+
+        assert 'id="val-quantile-notifs"' in html
+        assert 'id="bar-quantile-notifs"' in html
+        assert 'id="val-user-notifs-echo"' in html
+
+    def test_cohort_charts_and_app_js_exports(self, client: TestClient) -> None:
+        """Verify charts.js and app.js implement cohort rendering and endpoint integration (M2-TASK-04)."""
+        # charts.js exports
+        charts_js = client.get("/static/js/charts.js").text
+        assert "renderCohortCards" in charts_js
+        assert "renderScreenSleepHeatmap" in charts_js
+        assert "renderQuantileOverlays" in charts_js
+
+        # app.js cohort logic and analytics routes
+        app_js = client.get("/static/js/app.js").text
+        assert "loadCohortAnalytics" in app_js
+        assert "loadHeatmapMatrix" in app_js
+        assert "updateBenchmarkOverlay" in app_js
+        assert "/api/analytics/cohorts" in app_js
+        assert "/api/analytics/distributions/screen-sleep-matrix" in app_js
+        assert "/api/analytics/distributions/benchmark-overlay" in app_js
+
+
+
 
 

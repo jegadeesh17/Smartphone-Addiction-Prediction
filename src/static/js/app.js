@@ -48,7 +48,10 @@
             downloadToken: null
         },
         lastProbability: 0.505,
-        debounceTimer: null
+        debounceTimer: null,
+        cohortCache: new Map(),
+        screenSleepMatrixCache: null,
+        benchmarkOverlayCache: new Map()
     };
 
     // -------------------------------------------------------------------------
@@ -107,6 +110,10 @@
         interventionList: document.getElementById('intervention-list'),
 
         // Cohort Analytics
+        cohortTotalRecords: document.getElementById('cohort-total-records'),
+        cohortOverallPrevalence: document.getElementById('cohort-overall-prevalence'),
+        cohortMeanScreen: document.getElementById('cohort-mean-screen'),
+        cohortMeanSleep: document.getElementById('cohort-mean-sleep'),
         cohortCardsContainer: document.getElementById('cohort-cards-container'),
         heatmapGrid: document.getElementById('heatmap-grid'),
         valQuantileScreen: document.getElementById('val-quantile-screen'),
@@ -115,6 +122,12 @@
         valQuantileSleep: document.getElementById('val-quantile-sleep'),
         barQuantileSleep: document.getElementById('bar-quantile-sleep'),
         valUserSleepEcho: document.getElementById('val-user-sleep-echo'),
+        valQuantileOpens: document.getElementById('val-quantile-opens'),
+        barQuantileOpens: document.getElementById('bar-quantile-opens'),
+        valUserOpensEcho: document.getElementById('val-user-opens-echo'),
+        valQuantileNotifs: document.getElementById('val-quantile-notifs'),
+        barQuantileNotifs: document.getElementById('bar-quantile-notifs'),
+        valUserNotifsEcho: document.getElementById('val-user-notifs-echo'),
 
         // What-If
         leverRecreation: document.getElementById('lever-recreation-reduce'),
@@ -209,6 +222,8 @@
 
             // Refresh tab-specific dynamic content
             if (targetTabId === 'tab-cohorts') {
+                loadCohortAnalytics();
+                loadHeatmapMatrix();
                 updateBenchmarkOverlay();
             } else if (targetTabId === 'tab-whatif') {
                 runWhatIfSimulation();
@@ -657,8 +672,10 @@
             btn.addEventListener('click', function () {
                 document.querySelectorAll('.segment-btn[data-stress-filter]').forEach(function (b) {
                     b.classList.remove('active');
+                    b.setAttribute('aria-checked', 'false');
                 });
                 btn.classList.add('active');
+                btn.setAttribute('aria-checked', 'true');
                 const val = btn.getAttribute('data-stress-filter');
                 state.cohort.filter_stress = val === 'All' ? null : val;
                 loadCohortAnalytics();
@@ -668,136 +685,146 @@
 
     async function loadCohortAnalytics() {
         if (!dom.cohortCardsContainer) return;
+        const dim = state.cohort.dimension || 'age_bracket';
+        const stress = state.cohort.filter_stress;
+        const cacheKey = dim + '__' + (stress || 'all');
+
+        // Instant sub-2ms render from memory cache
+        if (state.cohortCache.has(cacheKey)) {
+            const cached = state.cohortCache.get(cacheKey);
+            applyCohortAnalytics(cached);
+            return;
+        }
+
         try {
-            let url = '/api/analytics/cohorts?dimension=' + encodeURIComponent(state.cohort.dimension);
-            if (state.cohort.filter_stress) {
-                url += '&filter_stress=' + encodeURIComponent(state.cohort.filter_stress);
+            let url = '/api/analytics/cohorts?dimension=' + encodeURIComponent(dim);
+            if (stress) {
+                url += '&filter_stress=' + encodeURIComponent(stress);
             }
 
             const resp = await fetch(url);
             if (!resp.ok) return;
-            const cohorts = await resp.json();
-            renderCohortCards(cohorts);
+            const data = await resp.json();
+            state.cohortCache.set(cacheKey, data);
+            applyCohortAnalytics(data);
         } catch (err) {
-            // Silent fallback if analytics endpoint is pending
+            // Non-blocking fallback
         }
     }
 
-    function renderCohortCards(cohorts) {
-        if (!dom.cohortCardsContainer || !Array.isArray(cohorts)) return;
-        dom.cohortCardsContainer.innerHTML = '';
-        cohorts.forEach(function (c) {
-            const card = document.createElement('div');
-            card.className = 'cohort-stat-card';
-            const prevPct = (c.addiction_prevalence * 100).toFixed(1);
+    function applyCohortAnalytics(data) {
+        if (data.total_records !== undefined && dom.cohortTotalRecords) {
+            dom.cohortTotalRecords.textContent = Number(data.total_records).toLocaleString();
+        }
 
-            card.innerHTML =
-                '<div class="cohort-title">' +
-                    '<span>' + c.cohort_name + '</span>' +
-                    '<span class="badge ' + (c.addiction_prevalence >= 0.71 ? 'badge-high' : 'badge-mod') + '">' + prevPct + '% Risk</span>' +
-                '</div>' +
-                '<div class="cohort-metric-row">' +
-                    '<span class="cohort-metric-label">Sample Count:</span>' +
-                    '<span class="cohort-metric-val">' + Number(c.sample_count).toLocaleString() + '</span>' +
-                '</div>' +
-                '<div class="cohort-metric-row">' +
-                    '<span class="cohort-metric-label">Mean Screen Time:</span>' +
-                    '<span class="cohort-metric-val">' + Number(c.mean_screen_time).toFixed(2) + 'h</span>' +
-                '</div>' +
-                '<div class="cohort-metric-row">' +
-                    '<span class="cohort-metric-label">Mean Sleep Duration:</span>' +
-                    '<span class="cohort-metric-val">' + Number(c.mean_sleep_hours).toFixed(2) + 'h</span>' +
-                '</div>' +
-                '<div class="cohort-metric-row">' +
-                    '<span class="cohort-metric-label">Mean Daily App Opens:</span>' +
-                    '<span class="cohort-metric-val">' + Math.round(c.mean_app_opens) + '</span>' +
-                '</div>';
-            dom.cohortCardsContainer.appendChild(card);
-        });
+        const cohorts = data.cohorts || (Array.isArray(data) ? data : []);
+
+        if (typeof window.renderCohortCards === 'function') {
+            window.renderCohortCards('cohort-cards-container', cohorts);
+        } else if (window.AppCharts && typeof window.AppCharts.renderCohortCards === 'function') {
+            window.AppCharts.renderCohortCards('cohort-cards-container', cohorts);
+        }
     }
 
     async function loadHeatmapMatrix() {
         if (!dom.heatmapGrid) return;
+
+        // Instant sub-2ms render from memory cache
+        if (state.screenSleepMatrixCache !== null) {
+            applyHeatmapMatrix(state.screenSleepMatrixCache);
+            return;
+        }
+
         try {
             const resp = await fetch('/api/analytics/distributions/screen-sleep-matrix');
             if (!resp.ok) return;
             const data = await resp.json();
-            renderHeatmap(data);
+            state.screenSleepMatrixCache = data;
+            applyHeatmapMatrix(data);
         } catch (err) {
-            // Silent fallback
+            // Non-blocking fallback
         }
     }
 
-    function renderHeatmap(data) {
-        if (!dom.heatmapGrid || !data || !Array.isArray(data.addiction_rate_matrix)) return;
-        dom.heatmapGrid.innerHTML = '';
-
-        const corner = document.createElement('div');
-        corner.className = 'heatmap-header-cell';
-        corner.textContent = 'Screen\\Sleep';
-        dom.heatmapGrid.appendChild(corner);
-
-        const sleepLabels = ['3-5h', '5-6h', '6-7h', '7-8h', '8-9h', '9-12h'];
-        sleepLabels.forEach(function (lbl) {
-            const h = document.createElement('div');
-            h.className = 'heatmap-header-cell';
-            h.textContent = lbl;
-            dom.heatmapGrid.appendChild(h);
-        });
-
-        const screenLabels = ['0-4h', '4-6h', '6-8h', '8-10h', '10-12h', '12-16h'];
-        data.addiction_rate_matrix.forEach(function (row, rIdx) {
-            const rowHeader = document.createElement('div');
-            rowHeader.className = 'heatmap-header-cell';
-            rowHeader.style.textAlign = 'left';
-            rowHeader.textContent = screenLabels[rIdx] || ('R' + rIdx);
-            dom.heatmapGrid.appendChild(rowHeader);
-
-            row.forEach(function (rate, cIdx) {
-                const cell = document.createElement('div');
-                cell.className = 'heatmap-cell';
-                const ratePct = (rate * 100).toFixed(0);
-
-                const redIntensity = Math.min(220, Math.max(30, Math.round(rate * 220)));
-                const greenIntensity = Math.min(180, Math.max(30, Math.round((1 - rate) * 160)));
-                cell.style.backgroundColor = 'rgb(' + redIntensity + ', ' + greenIntensity + ', 50)';
-                cell.title = 'Screen: ' + screenLabels[rIdx] + ', Sleep: ' + sleepLabels[cIdx] + ' | Risk Rate: ' + ratePct + '%';
-                cell.innerHTML = '<span>' + ratePct + '%</span>';
-                dom.heatmapGrid.appendChild(cell);
-            });
-        });
+    function applyHeatmapMatrix(data) {
+        if (typeof window.renderScreenSleepHeatmap === 'function') {
+            window.renderScreenSleepHeatmap('heatmap-grid', data);
+        } else if (window.AppCharts && typeof window.AppCharts.renderScreenSleepHeatmap === 'function') {
+            window.AppCharts.renderScreenSleepHeatmap('heatmap-grid', data);
+        }
     }
 
     async function updateBenchmarkOverlay() {
-        if (!dom.valQuantileScreen || !dom.barQuantileScreen) return;
+        // Echo current profile inputs to subtext labels
+        if (dom.valUserScreenEcho) {
+            dom.valUserScreenEcho.textContent = state.profile.daily_screen_time_hours.toFixed(1) + 'h';
+        }
+        if (dom.valUserSleepEcho) {
+            dom.valUserSleepEcho.textContent = state.profile.sleep_hours.toFixed(1) + 'h';
+        }
+        if (dom.valUserOpensEcho) {
+            dom.valUserOpensEcho.textContent = String(Math.round(state.profile.app_opens_per_day));
+        }
+        if (dom.valUserNotifsEcho) {
+            dom.valUserNotifsEcho.textContent = String(Math.round(state.profile.notifications_per_day));
+        }
+
+        const cacheKey = state.profile.daily_screen_time_hours.toFixed(1) + '__' +
+            state.profile.sleep_hours.toFixed(1) + '__' +
+            Math.round(state.profile.app_opens_per_day) + '__' +
+            Math.round(state.profile.notifications_per_day);
+
+        // Instant sub-2ms lookup from memory cache
+        if (state.benchmarkOverlayCache.has(cacheKey)) {
+            const cached = state.benchmarkOverlayCache.get(cacheKey);
+            applyBenchmarkOverlay(cached);
+            return;
+        }
+
         try {
+            const payload = {
+                daily_screen_time_hours: state.profile.daily_screen_time_hours,
+                sleep_hours: state.profile.sleep_hours,
+                app_opens_per_day: state.profile.app_opens_per_day,
+                notifications_per_day: state.profile.notifications_per_day
+            };
+
             const resp = await fetch('/api/analytics/distributions/benchmark-overlay', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(state.profile)
+                body: JSON.stringify(payload)
             });
+
             if (!resp.ok) return;
             const data = await resp.json();
-
-            dom.valQuantileScreen.textContent = Math.round(data.screen_time_percentile) + 'th Percentile';
-            dom.barQuantileScreen.style.width = Math.min(100, data.screen_time_percentile) + '%';
-            if (dom.valUserScreenEcho) {
-                dom.valUserScreenEcho.textContent = state.profile.daily_screen_time_hours.toFixed(1) + 'h';
-            }
-
-            dom.valQuantileSleep.textContent = Math.round(data.sleep_duration_percentile) + 'th Percentile';
-            dom.barQuantileSleep.style.width = Math.min(100, data.sleep_duration_percentile) + '%';
-            if (dom.valUserSleepEcho) {
-                dom.valUserSleepEcho.textContent = state.profile.sleep_hours.toFixed(1) + 'h';
-            }
+            state.benchmarkOverlayCache.set(cacheKey, data);
+            applyBenchmarkOverlay(data);
         } catch (err) {
-            // Fallback estimates
+            // Local fallback percentile estimates
             const screenPct = Math.min(99, Math.max(1, Math.round((state.profile.daily_screen_time_hours / 14.0) * 100)));
             const sleepPct = Math.min(99, Math.max(1, Math.round((state.profile.sleep_hours / 12.0) * 100)));
-            dom.valQuantileScreen.textContent = screenPct + 'th Percentile';
-            dom.barQuantileScreen.style.width = screenPct + '%';
-            dom.valQuantileSleep.textContent = sleepPct + 'th Percentile';
-            dom.barQuantileSleep.style.width = sleepPct + '%';
+            const opensPct = Math.min(99, Math.max(1, Math.round((state.profile.app_opens_per_day / 200.0) * 100)));
+            const notifsPct = Math.min(99, Math.max(1, Math.round((state.profile.notifications_per_day / 250.0) * 100)));
+            const fallbackData = {
+                screen_time_percentile: screenPct,
+                sleep_hours_percentile: sleepPct,
+                sleep_duration_percentile: sleepPct,
+                app_opens_percentile: opensPct,
+                notifications_percentile: notifsPct,
+                screen_time_label: screenPct + 'th Percentile in Screen Time',
+                sleep_hours_label: sleepPct + 'th Percentile in Sleep Duration',
+                population_mean_screen: 7.64,
+                population_mean_sleep: 6.80
+            };
+            applyBenchmarkOverlay(fallbackData);
+        }
+    }
+
+    function applyBenchmarkOverlay(data) {
+        if (typeof window.renderQuantileOverlays === 'function') {
+            window.renderQuantileOverlays(data);
+        } else if (window.AppCharts && typeof window.AppCharts.renderQuantileOverlays === 'function') {
+            window.AppCharts.renderQuantileOverlays(data);
         }
     }
 

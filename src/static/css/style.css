@@ -744,17 +744,25 @@ body {
     margin-bottom: 24px;
 }
 
+.heatmap-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    padding-bottom: 4px;
+}
+
 .heatmap-grid {
     display: grid;
-    grid-template-columns: 80px repeat(6, 1fr);
+    grid-template-columns: 90px repeat(5, 1fr);
     gap: 6px;
     margin-top: 16px;
     font-size: 0.75rem;
     align-items: center;
+    min-width: 520px;
 }
 
 .heatmap-cell {
-    height: 48px;
+    min-height: 52px;
     border-radius: var(--radius-sm);
     display: flex;
     flex-direction: column;
@@ -762,28 +770,78 @@ body {
     justify-content: center;
     font-weight: 600;
     color: var(--ink-white);
-    transition: transform 0.15s ease;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
     cursor: default;
     border: 1px solid var(--heatmap-border);
+    padding: 4px;
+    user-select: none;
 }
 
-.heatmap-cell:hover {
+.heatmap-cell:hover,
+.heatmap-cell:focus-visible {
     transform: scale(1.04);
     z-index: 2;
+    box-shadow: 0 3px 10px rgba(22, 32, 47, 0.22);
 }
 
-.heatmap-axis-label {
+.heatmap-rate {
+    font-size: 0.825rem;
+    font-weight: 700;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+}
+
+.heatmap-density {
+    font-size: 0.65rem;
+    font-weight: 500;
+    opacity: 0.92;
+    margin-top: 2px;
+    font-variant-numeric: tabular-nums;
+}
+
+.heatmap-cell-danger {
+    background-color: var(--danger);
+}
+
+.heatmap-cell-amber {
+    background-color: var(--amber);
+}
+
+.heatmap-cell-low {
+    background-color: var(--low-risk);
+}
+
+.heatmap-header-cell {
     font-weight: 600;
     color: var(--text-2);
+    font-size: 0.75rem;
+    text-align: center;
+    padding: 6px 4px;
+}
+
+.heatmap-corner-cell {
     text-align: right;
-    padding-right: 8px;
+    padding-right: 10px;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-3);
+}
+
+.heatmap-row-header {
+    text-align: right;
+    padding-right: 10px;
+    font-weight: 600;
+    color: var(--text-1);
+    font-variant-numeric: tabular-nums;
 }
 
 .heatmap-col-header {
     font-weight: 600;
-    color: var(--text-2);
-    text-align: center;
-    padding-bottom: 6px;
+    color: var(--text-1);
+    font-variant-numeric: tabular-nums;
+    text-transform: uppercase;
+    font-size: 0.725rem;
 }
 
 /* Personal Quantile Benchmark Overlay */
@@ -791,8 +849,17 @@ body {
     margin-top: 16px;
 }
 
+.quantile-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
 .quantile-row {
-    margin-bottom: 16px;
+    background: var(--panel-subtle);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
 }
 
 .quantile-track {
@@ -810,6 +877,13 @@ body {
     background: var(--gold);
     border-radius: var(--radius-pill);
     transform-origin: left;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s ease;
+}
+
+.quantile-subtext {
+    font-size: 0.75rem;
+    color: var(--text-3);
+    display: block;
 }
 
 /* --------------------------------------------------------------------------
@@ -1035,6 +1109,27 @@ body {
     }
     .cohort-summary-grid, .batch-summary-strip {
         grid-template-columns: 1fr;
+    }
+    .cohort-header-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+    .cohort-slicing-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        width: 100%;
+        gap: 8px;
+    }
+    .cohort-slicing-bar .segmented-control {
+        width: 100%;
+        overflow-x: auto;
+    }
+    .quantile-grid {
+        grid-template-columns: 1fr;
+    }
+    .heatmap-container {
+        padding: 16px;
     }
     .range-slider {
         height: 8px;
