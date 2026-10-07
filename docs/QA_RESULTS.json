@@ -97,8 +97,20 @@
     "output": "Generating cohort cache from C:\\Users\\jegad\\projects\\SmartphoneAddictionPrediction\\data\\train.csv...\nGenerated cohort cache successfully: C:\\Users\\jegad\\projects\\SmartphoneAddictionPrediction\\data\\cohort_summary.json (691,369 rows).\nValidating cohort cache integrity at C:\\Users\\jegad\\projects\\SmartphoneAddictionPrediction\\data\\cohort_summary.json...\nCohort cache validation PASSED: Schema integrity, non-zero sample counts, and percentage ranges verified.\n172 passed, 2 deselected in 32.77s",
     "status": "passed",
     "failure_output": ""
+  },
+  {
+    "task_id": "M2-TASK-02",
+    "attempt": 1,
+    "timestamp": "2026-10-07T03:54:00Z",
+    "command": "pytest -q tests/test_cohort_service.py && pytest -q -m \"not slow\"",
+    "exit_code": 0,
+    "summary": "Target: 22 passed in 0.68s; Fast suite: 194 passed, 2 deselected in 26.52s",
+    "output": "......................                                                   [100%]\n22 passed in 0.68s\n194 passed, 2 deselected in 26.52s",
+    "status": "passed",
+    "failure_output": ""
   }
 ]
+
 
 
 

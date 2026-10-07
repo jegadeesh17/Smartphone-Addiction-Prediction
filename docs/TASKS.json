@@ -148,7 +148,7 @@
             "src/schemas.py"
           ],
           "acceptance_criteria": "SPEC AC-2.1, AC-2.2, AC-2.3, AC-2.4, AC-2.5, ADR-0003. Verified by 'pytest -q tests/test_cohort_service.py' verifying sub-2ms query execution, correct demographic filtering, and accurate quantile calculation.",
-          "status": "pending"
+          "status": "completed"
         },
         {
           "id": "M2-TASK-03",
