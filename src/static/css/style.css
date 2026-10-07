@@ -1,0 +1,1607 @@
+/* ==========================================================================
+   App Shell, Layout & Component Stylesheet
+   Smartphone Addiction Analytical Platform
+   Conforming to DESIGN.md, ADR-0006, and ADR-0008
+   ========================================================================== */
+
+/* Universal Reset & Box Sizing */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    font-size: 16px;
+    background-color: var(--bg);
+    color: var(--text-1);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+    line-height: 1.5;
+}
+
+/* Accessibility Focus Ring (WCAG 2.2 AA) */
+:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+.tab-button:focus-visible,
+.segment-btn:focus-visible,
+.range-slider:focus-visible,
+.btn-primary:focus-visible,
+.btn-secondary:focus-visible,
+.dropzone-container:focus-visible,
+.heatmap-cell:focus-visible,
+.toast-close:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   Header & Brand Navigation Bar
+   -------------------------------------------------------------------------- */
+.app-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--panel);
+    border-bottom: 1px solid var(--line);
+    box-shadow: var(--shadow-header);
+}
+
+.header-top {
+    max-width: 1360px;
+    margin: 0 auto;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.brand-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.brand-mark {
+    width: 36px;
+    height: 36px;
+    background: var(--gold);
+    color: var(--ink-white);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-serif);
+    font-size: 1.25rem;
+    font-weight: 700;
+    box-shadow: var(--shadow-mark);
+    user-select: none;
+}
+
+.brand-title-group h1 {
+    font-family: var(--font-serif);
+    font-size: 1.65rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--text-1);
+    line-height: 1.2;
+}
+
+.brand-title-group p {
+    font-size: 0.85rem;
+    color: var(--text-2);
+}
+
+/* Calm Status Indicator & Live Telemetry Strip */
+.telemetry-strip {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.75rem;
+    color: var(--text-2);
+}
+
+.telemetry-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background: var(--panel-subtle);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-pill);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+}
+
+.status-indicator-static {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--low-risk);
+    display: inline-block;
+}
+
+/* Nav Tab Container (Clean bottom border, zero side borders) */
+.nav-tab-container {
+    max-width: 1360px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    gap: 4px;
+    border-top: 1px solid var(--line-soft);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+
+.nav-tab-container::-webkit-scrollbar {
+    display: none;
+}
+
+.tab-button {
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 12px 18px;
+    min-height: 44px;
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-2);
+    cursor: pointer;
+    transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tab-button:hover {
+    color: var(--text-1);
+    background-color: var(--gold-subtle);
+}
+
+.tab-button.active {
+    color: var(--gold);
+    font-weight: 600;
+    border-bottom-color: var(--gold);
+}
+
+/* --------------------------------------------------------------------------
+   Main Workspace Layout
+   -------------------------------------------------------------------------- */
+.main-workspace {
+    max-width: 1360px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 24px;
+    flex: 1;
+}
+
+.tab-content-panel {
+    display: none;
+}
+
+.tab-content-panel.active {
+    display: block;
+}
+
+/* 55/45 Two-Column Grid for Tab 1 */
+.diagnostic-grid {
+    display: grid;
+    grid-template-columns: 55% 45%;
+    gap: 24px;
+    align-items: start;
+}
+
+/* Panels & Cards */
+.panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    box-shadow: var(--shadow-card);
+    margin-bottom: 20px;
+}
+
+.panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--line-soft);
+}
+
+.panel-title {
+    font-family: var(--font-serif);
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-1);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.panel-subtitle {
+    font-size: 0.825rem;
+    color: var(--text-3);
+}
+
+/* Form Controls & Sliders */
+.form-group {
+    margin-bottom: 16px;
+}
+
+.label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.form-label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-1);
+}
+
+.form-value {
+    font-size: 0.85rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--gold);
+}
+
+/* Range Slider Styling */
+.range-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 44px; /* 44px hit area; the visible track is drawn inside it */
+    margin: 0;
+    background: transparent;
+    cursor: pointer;
+}
+
+.range-slider::-webkit-slider-runnable-track {
+    height: 6px;
+    background: var(--track);
+    border-radius: var(--radius-pill);
+}
+
+.range-slider::-moz-range-track {
+    height: 6px;
+    background: var(--track);
+    border-radius: var(--radius-pill);
+}
+
+.range-slider:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 0;
+    border-radius: var(--radius-md);
+}
+
+.range-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    margin-top: -6px; /* centres 18px thumb on 6px track */
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--gold);
+    border: 2px solid var(--ink-white);
+    box-shadow: var(--shadow-thumb);
+    cursor: pointer;
+    transition: transform 0.1s ease, background-color 0.1s ease;
+}
+
+.range-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+    background: var(--gold-hover);
+}
+
+.range-slider::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--gold);
+    border: 2px solid var(--ink-white);
+    box-shadow: var(--shadow-thumb);
+    cursor: pointer;
+}
+
+/* Segmented Control Pill Buttons */
+.segmented-control {
+    display: flex;
+    background: var(--field-bg);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-pill);
+    padding: 3px;
+    gap: 3px;
+}
+
+.segment-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 8px 12px;
+    border-radius: var(--radius-pill);
+    font-family: var(--font-sans);
+    font-size: 0.825rem;
+    font-weight: 500;
+    color: var(--text-2);
+    cursor: pointer;
+    transition: color 0.15s ease, background-color 0.15s ease;
+    text-align: center;
+    min-height: 38px;
+}
+
+.segment-btn:hover {
+    color: var(--text-1);
+}
+
+.segment-btn.active {
+    background: var(--panel);
+    color: var(--gold);
+    font-weight: 600;
+    box-shadow: var(--shadow-pill);
+}
+
+/* Physiological Warning Banner */
+.boundary-warning {
+    display: none;
+    background: var(--amber-bg);
+    border: 1px solid var(--amber-border);
+    border-radius: var(--radius-md);
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    color: var(--amber);
+    font-size: 0.85rem;
+    line-height: 1.4;
+    align-items: center;
+    gap: 10px;
+}
+
+.boundary-warning.active {
+    display: flex;
+}
+
+/* Live Assessment Output Card */
+.assessment-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    box-shadow: var(--shadow-card);
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.assessment-title {
+    font-family: var(--font-serif);
+    font-size: 1.15rem;
+    color: var(--text-1);
+    margin-bottom: 14px;
+    font-weight: 600;
+}
+
+/* --------------------------------------------------------------------------
+   SVG Risk Gauge Geometry (ADR-0008)
+   ViewBox: 0 0 240 170 | Center: (120, 120) | R=85 | Sweep: 220° (160° to 380°)
+   Arc feet end at Y ≈ 149.1px, leaving >20px canvas padding.
+   -------------------------------------------------------------------------- */
+.gauge-container {
+    position: relative;
+    width: 240px;
+    height: 170px;
+    margin: 0 auto;
+}
+
+.gauge-svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+.gauge-bg {
+    fill: none;
+    stroke: var(--track);
+    stroke-width: 14;
+    stroke-linecap: round;
+}
+
+.gauge-meter {
+    fill: none;
+    stroke: var(--low-risk);
+    stroke-width: 14;
+    stroke-linecap: round;
+    stroke-dasharray: 326.4;
+    stroke-dashoffset: 326.4;
+    transition: stroke-dashoffset 0.25s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.25s ease;
+}
+
+.gauge-readout {
+    position: absolute;
+    top: 86px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    pointer-events: none;
+}
+
+.gauge-percentage {
+    font-family: var(--font-sans);
+    font-size: 2.3rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-1);
+    line-height: 1;
+}
+
+/* Sub-Gauge Caption Layout: positive top margin guarantees >32px clearance (ADR-0008) */
+.gauge-caption {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-top: 1.25rem;
+    margin-bottom: 0;
+    text-align: center;
+}
+
+/* --------------------------------------------------------------------------
+   Consolidated Authoritative Status Pill (ADR-0006)
+   -------------------------------------------------------------------------- */
+.status-pill-container {
+    display: flex;
+    justify-content: center;
+    margin: 14px 0 12px;
+}
+
+.status-pill {
+    border-radius: var(--radius-pill);
+    padding: 6px 16px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-variant-numeric: tabular-nums;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.status-pill-low {
+    background: var(--low-risk-bg);
+    color: var(--low-risk);
+    border: 1px solid var(--low-risk-border);
+}
+
+.status-pill-mod,
+.status-pill-amber {
+    background: var(--amber-bg);
+    color: var(--amber);
+    border: 1px solid var(--amber-border);
+}
+
+.status-pill-high,
+.status-pill-danger {
+    background: var(--danger-bg);
+    color: var(--danger);
+    border: 1px solid var(--danger-border);
+}
+
+/* Legacy badge compatibility wrapper */
+.badge-group {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 14px 0 16px;
+}
+
+.badge {
+    border-radius: var(--radius-pill);
+    padding: 4px 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-variant-numeric: tabular-nums;
+}
+
+.badge-low {
+    background: var(--low-risk-bg);
+    color: var(--low-risk);
+    border: 1px solid var(--low-risk-border);
+}
+
+.badge-mod,
+.badge-amber {
+    background: var(--amber-bg);
+    color: var(--amber);
+    border: 1px solid var(--amber-border);
+}
+
+.badge-high,
+.badge-danger {
+    background: var(--danger-bg);
+    color: var(--danger);
+    border: 1px solid var(--danger-border);
+}
+
+.classification-text {
+    font-size: 0.9rem;
+    color: var(--text-2);
+    margin-top: 8px;
+}
+
+.classification-text strong {
+    color: var(--text-1);
+}
+
+/* Granular Metric Tiles */
+.metric-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-top: 18px;
+}
+
+.metric-card {
+    background: var(--panel-subtle);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+    text-align: left;
+}
+
+.metric-card-label {
+    font-size: 0.75rem;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 600;
+}
+
+.metric-card-value {
+    font-family: var(--font-sans);
+    font-size: 1.45rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-1);
+    margin: 4px 0 2px;
+}
+
+.metric-card-target {
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+}
+
+.target-met {
+    color: var(--low-risk);
+}
+
+.target-breached {
+    color: var(--danger);
+}
+
+/* Dynamic Interventions Box */
+.intervention-box {
+    margin-top: 20px;
+    text-align: left;
+}
+
+.intervention-box h3,
+.intervention-box h4 {
+    font-family: var(--font-serif);
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-1);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.intervention-item {
+    background: var(--panel-subtle);
+    border: 1px solid var(--line-soft);
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 8px;
+    font-size: 0.825rem;
+    line-height: 1.4;
+    color: var(--text-1);
+}
+
+.intervention-item.optimal {
+    border-color: var(--low-risk-border);
+    background: var(--low-risk-bg);
+}
+
+/* --------------------------------------------------------------------------
+   Multi-Model Benchmark Table (PAR-7)
+   -------------------------------------------------------------------------- */
+.benchmark-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-top: 12px;
+}
+
+.styled-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.825rem;
+    text-align: left;
+}
+
+.styled-table th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: var(--panel-subtle);
+    color: var(--text-2);
+    font-weight: 600;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line);
+    text-transform: uppercase;
+    font-size: 0.725rem;
+    letter-spacing: 0.05em;
+    font-variant-numeric: tabular-nums;
+}
+
+.styled-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line-soft);
+    color: var(--text-1);
+    font-variant-numeric: tabular-nums;
+}
+
+.styled-table tr:last-child td {
+    border-bottom: none;
+}
+
+.styled-table tr.highlight-row {
+    background: var(--gold-highlight);
+    font-weight: 600;
+}
+
+/* --------------------------------------------------------------------------
+   Tab 2: Population Cohort Analytics Styles
+   -------------------------------------------------------------------------- */
+.cohort-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.cohort-slicing-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.filter-label {
+    font-size: 0.825rem;
+    font-weight: 600;
+    color: var(--text-2);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.cohort-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.cohort-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.cohort-stat-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    box-shadow: var(--shadow-card);
+}
+
+.cohort-title {
+    font-family: var(--font-serif);
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text-1);
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.cohort-metric-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.825rem;
+    padding: 6px 0;
+    border-bottom: 1px dashed var(--line-soft);
+}
+
+.cohort-metric-row:last-child {
+    border-bottom: none;
+}
+
+.cohort-metric-label {
+    color: var(--text-2);
+}
+
+.cohort-metric-val {
+    font-weight: 600;
+    color: var(--text-1);
+    font-variant-numeric: tabular-nums;
+}
+
+/* 2D Joint Density Heatmap */
+.heatmap-container {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    margin-bottom: 24px;
+}
+
+.heatmap-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    padding-bottom: 4px;
+}
+
+.heatmap-grid {
+    display: grid;
+    grid-template-columns: 90px repeat(5, 1fr);
+    gap: 6px;
+    margin-top: 16px;
+    font-size: 0.75rem;
+    align-items: center;
+    min-width: 520px;
+}
+
+.heatmap-cell {
+    min-height: 52px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    color: var(--ink-white);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    cursor: default;
+    border: 1px solid var(--heatmap-border);
+    padding: 4px;
+    user-select: none;
+}
+
+.heatmap-cell:hover,
+.heatmap-cell:focus-visible {
+    transform: scale(1.04);
+    z-index: 2;
+    box-shadow: 0 3px 10px rgba(22, 32, 47, 0.22);
+}
+
+.heatmap-rate {
+    font-size: 0.825rem;
+    font-weight: 700;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+}
+
+.heatmap-density {
+    font-size: 0.65rem;
+    font-weight: 500;
+    opacity: 0.92;
+    margin-top: 2px;
+    font-variant-numeric: tabular-nums;
+}
+
+.heatmap-cell-danger {
+    background-color: var(--danger);
+}
+
+.heatmap-cell-amber {
+    background-color: var(--amber);
+}
+
+.heatmap-cell-low {
+    background-color: var(--low-risk);
+}
+
+.heatmap-header-cell {
+    font-weight: 600;
+    color: var(--text-2);
+    font-size: 0.75rem;
+    text-align: center;
+    padding: 6px 4px;
+}
+
+.heatmap-corner-cell {
+    text-align: right;
+    padding-right: 10px;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-3);
+}
+
+.heatmap-row-header {
+    text-align: right;
+    padding-right: 10px;
+    font-weight: 600;
+    color: var(--text-1);
+    font-variant-numeric: tabular-nums;
+}
+
+.heatmap-col-header {
+    font-weight: 600;
+    color: var(--text-1);
+    font-variant-numeric: tabular-nums;
+    text-transform: uppercase;
+    font-size: 0.725rem;
+}
+
+/* Personal Quantile Benchmark Overlay */
+.quantile-panel {
+    margin-top: 16px;
+}
+
+.quantile-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+.quantile-row {
+    background: var(--panel-subtle);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+}
+
+.quantile-track {
+    width: 100%;
+    height: 10px;
+    background: var(--track);
+    border-radius: var(--radius-pill);
+    overflow: hidden;
+    margin: 8px 0 6px;
+    position: relative;
+}
+
+.quantile-fill {
+    height: 100%;
+    background: var(--gold);
+    border-radius: var(--radius-pill);
+    transform-origin: left;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s ease;
+}
+
+.quantile-subtext {
+    font-size: 0.75rem;
+    color: var(--text-3);
+    display: block;
+    font-variant-numeric: tabular-nums;
+}
+
+.quantile-subtext strong {
+    font-variant-numeric: tabular-nums;
+}
+
+/* --------------------------------------------------------------------------
+   Tab 3: What-If Simulation Styles
+   -------------------------------------------------------------------------- */
+.what-if-grid {
+    display: grid;
+    grid-template-columns: 50% 50%;
+    gap: 24px;
+    align-items: start;
+}
+
+.comparison-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 20px;
+    background: var(--panel-subtle);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-md);
+    margin-bottom: 20px;
+}
+
+.comparison-side {
+    text-align: center;
+}
+
+.comparison-side-label {
+    font-size: 0.75rem;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.comparison-side-prob {
+    font-size: 1.85rem;
+    font-weight: 700;
+    color: var(--text-1);
+    font-variant-numeric: tabular-nums;
+    margin-bottom: 6px;
+}
+
+.comparison-side-prob.sim-highlight {
+    color: var(--low-risk);
+}
+
+.comparison-arrow {
+    font-size: 1.5rem;
+    color: var(--text-3);
+    user-select: none;
+}
+
+.delta-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: var(--radius-pill);
+    font-weight: 700;
+    font-size: 0.9rem;
+    font-variant-numeric: tabular-nums;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.delta-reduction {
+    background: var(--low-risk-bg);
+    color: var(--low-risk);
+    border: 1px solid var(--low-risk-border);
+}
+
+.delta-increase {
+    background: var(--danger-bg);
+    color: var(--danger);
+    border: 1px solid var(--danger-border);
+}
+
+.optimal-target-card {
+    margin-top: 16px;
+    background: var(--low-risk-bg);
+    border: 1px solid var(--low-risk-border);
+    border-radius: var(--radius-md);
+    padding: 16px;
+}
+
+.optimal-target-title {
+    color: var(--low-risk);
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+    font-family: var(--font-sans);
+}
+
+.optimal-target-list {
+    margin: 0;
+    padding-left: 20px;
+    font-size: 0.825rem;
+    color: var(--text-1);
+    line-height: 1.45;
+}
+
+.optimal-target-list li + li {
+    margin-top: 4px;
+}
+
+/* --------------------------------------------------------------------------
+   Tab 4: Batch CSV Diagnostics Styles
+   -------------------------------------------------------------------------- */
+.dropzone-container {
+    border: 2px dashed var(--line);
+    background: var(--field-bg);
+    border-radius: var(--radius-lg);
+    padding: 40px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+    margin-bottom: 24px;
+}
+
+.dropzone-container:hover {
+    border-color: var(--gold);
+    background: var(--panel-subtle);
+}
+
+.dropzone-container.drag-over {
+    border-color: var(--gold);
+    background: var(--gold-subtle);
+    box-shadow: 0 0 0 3px var(--gold-subtle);
+}
+
+.dropzone-container:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+}
+
+.dropzone-icon {
+    font-size: 1.8rem;
+    font-weight: 700;
+    font-family: var(--font-serif);
+    color: var(--gold);
+    margin-bottom: 12px;
+}
+
+.dropzone-text {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-1);
+    margin-bottom: 4px;
+}
+
+.dropzone-hint {
+    font-size: 0.8rem;
+    color: var(--text-3);
+    margin-bottom: 16px;
+    line-height: 1.4;
+}
+
+.file-input {
+    display: none;
+}
+
+.batch-summary-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.batch-actions-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.batch-preview-heading {
+    font-family: var(--font-serif);
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-1);
+}
+
+.batch-table-wrapper {
+    max-height: 480px;
+    overflow-y: auto;
+    overflow-x: auto;
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-md);
+    background: var(--panel);
+}
+
+.batch-error-alert {
+    background: var(--danger-bg);
+    border: 1px solid var(--danger-border);
+    color: var(--danger);
+    border-radius: var(--radius-md);
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.batch-error-body {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    min-width: 0;
+}
+
+.batch-error-title {
+    font-weight: 600;
+}
+
+.batch-error-msg,
+.batch-error-hint {
+    overflow-wrap: anywhere;
+    line-height: 1.45;
+}
+
+.batch-error-msg:empty,
+.batch-error-hint:empty {
+    display: none;
+}
+
+.batch-error-hint {
+    color: var(--text-1);
+    font-weight: 400;
+}
+
+.batch-error-action {
+    margin-top: 6px;
+    min-height: 44px;
+}
+
+.batch-advisory {
+    font-size: 0.8rem;
+    color: var(--text-2);
+    max-width: 280px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Buttons */
+.btn-primary {
+    background: var(--gold);
+    color: var(--ink-white);
+    border: none;
+    border-radius: var(--radius-md);
+    padding: 10px 18px;
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease, transform 0.1s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-primary:hover {
+    background: var(--gold-hover);
+}
+
+.btn-secondary {
+    background: var(--panel-subtle);
+    color: var(--text-1);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    padding: 8px 14px;
+    font-family: var(--font-sans);
+    font-size: 0.825rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-secondary:hover {
+    background: var(--field-bg);
+    border-color: var(--gold);
+}
+
+/* State Containers */
+.state-container {
+    padding: 30px;
+    text-align: center;
+    color: var(--text-2);
+}
+
+.spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid var(--track);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 12px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Footer */
+.app-footer {
+    border-top: 1px solid var(--line);
+    background: var(--panel);
+    padding: 20px 24px;
+    margin-top: auto;
+    font-size: 0.8rem;
+    color: var(--text-3);
+}
+
+.footer-content {
+    max-width: 1360px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+/* --------------------------------------------------------------------------
+   Toast Notifications (Offline, Graceful Fallback, System Status)
+   -------------------------------------------------------------------------- */
+.toast-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 380px;
+    width: calc(100% - 48px);
+    pointer-events: none;
+}
+
+.toast {
+    pointer-events: auto;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    box-shadow: 0 4px 16px rgba(22, 32, 47, 0.12);
+    padding: 14px 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    animation: toast-slide-in 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.toast.toast-dismissing {
+    opacity: 0;
+    transform: translateY(8px);
+}
+
+.toast-icon {
+    font-size: 1.1rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    line-height: 1;
+    margin-top: 1px;
+}
+
+.toast-warning .toast-icon {
+    color: var(--amber);
+}
+
+.toast-danger .toast-icon {
+    color: var(--danger);
+}
+
+.toast-info .toast-icon {
+    color: var(--gold);
+}
+
+.toast-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.toast-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-1);
+    margin-bottom: 2px;
+    line-height: 1.3;
+}
+
+.toast-message {
+    font-size: 0.8rem;
+    color: var(--text-2);
+    line-height: 1.4;
+    font-variant-numeric: tabular-nums;
+}
+
+.toast-close {
+    background: transparent;
+    border: none;
+    color: var(--text-3);
+    cursor: pointer;
+    font-size: 1.1rem;
+    line-height: 1;
+    padding: 4px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    min-height: 24px;
+}
+
+.toast-close:hover {
+    color: var(--text-1);
+}
+
+@keyframes toast-slide-in {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* --------------------------------------------------------------------------
+   Responsive Layout & Mobile Hardening (Down to 390px)
+   -------------------------------------------------------------------------- */
+@media (max-width: 1024px) {
+    .diagnostic-grid, .what-if-grid {
+        grid-template-columns: 1fr;
+    }
+    .cohort-summary-grid, .batch-summary-strip {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Batch results: stacked rows so Predicted Risk and Classification lead
+   and nothing needs horizontal scrolling */
+@media (max-width: 900px) {
+    .batch-table-wrapper {
+        max-height: none;
+        overflow-x: visible;
+        overflow-y: visible;
+        border: none;
+        background: transparent;
+    }
+    #batch-table,
+    #batch-table tbody {
+        display: block;
+    }
+    #batch-table thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+    }
+    #batch-table tr {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px 12px;
+        padding: 12px;
+        margin-bottom: 8px;
+        background: var(--panel);
+        border: 1px solid var(--line-soft);
+        border-radius: var(--radius-md);
+    }
+    #batch-table td {
+        display: block;
+        padding: 0;
+        border: none;
+        min-width: 0;
+    }
+    #batch-table td:not([data-label]) {
+        grid-column: 1 / -1;
+    }
+    #batch-table td[data-label]::before {
+        content: attr(data-label);
+        display: block;
+        font-size: 0.7rem;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--text-3);
+        margin-bottom: 2px;
+    }
+    #batch-table td[data-label="#"] {
+        display: none;
+    }
+    #batch-table td[data-label="Predicted risk"] {
+        order: -2;
+        grid-column: span 2;
+        font-size: 1.1rem;
+    }
+    #batch-table td[data-label="Classification"] {
+        order: -1;
+        grid-column: span 2;
+    }
+    #batch-table td[data-label="Primary advisory"] {
+        grid-column: 1 / -1;
+        order: 1;
+    }
+    .batch-advisory {
+        max-width: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .panel-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+    }
+}
+
+@media (max-width: 640px) {
+    .main-workspace {
+        padding: 16px;
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+    .header-top {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 12px 16px;
+    }
+    .telemetry-strip {
+        width: 100%;
+        justify-content: space-between;
+    }
+    .nav-tab-container {
+        padding: 0 16px;
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+    .tab-button {
+        min-height: 44px;
+        padding: 12px 14px;
+        flex-shrink: 0;
+    }
+    .panel {
+        padding: 16px;
+    }
+    .metric-grid {
+        grid-template-columns: 1fr;
+    }
+    .cohort-summary-grid, .batch-summary-strip {
+        grid-template-columns: 1fr;
+    }
+    .cohort-header-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+    .cohort-slicing-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        width: 100%;
+        gap: 8px;
+    }
+    .cohort-slicing-bar .segmented-control {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+    .cohort-slicing-bar .segment-btn {
+        flex: 0 0 auto;
+        white-space: nowrap;
+    }
+    .quantile-grid {
+        grid-template-columns: 1fr;
+    }
+    .heatmap-container {
+        padding: 16px;
+    }
+    .heatmap-wrapper,
+    .benchmark-table-wrapper,
+    .batch-table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        width: 100%;
+        max-width: 100%;
+    }
+    .range-slider::-webkit-slider-runnable-track,
+    .range-slider::-moz-range-track {
+        height: 8px;
+    }
+    .range-slider::-webkit-slider-thumb {
+        margin-top: -9px; /* centres 26px thumb on 8px track */
+        width: 26px;
+        height: 26px;
+    }
+    .range-slider::-moz-range-thumb {
+        width: 26px;
+        height: 26px;
+    }
+    .segment-btn {
+        min-height: 44px; /* Accessible 44px touch target */
+        padding: 10px 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .btn-primary, .btn-secondary {
+        width: 100%;
+        justify-content: center;
+        min-height: 44px; /* Accessible 44px touch target */
+        padding: 12px 18px;
+        display: inline-flex;
+        align-items: center;
+    }
+    .footer-content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .comparison-box {
+        flex-direction: column;
+        gap: 12px;
+        padding: 16px;
+    }
+    .comparison-arrow {
+        transform: rotate(90deg);
+    }
+    .toast-container {
+        bottom: 16px;
+        right: 16px;
+        left: 16px;
+        width: auto;
+        max-width: none;
+    }
+}
+
+/* Prefers Reduced Motion Invariant (WCAG 2.2 AA) */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+    .gauge-meter,
+    .quantile-fill,
+    .spinner,
+    .toast,
+    .heatmap-cell,
+    .tab-button,
+    .segment-btn,
+    .status-pill,
+    .delta-badge {
+        transition: none !important;
+        animation: none !important;
+    }
+}

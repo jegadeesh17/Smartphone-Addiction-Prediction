@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Smartphone Addiction Analytical Platform - Live tabular machine learning risk assessment and population cohort analytics.">
+    <title>Smartphone Addiction Analytical Platform</title>
+    <link rel="stylesheet" href="/static/css/tokens.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/app.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22><rect width=%2232%22 height=%2232%22 rx=%226%22 fill=%22%232B4A86%22/><text x=%2216%22 y=%2223%22 font-size=%2220%22 font-weight=%22bold%22 font-family=%22Georgia,serif%22 fill=%22%23FFFFFF%22 text-anchor=%22middle%22>Σ</text></svg>">
+</head>
+<body>
+
+    <!-- Header & Brand Navigation Bar -->
+    <header class="app-header">
+        <div class="header-top">
+            <div class="brand-wrapper">
+                <div class="brand-mark" aria-hidden="true">Σ</div>
+                <div class="brand-title-group">
+                    <h1>Smartphone Addiction Analytical Platform</h1>
+                    <p>LightGBM Tabular Risk Assessment &amp; Population Cohort Analytics</p>
+                </div>
+            </div>
+            <div class="telemetry-strip" aria-label="System status telemetry">
+                <div class="telemetry-item" title="Machine learning model checkpoint status">
+                    <span class="status-indicator-static" aria-hidden="true"></span>
+                    <span id="telemetry-model">MODEL: LIGHTGBM FOLD 1</span>
+                </div>
+                <div class="telemetry-item" title="Live REST prediction latency">
+                    <span>LATENCY:</span>
+                    <span id="telemetry-latency" style="font-variant-numeric: tabular-nums;">-- ms</span>
+                </div>
+                <div class="telemetry-item" title="Underlying Kaggle training cohort volume">
+                    <span>POPULATION: 691,369 RECORDS</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4-Tab Navigation Structure -->
+        <nav class="nav-tab-container" role="tablist" aria-label="Analytical views">
+            <button class="tab-button active" role="tab" aria-selected="true" data-tab="tab-diagnostic" id="tab-btn-diagnostic" aria-controls="tab-diagnostic" tabindex="0">
+                Individual Diagnostic
+            </button>
+            <button class="tab-button" role="tab" aria-selected="false" data-tab="tab-cohorts" id="tab-btn-cohorts" aria-controls="tab-cohorts" tabindex="-1">
+                Population Cohort Analytics
+            </button>
+            <button class="tab-button" role="tab" aria-selected="false" data-tab="tab-whatif" id="tab-btn-whatif" aria-controls="tab-whatif" tabindex="-1">
+                What-If Simulation
+            </button>
+            <button class="tab-button" role="tab" aria-selected="false" data-tab="tab-batch" id="tab-btn-batch" aria-controls="tab-batch" tabindex="-1">
+                Batch Diagnostics
+            </button>
+        </nav>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="main-workspace">
+
+        <!-- ==================================================================
+             TAB 1: Individual Diagnostic View (M1)
+             ================================================================== -->
+        <section id="tab-diagnostic" class="tab-content-panel active" role="tabpanel" aria-labelledby="tab-btn-diagnostic">
+            <div class="diagnostic-grid">
+                
+                <!-- Left Column: Behavioral Input Controls -->
+                <div class="diagnostic-inputs">
+                    
+                    <!-- Physiological Warning (Excess Hours) -->
+                    <div id="boundary-warning" class="boundary-warning" role="alert">
+                        <div>
+                            <strong>Total Accounted Time Exceeds 24 Hours:</strong>
+                            <span id="excess-hours-msg">Sum of daily screen, work/study, and sleep exceeds 24h per day. Please verify daily time budget.</span>
+                        </div>
+                    </div>
+
+                    <!-- Panel 1: Demographics & Context -->
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h2 class="panel-title">Demographics &amp; Context</h2>
+                            <span class="panel-subtitle">Cohort 18–35</span>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="label-row">
+                                <label for="input-age" class="form-label">Age (Years)</label>
+                                <span class="form-value" id="val-age">25</span>
+                            </div>
+                            <input type="range" id="input-age" class="range-slider" min="18" max="35" value="25" step="1" aria-valuemin="18" aria-valuemax="35" aria-valuenow="25" aria-label="Age in years">
+                        </div>
+
+                        <div class="form-group">
+                            <div class="label-row">
+                                <span class="form-label" id="gender-label">Gender</span>
+                            </div>
+                            <div class="segmented-control" role="radiogroup" aria-labelledby="gender-label">
+                                <button type="button" class="segment-btn active" data-group="gender" data-value="Male" role="radio" aria-checked="true">Male</button>
+                                <button type="button" class="segment-btn" data-group="gender" data-value="Female" role="radio" aria-checked="false">Female</button>
+                                <button type="button" class="segment-btn" data-group="gender" data-value="Other" role="radio" aria-checked="false">Other</button>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="label-row">
+                                <span class="form-label" id="stress-label">Stress Level</span>
+                            </div>
+                            <div class="segmented-control" role="radiogroup" aria-labelledby="stress-label">
+                                <button type="button" class="segment-btn" data-group="stress" data-value="Low" role="radio" aria-checked="false">Low</button>
+                                <button type="button" class="segment-btn active" data-group="stress" data-value="Medium" role="radio" aria-checked="true">Medium</button>
+                                <button type="button" class="segment-btn" data-group="stress" data-value="High" role="radio" aria-checked="false">High</button>
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <div class="label-row">
+                                <span class="form-label" id="impact-label">Impact on Work / Academics</span>
+                            </div>
+                            <div class="segmented-control" role="radiogroup" aria-labelledby="impact-label">
+                                <button type="button" class="segment-btn" data-group="impact" data-value="No" role="radio" aria-checked="false">No</button>
+                                <button type="button" class="segment-btn active" data-group="impact" data-value="Yes" role="radio" aria-checked="true">Yes</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Panel 2: Daily Digital Time Budget -->
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h2 class="panel-title">Daily Digital Time Budget</h2>
+                            <span class="panel-subtitle">Hours per day</span>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="label-row">
+                                <label for="input-daily-screen" class="form-label">Daily Screen Time</label>
+                                <span class="form-value" id="val-daily-screen">7.5h</span>
+                            </div>
+                            <input type="range" id="input-daily-screen" class="range-slider" min="0.5" max="16.0" value="7.5" step="0.1" aria-valuemin="0.5" aria-valuemax="16.0" aria-valuenow="7.5" aria-label="Daily screen time in hours">
+                        </div>
+
+                        <div class="form-group">
+                            <div class="label-row">
+                                <label for="input-social-media" class="form-label">Social Media Usage</label>
+                                <span class="form-value" id="val-social-media">3.5h</span>
+                            </div>
+                            <input type="range" id="input-social-media" class="range-slider" min="0.0" max="12.0" value="3.5" step="0.1" aria-valuemin="0.0" aria-valuemax="12.0" aria-valuenow="3.5" aria-label="Social media usage in hours">
+                        </div>
+
+                        <div class="form-group">
+                            <div class="label-row">
+                                <label for="input-gaming" class="form-label">Mobile Gaming</label>
+                                <span class="form-value" id="val-gaming">1.2h</span>
+                            </div>
+                            <input type="range" id="input-gaming" class="range-slider" min="0.0" max="10.0" value="1.2" step="0.1" aria-valuemin="0.0" aria-valuemax="10.0" aria-valuenow="1.2" aria-label="Mobile gaming screen time in hours">
+                        </div>
+
+                        <div class="form-group">
+                            <div class="label-row">
+                                <label for="input-work-study" class="form-label">Work / Study Screen Time</label>
+                                <span class="form-value" id="val-work-study">2.5h</span>
+                            </div>
+                            <input type="range" id="input-work-study" class="range-slider" min="0.0" max="14.0" value="2.5" step="0.1" aria-valuemin="0.0" aria-valuemax="14.0" aria-valuenow="2.5" aria-label="Work and study screen time in hours">
+                        </div>
+
+                        <div class="form-group">
+                            <div class="label-row">
+                                <label for="input-weekend-screen" class="form-label">Weekend Daily Screen Time</label>
+                                <span class="form-value" id="val-weekend-screen">9.5h</span>
+                            </div>
+                            <input type="range" id="input-weekend-screen" class="range-slider" min="0.5" max="18.0" value="9.5" step="0.1" aria-valuemin="0.5" aria-valuemax="18.0" aria-valuenow="9.5" aria-label="Weekend daily screen time in hours">
+                        </div>
+
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <div class="label-row">
+                                <label for="input-sleep" class="form-label">Daily Sleep Duration</label>
+                                <span class="form-value" id="val-sleep">6.8h</span>
+                            </div>
+                            <input type="range" id="input-sleep" class="range-slider" min="1.0" max="14.0" value="6.8" step="0.1" aria-valuemin="1.0" aria-valuemax="14.0" aria-valuenow="6.8" aria-label="Daily sleep duration in hours">
+                        </div>
+                    </div>
+
+                    <!-- Panel 3: Notification & Decision Settings -->
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h2 class="panel-title">Habit Intensity &amp; Decision Boundary</h2>
+                            <span class="panel-subtitle">Frequency &amp; threshold</span>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="label-row">
+                                <label for="input-notifications" class="form-label">Notifications Received / Day</label>
+                                <span class="form-value" id="val-notifications">140</span>
+                            </div>
+                            <input type="range" id="input-notifications" class="range-slider" min="10" max="300" value="140" step="5" aria-valuemin="10" aria-valuemax="300" aria-valuenow="140" aria-label="Notifications received per day">
+                        </div>
+
+                        <div class="form-group">
+                            <div class="label-row">
+                                <label for="input-app-opens" class="form-label">App Opens / Day</label>
+                                <span class="form-value" id="val-app-opens">100</span>
+                            </div>
+                            <input type="range" id="input-app-opens" class="range-slider" min="10" max="250" value="100" step="5" aria-valuemin="10" aria-valuemax="250" aria-valuenow="100" aria-label="App opens per day">
+                        </div>
+
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <div class="label-row">
+                                <label for="input-threshold" class="form-label">Classification Threshold (τ)</label>
+                                <span class="form-value" id="val-threshold">0.50</span>
+                            </div>
+                            <input type="range" id="input-threshold" class="range-slider" min="0.10" max="0.90" value="0.50" step="0.01" aria-valuemin="0.10" aria-valuemax="0.90" aria-valuenow="0.50" aria-label="Classification decision threshold tau">
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Right Column: Live Assessment Output & Benchmarks -->
+                <div class="diagnostic-results">
+                    
+                    <!-- Card: Risk Gauge & Classification -->
+                    <div class="assessment-card">
+                        <h2 class="assessment-title">Diagnostic Risk Evaluation</h2>
+
+                        <!-- SVG Circular Arc Gauge (ADR-0008: 220° sweep, viewBox 0 0 240 170) -->
+                        <div class="gauge-container" aria-label="Risk Probability Gauge">
+                            <svg class="gauge-svg" viewBox="0 0 240 170" role="img" aria-label="Gauge showing estimated addiction probability">
+                                <path class="gauge-bg" d="M 40.1 149.1 A 85 85 0 1 1 199.9 149.1" />
+                                <path id="gauge-arc" class="gauge-meter" d="M 40.1 149.1 A 85 85 0 1 1 199.9 149.1" />
+                            </svg>
+                            <div class="gauge-readout">
+                                <div id="gauge-probability-num" class="gauge-percentage">--%</div>
+                            </div>
+                        </div>
+
+                        <!-- Sub-Gauge Caption Layout: positive clearance from arc feet (ADR-0008) -->
+                        <div class="gauge-caption">Addiction Risk Probability</div>
+
+                        <!-- Consolidated Authoritative Status Pill (ADR-0006) -->
+                        <div class="status-pill-container">
+                            <div id="status-pill" class="status-pill status-pill-low" role="status">
+                                <span id="badge-status">Evaluating Profile...</span>
+                            </div>
+                        </div>
+
+                        <p class="classification-text" id="classification-summary">
+                            Evaluating profile against LightGBM decision model...
+                        </p>
+
+                        <!-- Granular Metric Tiles -->
+                        <div class="metric-grid">
+                            <div class="metric-card">
+                                <div class="metric-card-label">Screen / Sleep Ratio</div>
+                                <div class="metric-card-value" id="metric-screen-sleep">1.10x</div>
+                                <div class="metric-card-target" id="target-screen-sleep">
+                                    <span>Target &lt; 1.0x</span>
+                                </div>
+                            </div>
+
+                            <div class="metric-card">
+                                <div class="metric-card-label">Recreational Share</div>
+                                <div class="metric-card-value" id="metric-rec-share">62.7%</div>
+                                <div class="metric-card-target" id="target-rec-share">
+                                    <span>Target &lt; 50%</span>
+                                </div>
+                            </div>
+
+                            <div class="metric-card">
+                                <div class="metric-card-label">Avg Session Length</div>
+                                <div class="metric-card-value" id="metric-unlock-mins">4.5 min</div>
+                                <div class="metric-card-target" id="target-unlock-mins">
+                                    <span>Target &gt; 5.0 min</span>
+                                </div>
+                            </div>
+
+                            <div class="metric-card">
+                                <div class="metric-card-label">Weekend Surge</div>
+                                <div class="metric-card-value" id="metric-weekend-surge">+2.0h</div>
+                                <div class="metric-card-target" id="target-weekend-surge">
+                                    <span>Target &lt; 2.0h</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dynamic Interventions Advisory -->
+                        <div class="intervention-box">
+                            <h3>Recommended Clinical Interventions</h3>
+                            <div id="intervention-list">
+                                <div class="intervention-item optimal">
+                                    Balanced behavioral hygiene detected. Maintain current digital boundaries.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card: Multi-Model Benchmark Table (PAR-7) -->
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h2 class="panel-title">Model Benchmark Performance</h2>
+                            <span class="panel-subtitle">Kaggle S6E8 5-Fold Stratified</span>
+                        </div>
+                        <div class="benchmark-table-wrapper">
+                            <table class="styled-table" aria-label="Cross validation benchmark table">
+                                <thead>
+                                    <tr>
+                                        <th>Model Architecture</th>
+                                        <th>5-Fold ROC AUC</th>
+                                        <th>Accuracy (τ=0.50)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="highlight-row">
+                                        <td><strong>LightGBM Fold 1 (Active)</strong></td>
+                                        <td><strong>0.96394</strong></td>
+                                        <td><strong>90.26%</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Hist XGBoost (max_depth=8)</td>
+                                        <td>0.96342</td>
+                                        <td>90.18%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Symmetric CatBoost (depth=7)</td>
+                                        <td>0.96000</td>
+                                        <td>89.67%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>PyTorch Tabular ResNet (256d)</td>
+                                        <td>0.95750</td>
+                                        <td>89.20%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Optimized Logit Ensemble</td>
+                                        <td>0.96410+</td>
+                                        <td>90.30%+</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================================================================
+             TAB 2: Population Cohort Analytics Explorer (M2)
+             ================================================================== -->
+        <section id="tab-cohorts" class="tab-content-panel" role="tabpanel" aria-labelledby="tab-btn-cohorts">
+            
+            <div class="cohort-header-row">
+                <div class="cohort-slicing-bar">
+                    <span class="filter-label" id="cohort-dim-label">Primary Dimension:</span>
+                    <div class="segmented-control" role="radiogroup" aria-labelledby="cohort-dim-label">
+                        <button type="button" class="segment-btn active" data-cohort-dim="age_bracket" role="radio" aria-checked="true">Age Bracket</button>
+                        <button type="button" class="segment-btn" data-cohort-dim="gender" role="radio" aria-checked="false">Gender</button>
+                        <button type="button" class="segment-btn" data-cohort-dim="stress_level" role="radio" aria-checked="false">Stress Level</button>
+                        <button type="button" class="segment-btn" data-cohort-dim="academic_work_impact" role="radio" aria-checked="false">Academic Impact</button>
+                    </div>
+                </div>
+
+                <div class="cohort-slicing-bar">
+                    <span class="filter-label" id="stress-filter-label">Condition On Stress:</span>
+                    <div class="segmented-control" role="radiogroup" aria-labelledby="stress-filter-label">
+                        <button type="button" class="segment-btn active" data-stress-filter="All" role="radio" aria-checked="true">All</button>
+                        <button type="button" class="segment-btn" data-stress-filter="Low" role="radio" aria-checked="false">Low</button>
+                        <button type="button" class="segment-btn" data-stress-filter="Medium" role="radio" aria-checked="false">Medium</button>
+                        <button type="button" class="segment-btn" data-stress-filter="High" role="radio" aria-checked="false">High</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Population Summary Metrics -->
+            <div class="cohort-summary-grid">
+                <div class="metric-card">
+                    <div class="metric-card-label">Total Cohort Records</div>
+                    <div class="metric-card-value" id="cohort-total-records">691,369</div>
+                    <div class="metric-card-target" id="cohort-total-target" style="color: var(--text-2);">Kaggle S6E8 Population</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-card-label">Overall Addiction Prevalence</div>
+                    <div class="metric-card-value" id="cohort-overall-prevalence">70.9%</div>
+                    <div class="metric-card-target" id="cohort-prev-target" style="color: var(--amber);">High Population Baseline</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-card-label">Mean Daily Screen Time</div>
+                    <div class="metric-card-value" id="cohort-mean-screen">7.64 hrs</div>
+                    <div class="metric-card-target" style="color: var(--text-2);">Population Average</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-card-label">Mean Sleep Duration</div>
+                    <div class="metric-card-value" id="cohort-mean-sleep">6.80 hrs</div>
+                    <div class="metric-card-target" style="color: var(--text-2);">Population Average</div>
+                </div>
+            </div>
+
+            <!-- Dynamic Cohort Cards -->
+            <h3 style="font-family: var(--font-serif); font-size: 1.15rem; color: var(--text-1); margin-bottom: 14px;">
+                Demographic Sub-Cohort Breakdown
+            </h3>
+            <div id="cohort-cards-container" class="cohort-card-grid">
+                <!-- Dynamically populated via JS -->
+            </div>
+
+            <!-- 2D Joint Density Heatmap (Screen vs Sleep) -->
+            <div class="heatmap-container">
+                <div class="panel-header">
+                    <h2 class="panel-title">2D Joint Density &amp; Addiction Heatmap</h2>
+                    <span class="panel-subtitle">Screen Time (Y-axis) vs Sleep Duration (X-axis)</span>
+                </div>
+                <p style="font-size: 0.825rem; color: var(--text-2); margin-bottom: 12px;">
+                    Color saturation indicates addiction prevalence rate within each demographic cell. Dark crimson indicates high risk concentration.
+                </p>
+                <div class="heatmap-wrapper">
+                    <div id="heatmap-grid" class="heatmap-grid">
+                        <!-- Dynamically populated via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Personal Quantile Overlay -->
+            <div class="panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">Personal Quantile Benchmark Overlay</h2>
+                    <span class="panel-subtitle">Your habits relative to 691,369 participants</span>
+                </div>
+
+                <div class="quantile-panel quantile-grid">
+                    <div class="quantile-row">
+                        <div class="label-row">
+                            <span class="form-label">Daily Screen Time Ranking</span>
+                            <span class="form-value" id="val-quantile-screen">78th Percentile</span>
+                        </div>
+                        <div class="quantile-track">
+                            <div class="quantile-fill" id="bar-quantile-screen" style="width: 78%;"></div>
+                        </div>
+                        <span class="quantile-subtext">Population Mean: 7.64 hrs/day | Your Input: <strong id="val-user-screen-echo">7.5h</strong></span>
+                    </div>
+
+                    <div class="quantile-row">
+                        <div class="label-row">
+                            <span class="form-label">Daily Sleep Duration Ranking</span>
+                            <span class="form-value" id="val-quantile-sleep">45th Percentile</span>
+                        </div>
+                        <div class="quantile-track">
+                            <div class="quantile-fill" id="bar-quantile-sleep" style="width: 45%;"></div>
+                        </div>
+                        <span class="quantile-subtext">Population Mean: 6.80 hrs/day | Your Input: <strong id="val-user-sleep-echo">6.8h</strong></span>
+                    </div>
+
+                    <div class="quantile-row">
+                        <div class="label-row">
+                            <span class="form-label">Daily App Opens Ranking</span>
+                            <span class="form-value" id="val-quantile-opens">50th Percentile</span>
+                        </div>
+                        <div class="quantile-track">
+                            <div class="quantile-fill" id="bar-quantile-opens" style="width: 50%;"></div>
+                        </div>
+                        <span class="quantile-subtext">Population Median: 104 opens/day | Your Input: <strong id="val-user-opens-echo">100</strong></span>
+                    </div>
+
+                    <div class="quantile-row">
+                        <div class="label-row">
+                            <span class="form-label">Daily Notifications Ranking</span>
+                            <span class="form-value" id="val-quantile-notifs">50th Percentile</span>
+                        </div>
+                        <div class="quantile-track">
+                            <div class="quantile-fill" id="bar-quantile-notifs" style="width: 50%;"></div>
+                        </div>
+                        <span class="quantile-subtext">Population Median: 149 alerts/day | Your Input: <strong id="val-user-notifs-echo">140</strong></span>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ==================================================================
+             TAB 3: What-If Behavioral Scenario Simulator (M3)
+             ================================================================== -->
+        <section id="tab-whatif" class="tab-content-panel" role="tabpanel" aria-labelledby="tab-btn-whatif">
+            <div class="what-if-grid">
+
+                <!-- Left Column: Counterfactual Intervention Levers -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <h2 class="panel-title">Counterfactual Habit Levers</h2>
+                        <span class="panel-subtitle">Simulate lifestyle adjustments</span>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="label-row">
+                            <label for="lever-recreation-reduce" class="form-label">Recreational Screen Reduction</label>
+                            <span class="form-value" id="val-lever-recreation">-1.5 hrs</span>
+                        </div>
+                        <input type="range" id="lever-recreation-reduce" class="range-slider" min="-6.0" max="0.0" value="-1.5" step="0.25" aria-valuemin="-6.0" aria-valuemax="0.0" aria-valuenow="-1.5" aria-label="Recreational screen reduction in hours">
+                    </div>
+
+                    <div class="form-group">
+                        <div class="label-row">
+                            <label for="lever-sleep-extend" class="form-label">Sleep Duration Extension</label>
+                            <span class="form-value" id="val-lever-sleep">+1.0 hrs</span>
+                        </div>
+                        <input type="range" id="lever-sleep-extend" class="range-slider" min="0.0" max="4.0" value="1.0" step="0.25" aria-valuemin="0.0" aria-valuemax="4.0" aria-valuenow="1.0" aria-label="Sleep duration extension in hours">
+                    </div>
+
+                    <div class="form-group">
+                        <div class="label-row">
+                            <label for="lever-opens-batch" class="form-label">App Open Batching / Reduction</label>
+                            <span class="form-value" id="val-lever-opens">-30 opens</span>
+                        </div>
+                        <input type="range" id="lever-opens-batch" class="range-slider" min="-80" max="0" value="-30" step="5" aria-valuemin="-80" aria-valuemax="0" aria-valuenow="-30" aria-label="App open batching reduction count">
+                    </div>
+
+                    <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line-soft);">
+                        <button type="button" id="btn-generate-optimal" class="btn-primary" style="width: 100%;">
+                            Generate Optimal Habit Target
+                        </button>
+                    </div>
+
+                    <div id="optimal-target-card" class="optimal-target-card" style="display: none;">
+                        <h3 class="optimal-target-title">Optimal Intervention Pathway:</h3>
+                        <ol id="optimal-target-text" class="optimal-target-list"></ol>
+                        <button type="button" id="btn-apply-optimal" class="btn-secondary" style="margin-top: 10px; width: 100%;">
+                            Apply Target to Simulation Levers
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right Column: Simulated Comparison & Delta -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <h2 class="panel-title">Baseline vs. Counterfactual Outcome</h2>
+                        <span class="panel-subtitle">Real-time risk delta</span>
+                    </div>
+
+                    <div class="comparison-box">
+                        <div class="comparison-side">
+                            <span class="comparison-side-label">Current Baseline</span>
+                            <div id="sim-baseline-prob" class="comparison-side-prob">--%</div>
+                            <span id="sim-baseline-badge" class="badge badge-danger">At-Risk</span>
+                        </div>
+                        <div class="comparison-arrow" aria-hidden="true">&rarr;</div>
+                        <div class="comparison-side">
+                            <span class="comparison-side-label">Simulated Outcome</span>
+                            <div id="sim-counterfactual-prob" class="comparison-side-prob sim-highlight">--%</div>
+                            <span id="sim-counterfactual-badge" class="badge badge-low">Healthy</span>
+                        </div>
+                    </div>
+
+                    <div style="text-align: center; margin: 16px 0;">
+                        <div id="sim-delta-badge" class="delta-badge delta-reduction">
+                            0.0% Risk Delta
+                        </div>
+                    </div>
+
+                    <table class="styled-table" style="margin-top: 16px;" aria-label="Detailed behavioral metrics comparison">
+                        <thead>
+                            <tr>
+                                <th scope="col">Diagnostic Metric</th>
+                                <th scope="col">Baseline</th>
+                                <th scope="col">Counterfactual</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Screen / Sleep Ratio</td>
+                                <td id="sim-base-ss">1.10x</td>
+                                <td id="sim-new-ss" style="font-weight: 600; color: var(--low-risk);">0.77x</td>
+                            </tr>
+                            <tr>
+                                <td>Recreational Share</td>
+                                <td id="sim-base-rec">62.7%</td>
+                                <td id="sim-new-rec" style="font-weight: 600; color: var(--low-risk);">41.7%</td>
+                            </tr>
+                            <tr>
+                                <td>Daily Screen Time</td>
+                                <td id="sim-base-screen">7.5h</td>
+                                <td id="sim-new-screen" style="font-weight: 600;">6.0h</td>
+                            </tr>
+                            <tr>
+                                <td>Sleep Duration</td>
+                                <td id="sim-base-sleep">6.8h</td>
+                                <td id="sim-new-sleep" style="font-weight: 600;">7.8h</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div style="margin-top: 20px;">
+                        <h3 style="font-family: var(--font-serif); font-size: 1.05rem; font-weight: 600; margin-bottom: 8px;">Simulated Clinical Status:</h3>
+                        <div id="sim-interventions-list">
+                            <!-- Populated via JS -->
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ==================================================================
+             TAB 4: Batch CSV Diagnostics Upload & Export (M3)
+             ================================================================== -->
+        <section id="tab-batch" class="tab-content-panel" role="tabpanel" aria-labelledby="tab-btn-batch">
+            <div class="panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">Batch Cohort Scoring &amp; Export</h2>
+                    <span class="panel-subtitle">Upload CSV (up to 10,000 records)</span>
+                </div>
+
+                <!-- Dropzone Area -->
+                <div id="batch-dropzone" class="dropzone-container" tabindex="0" role="button" aria-label="CSV file dropzone. Click or drag and drop a cohort CSV file here.">
+                    <div class="dropzone-icon" aria-hidden="true">CSV</div>
+                    <div class="dropzone-text">Click or Drag &amp; Drop Cohort CSV Here</div>
+                    <div class="dropzone-hint">Required columns: age, gender, stress_level, academic_work_impact, daily_screen_time_hours, sleep_hours, notifications_per_day, app_opens_per_day, etc.</div>
+                    <input type="file" id="batch-file-input" class="file-input" accept=".csv" aria-label="Select CSV file for batch diagnosis">
+                    
+                    <div style="margin-top: 10px;">
+                        <button type="button" id="btn-load-demo-batch" class="btn-secondary">
+                            Load Demo 20-Patient Clinical Cohort CSV
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Loading State -->
+                <div id="batch-loading" class="state-container" style="display: none;" role="status" aria-live="polite">
+                    <div class="spinner" aria-hidden="true"></div>
+                    <p>Scoring batch records via LightGBM Fold 1 parallel pipeline...</p>
+                </div>
+
+                <!-- Error State -->
+                <div id="batch-error" class="boundary-warning batch-error-alert" style="display: none;" role="alert" aria-live="assertive">
+                    <div class="batch-error-body">
+                        <strong id="batch-error-title" class="batch-error-title">Upload could not be scored</strong>
+                        <span id="batch-error-msg" class="batch-error-msg"></span>
+                        <span id="batch-error-hint" class="batch-error-hint"></span>
+                        <button type="button" id="btn-batch-error-template" class="btn-secondary batch-error-action">
+                            Download template CSV
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Batch Results View -->
+                <div id="batch-results-view" style="display: none;">
+                    <div class="batch-summary-strip">
+                        <div class="metric-card">
+                            <div class="metric-card-label">Total Evaluated</div>
+                            <div class="metric-card-value" id="batch-total-records">20</div>
+                            <div class="metric-card-target">100% Processed</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-card-label">Cohort Addiction Rate</div>
+                            <div class="metric-card-value" id="batch-addiction-rate">65.0%</div>
+                            <div class="metric-card-target" style="color: var(--amber);">Cohort Prevalence</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-card-label">High-Risk Severe Share</div>
+                            <div class="metric-card-value" id="batch-high-risk-rate">45.0%</div>
+                            <div class="metric-card-target" style="color: var(--danger);">Prioritise for follow-up</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-card-label">Mean Screen/Sleep Ratio</div>
+                            <div class="metric-card-value" id="batch-mean-ss">1.24x</div>
+                            <div class="metric-card-target" style="color: var(--danger);">Sleep short relative to screen time</div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
+                        <h3 style="font-family: var(--font-serif); font-size: 1.1rem;">
+                            Diagnostic Preview Table (Top 15 Rows)
+                        </h3>
+                        <button type="button" id="btn-export-csv" class="btn-primary">
+                            Export Full Diagnostic CSV
+                        </button>
+                    </div>
+
+                    <div class="benchmark-table-wrapper batch-table-wrapper">
+                        <table class="styled-table" id="batch-table" aria-label="Batch diagnostic preview results">
+                            <thead>
+                                <tr>
+                                    <th scope="col">#</th>
+                                    <th scope="col">Age</th>
+                                    <th scope="col">Gender</th>
+                                    <th scope="col">Daily Screen</th>
+                                    <th scope="col">Sleep</th>
+                                    <th scope="col">Predicted Risk</th>
+                                    <th scope="col">Classification</th>
+                                    <th scope="col">Primary Advisory</th>
+                                </tr>
+                            </thead>
+                            <tbody id="batch-table-body">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+        <div class="footer-content">
+            <div>
+                <strong>Smartphone Addiction Analytical Platform</strong> &bull; Sub-20ms LightGBM Inference Engine
+            </div>
+            <div>
+                Evaluated against Kaggle S6E8 (691k records) &bull; Version 1.0.0
+            </div>
+        </div>
+    </footer>
+
+    <!-- Notification Region for Offline / System Alerts -->
+    <div id="toast-container" class="toast-container" role="region" aria-label="Notifications" aria-live="polite"></div>
+
+    <!-- Application Scripts -->
+    <script src="/static/js/charts.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,87 @@
+/* ==========================================================================
+   Design Tokens: Smartphone Addiction Analytical Platform
+   Editorial design system specification conforming to DESIGN.md
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&display=swap');
+
+:root {
+    /* ----------------------------------------------------------------------
+       Canvas & Surfaces (Warm Editorial Parchment)
+       ---------------------------------------------------------------------- */
+    --bg: #F3F5F9;             /* Cool editorial paper background */
+    --panel: #FFFFFF;          /* Card surface container */
+    --panel-subtle: #F7F8FB;   /* Secondary recessed surface */
+    --field-bg: #F5F7FA;       /* Form input background */
+    --ink-white: #FFFFFF;      /* Clean surface ink on dark/colored badges */
+
+    /* ----------------------------------------------------------------------
+       Borders & Dividers
+       ---------------------------------------------------------------------- */
+    --line: rgba(43, 74, 134, 0.22);       /* Indigo-tinted hairline border */
+    --line-soft: rgba(22, 32, 47, 0.08);   /* Subtle slate divider */
+    --track: #D5DAE4;                      /* Slider track fill */
+    --heatmap-border: rgba(255, 255, 255, 0.2);
+
+    /* ----------------------------------------------------------------------
+       Brand Accents (WCAG 2.2 AA Compliant >= 4.5:1 on light panels & canvas)
+       ---------------------------------------------------------------------- */
+    --gold: #2B4A86;           /* Primary brand accent (deep indigo; token name kept for compatibility; >= 8:1 on panels) */
+    --gold-hover: #1F3768;     /* Interactive button hover */
+    --gold-subtle: rgba(43, 74, 134, 0.12); /* Subtle tint for active items */
+    --gold-highlight: rgba(43, 74, 134, 0.08); /* Table active row tint */
+    --ink-on-gold: #FFFFFF;    /* Contrast text on gold buttons */
+
+    /* ----------------------------------------------------------------------
+       Typography Inks (WCAG 2.2 AA compliant across all backgrounds)
+       ---------------------------------------------------------------------- */
+    --text-1: #16202F;         /* High-contrast slate heading ink (>= 14:1) */
+    --text-2: #55617A;         /* Secondary descriptive text (>= 5.1:1) */
+    --text-3: #525E73;         /* Accessible caption & metadata ink (>= 4.8:1 on panel & canvas) */
+
+    /* ----------------------------------------------------------------------
+       Status & Severity Tiers
+       ---------------------------------------------------------------------- */
+    --low-risk: #1E7E34;       /* Healthy green status (>= 4.7:1) */
+    --low-risk-bg: #EAF7EE;    /* Soft green pill background */
+    --low-risk-border: rgba(30, 126, 52, 0.25);
+
+    --amber: #8A4C0E;          /* Moderate/at-risk amber status (>= 4.9:1) */
+    --amber-bg: #FDF4E7;       /* Soft amber pill background */
+    --amber-border: rgba(138, 76, 14, 0.25);
+
+    --danger: #9C3F2C;         /* High-risk crimson status (>= 5.1:1) */
+    --danger-bg: #FDF0ED;      /* Soft danger pill background */
+    --danger-border: rgba(156, 63, 44, 0.25);
+
+    /* ----------------------------------------------------------------------
+       Typography Fonts & Stacks
+       ---------------------------------------------------------------------- */
+    --font-serif: 'Source Serif 4', Georgia, serif;
+    --font-sans: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+    /* ----------------------------------------------------------------------
+       Modular Spacing Scale (4px base)
+       ---------------------------------------------------------------------- */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-8: 32px;
+    --space-12: 48px;
+
+    /* ----------------------------------------------------------------------
+       Geometry & Elevations
+       ---------------------------------------------------------------------- */
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 8px;
+    --radius-pill: 999px;
+    --shadow-card: 0 1px 3px rgba(22, 32, 47, 0.04), 0 1px 2px rgba(22, 32, 47, 0.02);
+    --shadow-header: 0 1px 4px rgba(22, 32, 47, 0.03);
+    --shadow-mark: 0 1px 3px rgba(126, 89, 32, 0.2);
+    --shadow-thumb: 0 1px 3px rgba(22, 32, 47, 0.2);
+    --shadow-pill: 0 1px 2px rgba(22, 32, 47, 0.08);
+}

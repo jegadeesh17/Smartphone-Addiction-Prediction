@@ -1,0 +1,267 @@
+{
+  "milestones": [
+    {
+      "milestone_id": "M1",
+      "name": "MVP vertical slice: Modular FastAPI backend, live tabular inference, and individual diagnostic dashboard",
+      "tasks": [
+        {
+          "id": "M1-TASK-01",
+          "title": "Setup test runner, execution markers, and environment manifest",
+          "owner": "backend-developer",
+          "description": "Configure pytest test runner with slow test markers, update dependencies manifest, create environment variable template, and verify baseline test execution. Update requirements.txt to include fastapi, uvicorn, pydantic, pydantic-settings, python-multipart, httpx, and pytest-asyncio. Create pytest.ini defining testpaths, python_files, and custom markers (slow). Create .env.example with APP_HOST, APP_PORT, APP_DEBUG, MODEL_PATH, PRIORS_PATH, COHORT_CACHE_PATH, and USE_MOCK_MODEL. Create tests/conftest.py with shared fixtures and tests/test_baseline.py to verify test runner execution and asset presence.",
+          "files_to_create": [
+            "pytest.ini",
+            ".env.example",
+            "tests/conftest.py",
+            "tests/test_baseline.py"
+          ],
+          "files_to_modify": [
+            "requirements.txt"
+          ],
+          "acceptance_criteria": "SPEC Baseline setup and REG-2, REG-3: Fast test command 'pytest -q -m \"not slow\"' runs with exit code 0, discovering tests/test_baseline.py and verifying data/train.csv and models/lgb_fold_1.joblib are present and unmutated.",
+          "status": "completed"
+        },
+        {
+          "id": "M1-TASK-02",
+          "title": "Implement Pydantic v2 domain schemas and behavioral recommendation rules",
+          "owner": "backend-developer",
+          "description": "Implement Pydantic v2 schemas in src/schemas.py: BehavioralProfileInput with bounds validation (age 18-35, sleep 1.0-18.0h, daily screen 0.0-24.0h) and root validator for total daily hours warning; BehavioralMetrics (screen_to_sleep_ratio, recreational_share, avg_unlock_minutes, weekend_surge_hours, exceeds_daily_budget); PredictionResponse with consolidated status_label, risk_tier, and latency_ms; and HealthResponse. In src/recommendations.py, implement compute_metrics and rule-based clinical recommendation triggers for Sleep Protection, Recreation Audit, Notification Hygiene, and Weekend Disconnect. Add unit tests.",
+          "files_to_create": [
+            "src/schemas.py",
+            "src/recommendations.py",
+            "tests/test_schemas.py",
+            "tests/test_recommendations.py"
+          ],
+          "files_to_modify": [],
+          "acceptance_criteria": "SPEC AC-1.4 (exact ratio math), AC-1.5 (all 4 recommendation triggers fire when thresholds exceeded), AC-1.6 (HTTP 422 validation errors on bounds violation), PAR-2, PAR-4, PAR-5. Verified by 'pytest -q tests/test_schemas.py tests/test_recommendations.py'.",
+          "status": "completed"
+        },
+        {
+          "id": "M1-TASK-03",
+          "title": "Generate population priors and single-row 74-feature vectorized transformer",
+          "owner": "backend-developer",
+          "description": "Create scripts/generate_priors.py to compute population medians, category frequency mappings, and cohort group aggregations across (age, gender), (stress_level, academic_work_impact), and (gender, stress_level) from data/train.csv without modifying raw data (REG-3), saving to data/priors.json. In src/features.py, expose categorical mapping constants while preserving create_features signature (REG-1). Implement src/priors.py with load_population_priors and build_single_row_features to vectorize BehavioralProfileInput into the exact 74 feature columns matching LightGBM input order with zero single-row NaN or group leakage (ADR-0002). Add unit tests.",
+          "files_to_create": [
+            "scripts/generate_priors.py",
+            "data/priors.json",
+            "src/priors.py",
+            "tests/test_features.py"
+          ],
+          "files_to_modify": [
+            "src/features.py"
+          ],
+          "acceptance_criteria": "SPEC REG-1 (create_features outputs 74 features with zero NaNs), REG-3 (raw datasets immutable), ADR-0002 (vectorized single-row transformer generates exact 74 features without single-row NaNs). Verified by 'pytest -q tests/test_features.py'.",
+          "status": "completed"
+        },
+        {
+          "id": "M1-TASK-04",
+          "title": "Implement LightGBM inference engine and calibrated mock adapter",
+          "owner": "backend-developer",
+          "description": "Implement InferenceEngine in src/inference.py loading models/lgb_fold_1.joblib and data/priors.json to evaluate profiles within <20ms latency SLA, constructing PredictionResponse with unified status_label (ADR-0006) and graceful fail-fast error on missing model artifacts (AC-1.9, REG-2). Implement MockInferenceEngine in src/mock_adapter.py using population-centered logit heuristics yielding ~50.5% at median inputs (ADR-0005, ADR-0007). Add unit and latency benchmark tests in tests/test_inference.py.",
+          "files_to_create": [
+            "src/inference.py",
+            "src/mock_adapter.py",
+            "tests/test_inference.py"
+          ],
+          "files_to_modify": [],
+          "acceptance_criteria": "SPEC AC-1.1 (response payload schema), AC-1.2 (single-row inference p95 latency < 20ms), AC-1.3 (threshold responsiveness), AC-1.9 (fail-fast on missing weights), REG-2 (deserialization). Verified by 'pytest -q tests/test_inference.py'.",
+          "status": "completed"
+        },
+        {
+          "id": "M1-TASK-05",
+          "title": "Build modular FastAPI application and core REST endpoints",
+          "owner": "backend-developer",
+          "description": "Implement configuration management in src/config.py via pydantic-settings. Implement src/api/health.py (GET /health) returning HealthResponse with model, priors, and uptime telemetry. Implement src/api/predict.py (POST /api/predict) executing InferenceEngine (or MockInferenceEngine when USE_MOCK_MODEL=true). Implement root FastAPI application in src/main.py with CORS middleware, exception handlers for validation and service errors, and lifespan event loading. Add integration tests using httpx.TestClient in tests/test_api.py.",
+          "files_to_create": [
+            "src/config.py",
+            "src/main.py",
+            "src/api/__init__.py",
+            "src/api/health.py",
+            "src/api/predict.py",
+            "tests/test_api.py"
+          ],
+          "files_to_modify": [],
+          "acceptance_criteria": "SPEC AC-1.1 (POST /api/predict returns 200 with probability, classification, ratios, interventions), AC-1.6 (bounds violations return 422), AC-1.8 (GET /health returns 200 with status healthy). Verified by 'pytest -q tests/test_api.py'.",
+          "status": "completed"
+        },
+        {
+          "id": "M1-TASK-06",
+          "title": "Establish editorial design tokens, app shell, and multi-model benchmark view",
+          "owner": "frontend-developer",
+          "description": "Mount static assets (src/static) and templates (src/templates) in src/main.py for GET / and GET /app. Create src/static/css/tokens.css with editorial design tokens (IBM Plex Sans, Source Serif 4, parchment canvas #F6F3EA, panel surfaces #FFFDF7, brand gold #9C6F28, semantic status colors). Create src/static/css/style.css with responsive app shell grid (55/45 desktop columns, fluid mobile stack). Create src/templates/index.html containing editorial header, telemetry status strip, accessible tab navigation, and the multi-model 5-fold CV benchmark table (PAR-7).",
+          "files_to_create": [
+            "src/static/css/tokens.css",
+            "src/static/css/style.css",
+            "src/templates/index.html"
+          ],
+          "files_to_modify": [
+            "src/main.py"
+          ],
+          "acceptance_criteria": "SPEC PAR-7 (multi-model CV benchmark table accessible), DESIGN.md sections 1, 2, 3. Verified by 'pytest -q tests/test_api.py' checking GET / and GET /app return 200 with text/html content containing app shell and benchmark markup.",
+          "status": "completed"
+        },
+        {
+          "id": "M1-TASK-07",
+          "title": "Build Individual Diagnostic view with SVG risk gauge and dynamic interventions",
+          "owner": "frontend-developer",
+          "description": "Port and refine the primary diagnostic view in src/templates/index.html. Implement profile input controls for 12 features and decision threshold slider (PAR-1) with live readouts. In src/static/js/charts.js, implement SVG circular arc risk gauge with 220-degree sweep, viewBox 0 0 240 170, and positive margin clearance (>32px) for caption label per ADR-0008, plus single authoritative status pill (ADR-0006). In src/static/js/app.js, implement debounced API client calling /api/predict, render 4 ratio diagnostic cards with target indicators, inline 24h accounted hours warning banner (AC-1.7), and rule-based clinical recommendation callouts (AC-1.5, PAR-5, PAR-6).",
+          "files_to_create": [
+            "src/static/js/app.js",
+            "src/static/js/charts.js"
+          ],
+          "files_to_modify": [
+            "src/templates/index.html",
+            "src/static/css/style.css"
+          ],
+          "acceptance_criteria": "SPEC AC-1.1, AC-1.3, AC-1.4, AC-1.5, AC-1.7, PAR-1, PAR-3, PAR-4, PAR-5, PAR-6 (correct 'ADDICTION DETECTED' spelling), ADR-0006, ADR-0008, FEEDBACK.md items 1 & 2. Verified by 'pytest -q tests/test_api.py' checking UI template delivery and valid predict payload interactions.",
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "milestone_id": "M2",
+      "name": "Core flows: Population cohort analytics explorer, 2D density heatmap, and demographic distributions",
+      "tasks": [
+        {
+          "id": "M2-TASK-01",
+          "title": "Pre-aggregate population cohort distributions and 2D density grid cache",
+          "owner": "backend-developer",
+          "description": "Implement scripts/generate_cohort_cache.py to analyze data/train.csv (691,369 records) without modifying source datasets (REG-3). Pre-calculate addiction prevalence rates, sample counts, feature percentiles (10th, 25th, 50th, 75th, 90th) grouped across demographic dimensions: age brackets (18-20, 21-25, 26-30, 31-35), gender (Female, Male, Other), stress levels (Low, Medium, High), and academic impact (Yes, No). Compute 2D screen-time vs sleep-duration joint density and addiction prevalence grid. Save serialized summary to data/cohort_summary.json (ADR-0003).",
+          "files_to_create": [
+            "scripts/generate_cohort_cache.py",
+            "data/cohort_summary.json"
+          ],
+          "files_to_modify": [],
+          "acceptance_criteria": "SPEC AC-2.1, AC-2.3, REG-3, ADR-0003. Verified by running 'python scripts/generate_cohort_cache.py --validate' confirming non-empty cohort distributions, valid density grid, and schema integrity.",
+          "status": "completed"
+        },
+        {
+          "id": "M2-TASK-02",
+          "title": "Implement Cohort Analytics Service and personal quantile overlay logic",
+          "owner": "backend-developer",
+          "description": "Add CohortFilterParams, CohortDistributionResponse, ScreenSleepMatrixResponse, and BenchmarkOverlayResponse models to src/schemas.py. Implement CohortService in src/cohort_service.py loading data/cohort_summary.json into memory on startup for sub-2ms lookups. Implement cohort filtering by demographic dimensions, joint screen-sleep density matrix retrieval, and personal quantile benchmark calculation (computing user screen time and sleep duration percentiles against 691k population). Add comprehensive tests in tests/test_cohort_service.py.",
+          "files_to_create": [
+            "src/cohort_service.py",
+            "tests/test_cohort_service.py"
+          ],
+          "files_to_modify": [
+            "src/schemas.py"
+          ],
+          "acceptance_criteria": "SPEC AC-2.1, AC-2.2, AC-2.3, AC-2.4, AC-2.5, ADR-0003. Verified by 'pytest -q tests/test_cohort_service.py' verifying sub-2ms query execution, correct demographic filtering, and accurate quantile calculation.",
+          "status": "completed"
+        },
+        {
+          "id": "M2-TASK-03",
+          "title": "Implement Cohort Analytics API router and distribution endpoints",
+          "owner": "backend-developer",
+          "description": "Implement src/api/analytics.py registering endpoints: GET /api/analytics/cohorts (with query parameters dimension, filter_gender, filter_stress), GET /api/analytics/distributions/screen-sleep-matrix, and POST /api/analytics/distributions/benchmark-overlay. Validate dimension parameters with explicit HTTP 422 error on invalid inputs (AC-2.5). Mount analytics router in src/main.py. Add integration test coverage in tests/test_api.py.",
+          "files_to_create": [
+            "src/api/analytics.py"
+          ],
+          "files_to_modify": [
+            "src/main.py",
+            "tests/test_api.py"
+          ],
+          "acceptance_criteria": "SPEC AC-2.1 (GET /api/analytics/cohorts returns 200 with cohort array), AC-2.2 (filters by gender and stress), AC-2.3 (screen-sleep density matrix), AC-2.4 (benchmark overlay returns population percentiles), AC-2.5 (invalid dimension returns 422). Verified by 'pytest -q tests/test_api.py'.",
+          "status": "completed"
+        },
+        {
+          "id": "M2-TASK-04",
+          "title": "Build Population Cohort Analytics Explorer UI view, heatmap, and quantile overlays",
+          "owner": "frontend-developer",
+          "description": "In src/templates/index.html, construct the Population Cohort Analytics view (#tab-cohorts) with demographic filter selectors (Age Bracket, Gender, Stress Level, Academic Impact). In src/static/js/charts.js, implement rendering for cohort summary cards (prevalence rate %, digital budget breakdown) and build the 2D Screen-Time vs Sleep-Duration Joint Density Heatmap using SVG/Chart.js. In src/static/js/app.js, connect filter changes to /api/analytics/cohorts and render personal quantile benchmark overlay chips comparing user habits to 691k population statistics.",
+          "files_to_create": [],
+          "files_to_modify": [
+            "src/templates/index.html",
+            "src/static/js/app.js",
+            "src/static/js/charts.js",
+            "src/static/css/style.css"
+          ],
+          "acceptance_criteria": "SPEC Journey 2, AC-2.1, AC-2.2, AC-2.3, AC-2.4. Verified by 'pytest -q tests/test_api.py' confirming template and analytics endpoint integration.",
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "milestone_id": "M3",
+      "name": "Polish and edge cases: Counterfactual What-If simulator, batch CSV processing, and craft polish",
+      "tasks": [
+        {
+          "id": "M3-TASK-01",
+          "title": "Implement counterfactual What-If simulation engine and habit optimizer",
+          "owner": "backend-developer",
+          "description": "Add WhatIfRequest, WhatIfResponse, HabitOptimizeRequest, and HabitOptimizeResponse schemas to src/schemas.py. Implement POST /api/analytics/what-if in src/api/analytics.py applying lifestyle deltas (screen reduction, sleep extension, notification batching) to baseline profile, computing simulated probability, risk delta, simulated classification, and updated behavioral ratios (AC-3.1). Implement POST /api/analytics/what-if/optimize computing minimal habit modifications to lower risk below threshold tau (AC-3.2). Add unit and integration tests in tests/test_whatif.py.",
+          "files_to_create": [
+            "tests/test_whatif.py"
+          ],
+          "files_to_modify": [
+            "src/schemas.py",
+            "src/api/analytics.py",
+            "tests/test_api.py"
+          ],
+          "acceptance_criteria": "SPEC AC-3.1 (counterfactual delta evaluation returns simulated probability < baseline when habits improve), AC-3.2 (automated optimal habit target returns achievable reduction pathway). Verified by 'pytest -q tests/test_whatif.py'.",
+          "status": "completed"
+        },
+        {
+          "id": "M3-TASK-02",
+          "title": "Implement batch CSV diagnostic scoring, validation, and report export",
+          "owner": "backend-developer",
+          "description": "Implement batch_predict in src/inference.py for vectorized multi-row DataFrame scoring. Implement POST /api/predict/batch in src/api/predict.py accepting multipart CSV files up to 10,000 rows (AC-3.3). Enforce mandatory header validation returning HTTP 422 with missing column names (AC-3.4), and enforce row limit returning HTTP 413 Payload Too Large when row count exceeds 10,000 (AC-3.5). Implement GET /api/predict/batch/export streaming an enriched CSV download with predicted probabilities, classifications, behavioral ratios, and clinical recommendations (AC-3.6). Add tests in tests/test_batch.py.",
+          "files_to_create": [
+            "tests/test_batch.py"
+          ],
+          "files_to_modify": [
+            "src/api/predict.py",
+            "src/inference.py",
+            "tests/test_api.py"
+          ],
+          "acceptance_criteria": "SPEC AC-3.3 (batch scoring execution), AC-3.4 (header validation 422 error), AC-3.5 (10,000 row ceiling 413 error), AC-3.6 (export download returns diagnostic CSV attachment). Verified by 'pytest -q tests/test_batch.py'.",
+          "status": "completed"
+        },
+        {
+          "id": "M3-TASK-03",
+          "title": "Build What-If Scenario Simulator and Batch Diagnostics UI views",
+          "owner": "frontend-developer",
+          "description": "In src/templates/index.html, implement the What-If Simulator view (#tab-whatif) with counterfactual adjustment sliders, split baseline vs simulated comparison cards, reactive risk delta badge (-X.X% risk reduction), status transition indicator, and 'Generate Optimal Habit Target' button. Implement Batch Diagnostics view (#tab-batch) with drag-and-drop CSV dropzone, sample cohort loader, row validation error preview table, cohort summary strip, and CSV export download trigger. Wire client interactions in src/static/js/app.js.",
+          "files_to_create": [],
+          "files_to_modify": [
+            "src/templates/index.html",
+            "src/static/js/app.js",
+            "src/static/css/style.css"
+          ],
+          "acceptance_criteria": "SPEC Journey 3, Journey 4, AC-3.1, AC-3.2, AC-3.3, AC-3.6. Verified by 'pytest -q tests/test_api.py' confirming template rendering and endpoint integration.",
+          "status": "completed"
+        },
+        {
+          "id": "M3-TASK-04",
+          "title": "Frontend craft polish pass, responsive hardening, and accessibility compliance",
+          "owner": "frontend-developer",
+          "description": "Execute comprehensive UI craft polish and hardening across all dashboard views. Verify responsive layouts on 390px mobile viewport (pinned risk summary, single column fluid stack, >= 44px touch targets) and 1440px desktop viewport. Verify keyboard navigation (:focus-visible outline: 2px solid var(--gold)), semantic ARIA roles (role=tablist, role=radiogroup, role=slider, aria-checked, aria-selected), and @media (prefers-reduced-motion: reduce) compliance. Polish tabular numeric typography (tabular-nums), status pill contrast, sub-gauge clearance (ADR-0008), and graceful offline error toast indicators.",
+          "files_to_create": [],
+          "files_to_modify": [
+            "src/static/css/style.css",
+            "src/static/css/tokens.css",
+            "src/templates/index.html",
+            "src/static/js/app.js"
+          ],
+          "acceptance_criteria": "DESIGN.md Sections 1-5, FEEDBACK.md items 1-3. Verified by manual visual inspection at 1440px and 390px viewports and 'pytest -q tests/test_api.py'.",
+          "status": "completed"
+        },
+        {
+          "id": "M3-TASK-05",
+          "title": "Comprehensive regression safeguards and full pipeline verification",
+          "owner": "backend-developer",
+          "description": "Create tests/test_regression.py validating all regression criteria from the SPEC. Verify src/features.py:create_features produces exactly 74 features with zero NaNs (REG-1). Verify all 5-fold LightGBM, XGBoost, and CatBoost checkpoints load and evaluate valid probabilities (REG-2). Verify raw competition datasets data/train.csv and data/test.csv are intact and unmodified (REG-3). Verify src/ensemble.py and src/train.py public interfaces remain functional (REG-4). Run full test suite including slow-marked benchmarks.",
+          "files_to_create": [
+            "tests/test_regression.py"
+          ],
+          "files_to_modify": [
+            "tests/conftest.py"
+          ],
+          "acceptance_criteria": "SPEC REG-1, REG-2, REG-3, REG-4, AC-1.2. Verified by 'pytest -q' running the complete test suite with 100% passing tests.",
+          "status": "completed"
+        }
+      ]
+    }
+  ]
+}

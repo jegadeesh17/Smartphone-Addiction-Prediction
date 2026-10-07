@@ -1,0 +1,8 @@
+/* ==========================================================================
+   Smartphone Addiction Analytical Platform - Master Stylesheet
+   Combines editorial design tokens and responsive application shell styles.
+   Conforming to DESIGN.md, ADR-0006, and ADR-0008.
+   ========================================================================== */
+
+@import url('tokens.css');
+@import url('style.css');

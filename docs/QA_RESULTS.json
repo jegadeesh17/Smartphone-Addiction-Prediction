@@ -1,0 +1,198 @@
+[
+  {
+    "task_id": "M1-TASK-01",
+    "attempt": 1,
+    "timestamp": "2026-10-06T14:48:40Z",
+    "command": "pytest -q -m \"not slow\"",
+    "exit_code": 0,
+    "summary": "6 passed, 1 deselected in 0.66s",
+    "output": "......                                                                   [100%]\n6 passed, 1 deselected in 0.66s",
+    "status": "passed",
+    "failure_output": ""
+  },
+  {
+    "task_id": "M1-TASK-02",
+    "attempt": 1,
+    "timestamp": "2026-10-06T15:01:00Z",
+    "command": "pytest -q tests/test_schemas.py tests/test_recommendations.py",
+    "exit_code": 0,
+    "summary": "70 passed in 0.49s",
+    "output": "......................................................................   [100%]\n70 passed in 0.49s",
+    "status": "passed",
+    "failure_output": ""
+  },
+  {
+    "task_id": "M1-TASK-03",
+    "attempt": 1,
+    "timestamp": "2026-10-06T15:27:00Z",
+    "command": "pytest -q tests/test_features.py",
+    "exit_code": 0,
+    "summary": "25 passed in 4.80s",
+    "output": ".........................                                                [100%]\n25 passed in 4.80s",
+    "status": "passed",
+    "failure_output": ""
+  },
+  {
+    "task_id": "M1-TASK-04",
+    "attempt": 1,
+    "timestamp": "2026-10-06T15:42:00Z",
+    "command": "pytest -q tests/test_inference.py",
+    "exit_code": 0,
+    "summary": "25 passed in 7.60s",
+    "output": ".........................                                                [100%]\n25 passed in 7.60s",
+    "status": "passed",
+    "failure_output": ""
+  },
+  {
+    "task_id": "M1-TASK-05",
+    "attempt": 1,
+    "timestamp": "2026-10-06T16:02:00Z",
+    "command": "pytest -q tests/test_api.py",
+    "exit_code": 0,
+    "summary": "25 passed in 12.05s",
+    "output": ".........................                                                [100%]\n25 passed in 12.05s",
+    "status": "passed",
+    "failure_output": ""
+  },
+  {
+    "task_id": "M1-TASK-06",
+    "attempt": 1,
+    "timestamp": "2026-10-06T16:25:30Z",
+    "command": "pytest -q tests/test_api.py",
+    "exit_code": 0,
+    "summary": "29 passed in 12.84s",
+    "output": ".............................                                            [100%]\n29 passed in 12.84s",
+    "status": "passed",
+    "failure_output": ""
+  },
+  {
+    "task_id": "M1-TASK-07",
+    "attempt": 1,
+    "timestamp": "2026-10-06T16:53:15Z",
+    "command": "pytest -q tests/test_api.py",
+    "exit_code": 0,
+    "summary": "37 passed in 20.34s",
+    "output": ".....................................                                    [100%]\n37 passed in 20.34s",
+    "status": "passed",
+    "failure_output": ""
+  },
+  {
+    "task_id": "M1-FIX-01",
+    "attempt": 1,
+    "timestamp": "2026-10-06T17:19:30Z",
+    "command": "pytest -q tests/test_inference.py tests/test_api.py && pytest -q",
+    "exit_code": 0,
+    "summary": "Target: 62 passed in 17.95s; Full: 164 passed in 19.16s",
+    "output": "..............................................................           [100%]\n62 passed in 17.95s\n........................................................................ [ 43%]\n........................................................................ [ 87%]\n....................                                                     [100%]\n164 passed in 19.16s",
+    "status": "passed",
+    "failure_output": ""
+  },
+  {
+    "task_id": "M2-TASK-01",
+    "attempt": 1,
+    "timestamp": "2026-10-07T03:35:25Z",
+    "command": "python scripts/generate_cohort_cache.py --validate; if ($?) { pytest -q -m \"not slow\" }",
+    "exit_code": 0,
+    "summary": "Cohort cache validation PASSED (691,369 rows); Fast suite: 172 passed, 2 deselected in 32.77s",
+    "output": "Generating cohort cache from C:\\Users\\jegad\\projects\\SmartphoneAddictionPrediction\\data\\train.csv...\nGenerated cohort cache successfully: C:\\Users\\jegad\\projects\\SmartphoneAddictionPrediction\\data\\cohort_summary.json (691,369 rows).\nValidating cohort cache integrity at C:\\Users\\jegad\\projects\\SmartphoneAddictionPrediction\\data\\cohort_summary.json...\nCohort cache validation PASSED: Schema integrity, non-zero sample counts, and percentage ranges verified.\n172 passed, 2 deselected in 32.77s",
+    "status": "passed",
+    "failure_output": ""
+  },
+  {
+    "task_id": "M2-TASK-02",
+    "attempt": 1,
+    "timestamp": "2026-10-07T03:54:00Z",
+    "command": "pytest -q tests/test_cohort_service.py && pytest -q -m \"not slow\"",
+    "exit_code": 0,
+    "summary": "Target: 22 passed in 0.68s; Fast suite: 194 passed, 2 deselected in 26.52s",
+    "output": "......................                                                   [100%]\n22 passed in 0.68s\n194 passed, 2 deselected in 26.52s",
+    "status": "passed",
+    "failure_output": ""
+  },
+  {
+    "task_id": "M2-TASK-03",
+    "attempt": 1,
+    "timestamp": "2026-10-07T04:05:00Z",
+    "command": "pytest -q tests/test_api.py && pytest -q -m \"not slow\"",
+    "exit_code": 0,
+    "summary": "Target: 59 passed in 27.98s; Fast suite: 216 passed, 2 deselected in 34.99s",
+    "output": "...........................................................              [100%]\n59 passed in 27.98s\n216 passed, 2 deselected in 34.99s",
+    "status": "passed",
+    "failure_output": ""
+  },
+  {
+    "task_id": "M2-TASK-04",
+    "attempt": 1,
+    "timestamp": "2026-10-07T04:22:45Z",
+    "command": "pytest -q tests/test_api.py tests/test_cohort_service.py && pytest -q -m \"not slow\"",
+    "exit_code": 0,
+    "summary": "Target: 87 passed in 32.74s; Fast suite: 222 passed, 2 deselected in 39.65s",
+    "output": "87 passed in 32.74s\n222 passed, 2 deselected in 39.65s",
+    "status": "passed",
+    "failure_output": ""
+  },
+  {
+    "task_id": "M3-TASK-01",
+    "attempt": 1,
+    "timestamp": "2026-10-07T05:03:30Z",
+    "command": "pytest -q tests/test_whatif.py && pytest -q -m \"not slow\"",
+    "exit_code": 0,
+    "summary": "Target: 24 passed in 14.53s; Fast suite: 255 passed, 2 deselected in 52.12s",
+    "output": "........................                                                 [100%]\n24 passed in 14.53s\n255 passed, 2 deselected in 52.12s",
+    "status": "passed",
+    "failure_output": ""
+  },
+  {
+    "task_id": "M3-TASK-02",
+    "attempt": 1,
+    "timestamp": "2026-10-07T05:21:30Z",
+    "command": "pytest -q tests/test_batch.py && pytest -q -m \"not slow\"",
+    "exit_code": 0,
+    "summary": "Target: 13 passed in 7.24s; Fast suite: 273 passed, 2 deselected in 56.44s",
+    "output": ".............                                                            [100%]\n13 passed in 7.24s\n273 passed, 2 deselected in 56.44s",
+    "status": "passed",
+    "failure_output": ""
+  },
+  {
+    "task_id": "M3-TASK-03",
+    "attempt": 1,
+    "timestamp": "2026-10-07T05:42:30Z",
+    "command": "pytest -q tests/test_api.py && pytest -q -m \"not slow\"",
+    "exit_code": 0,
+    "summary": "Target: 85 passed in 37.24s; Fast suite: 279 passed, 2 deselected in 56.60s",
+    "output": "85 passed in 37.24s\n279 passed, 2 deselected in 56.60s",
+    "status": "passed",
+    "failure_output": ""
+  },
+  {
+    "task_id": "M3-TASK-04",
+    "attempt": 1,
+    "timestamp": "2026-10-07T06:05:46Z",
+    "command": "pytest -q tests/test_api.py && pytest -q -m \"not slow\"",
+    "exit_code": 0,
+    "summary": "Target: 93 passed in 39.08s; Fast suite: 287 passed, 2 deselected in 58.86s",
+    "output": "93 passed in 39.08s\n287 passed, 2 deselected in 58.86s",
+    "status": "passed",
+    "failure_output": ""
+  },
+  {
+    "task_id": "M3-TASK-05",
+    "attempt": 1,
+    "timestamp": "2026-10-07T06:25:00Z",
+    "command": "pytest -q tests/test_regression.py && pytest -q -m \"not slow\"",
+    "exit_code": 0,
+    "summary": "Target: 27 passed in 15.66s; Fast suite: 298 passed, 18 deselected in 64.44s; Full suite: 316 passed in 71.76s",
+    "output": "27 passed in 15.66s\n298 passed, 18 deselected in 64.44s\n316 passed in 71.76s",
+    "status": "passed",
+    "failure_output": ""
+  }
+]
+
+
+
+
+
+
+
+
+
