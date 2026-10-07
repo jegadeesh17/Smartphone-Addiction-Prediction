@@ -163,7 +163,7 @@
             "tests/test_api.py"
           ],
           "acceptance_criteria": "SPEC AC-2.1 (GET /api/analytics/cohorts returns 200 with cohort array), AC-2.2 (filters by gender and stress), AC-2.3 (screen-sleep density matrix), AC-2.4 (benchmark overlay returns population percentiles), AC-2.5 (invalid dimension returns 422). Verified by 'pytest -q tests/test_api.py'.",
-          "status": "pending"
+          "status": "completed"
         },
         {
           "id": "M2-TASK-04",

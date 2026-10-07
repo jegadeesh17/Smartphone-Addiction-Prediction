@@ -13,8 +13,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
+from src.api.analytics import router as analytics_router
 from src.api.health import router as health_router
 from src.api.predict import router as predict_router
+from src.cohort_service import get_cohort_service
 from src.config import Settings, get_settings
 from src.inference import get_inference_engine
 
@@ -49,6 +51,18 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         logger.error("Model or priors artifact missing during startup: %s (AC-1.9)", exc)
     except Exception as exc:
         logger.error("Unexpected error during inference warmup: %s", exc)
+
+    # Warm up cohort analytics cache if artifact exists (M2-TASK-03)
+    try:
+        cohort_cache_file = Path(settings.COHORT_CACHE_PATH)
+        if cohort_cache_file.is_file():
+            logger.info("Warming up Cohort Analytics cache from %s", settings.COHORT_CACHE_PATH)
+            get_cohort_service(cohort_summary_path=settings.COHORT_CACHE_PATH)
+            logger.info("Cohort analytics cache warmed up successfully.")
+        else:
+            logger.warning("Cohort cache file not found at %s during startup.", settings.COHORT_CACHE_PATH)
+    except Exception as exc:
+        logger.warning("Unexpected error during cohort service warmup: %s", exc)
 
     yield
 
@@ -120,6 +134,7 @@ def create_app() -> FastAPI:
     # Mount Routers
     app.include_router(health_router)
     app.include_router(predict_router)
+    app.include_router(analytics_router)
 
     # Mount Static Assets at /static
     for sdir in [

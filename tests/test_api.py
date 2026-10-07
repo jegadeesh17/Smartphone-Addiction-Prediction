@@ -595,4 +595,203 @@ class TestIndividualDiagnosticView:
         assert data["classification"] == "ADDICTION DETECTED"
 
 
+# ==============================================================================
+# 9. Cohort Analytics Endpoints (Milestone 2, Journey 2)
+# ==============================================================================
+
+
+class TestCohortAnalyticsApi:
+    """Integration test suite for Cohort Analytics endpoints (AC-2.1 to AC-2.5)."""
+
+    def test_get_cohorts_default_dimension_returns_200(self, client: TestClient) -> None:
+        """Verify GET /api/analytics/cohorts returns 200 OK and default age_bracket cohort summaries (AC-2.1)."""
+        response = client.get("/api/analytics/cohorts")
+        assert response.status_code == 200
+        data = response.json()
+
+        assert data["dimension"] == "age_bracket"
+        assert data["total_records"] > 0
+        assert isinstance(data["cohorts"], list)
+        assert len(data["cohorts"]) == 4
+
+        for cohort in data["cohorts"]:
+            # Standard & AC-2.1 aliases
+            assert "cohort_id" in cohort
+            assert cohort["cohort_id"].startswith("age_bracket")
+            assert "label" in cohort
+            assert "cohort_name" in cohort
+            assert cohort["cohort_name"] in ["18-21", "22-25", "26-30", "31-35"]
+            assert cohort["sample_count"] > 0
+            assert 0.0 <= cohort["addiction_prevalence"] <= 1.0
+            assert cohort["mean_screen_time"] > 0.0
+            assert cohort["mean_sleep_hours"] > 0.0
+            assert cohort["mean_app_opens"] > 0.0
+
+            # Metrics sub-object
+            metrics = cohort["metrics"]
+            assert metrics["count"] == cohort["sample_count"]
+            assert metrics["addiction_prevalence"] == cohort["addiction_prevalence"]
+
+    @pytest.mark.parametrize(
+        "dimension, expected_labels",
+        [
+            ("age_bracket", ["18-21", "22-25", "26-30", "31-35"]),
+            ("gender", ["Female", "Male", "Other"]),
+            ("stress_level", ["Low", "Medium", "High"]),
+            ("academic_work_impact", ["Yes", "No"]),
+        ],
+    )
+    def test_get_cohorts_all_dimensions_return_200(
+        self, client: TestClient, dimension: str, expected_labels: list[str]
+    ) -> None:
+        """Verify GET /api/analytics/cohorts returns 200 for all 4 primary demographic dimensions (AC-2.1)."""
+        response = client.get(f"/api/analytics/cohorts?dimension={dimension}")
+        assert response.status_code == 200
+        data = response.json()
+
+        assert data["dimension"] == dimension
+        assert len(data["cohorts"]) == len(expected_labels)
+        labels = [c["cohort_name"] for c in data["cohorts"]]
+        assert labels == expected_labels
+        assert data["total_records"] == sum(c["sample_count"] for c in data["cohorts"])
+
+    def test_get_cohorts_filtering_by_gender_and_stress(self, client: TestClient) -> None:
+        """Verify conditioned demographic slicing by gender and chronic stress level (AC-2.2)."""
+        # Slicing gender by High stress
+        response = client.get("/api/analytics/cohorts?dimension=gender&filter_stress=High")
+        assert response.status_code == 200
+        data = response.json()
+
+        assert data["dimension"] == "gender"
+        assert len(data["cohorts"]) == 3
+        labels = [c["cohort_name"] for c in data["cohorts"]]
+        assert labels == ["Female", "Male", "Other"]
+        # High stress subpopulation count must be strictly less than unconditioned population
+        assert data["total_records"] < 691369
+        for c in data["cohorts"]:
+            assert c["sample_count"] > 0
+            assert c["addiction_prevalence"] > 0.65
+
+        # Slicing stress_level by Female gender
+        res_gender_filter = client.get("/api/analytics/cohorts?dimension=stress_level&filter_gender=Female")
+        assert res_gender_filter.status_code == 200
+        data_gender = res_gender_filter.json()
+        assert data_gender["dimension"] == "stress_level"
+        assert len(data_gender["cohorts"]) == 3
+        assert [c["cohort_name"] for c in data_gender["cohorts"]] == ["Low", "Medium", "High"]
+
+    @pytest.mark.parametrize(
+        "invalid_dimension",
+        [
+            "invalid_dimension",
+            "income_level",
+            "occupation",
+            "device_brand",
+            "unknown",
+        ],
+    )
+    def test_get_cohorts_invalid_dimension_returns_422(
+        self, client: TestClient, invalid_dimension: str
+    ) -> None:
+        """Verify invalid dimension query parameter returns HTTP 422 with permissible dimensions (AC-2.5)."""
+        response = client.get(f"/api/analytics/cohorts?dimension={invalid_dimension}")
+        assert response.status_code == 422
+        data = response.json()
+        # Must contain explicit list of permissible dimensions per AC-2.5
+        err_msg = str(data)
+        assert "Invalid dimension" in err_msg or "Permissible dimensions" in err_msg
+        assert "age_bracket" in err_msg
+        assert "gender" in err_msg
+        assert "stress_level" in err_msg
+        assert "academic_work_impact" in err_msg
+
+    def test_get_screen_sleep_matrix_returns_200(self, client: TestClient) -> None:
+        """Verify GET /api/analytics/distributions/screen-sleep-matrix returns 200 OK and 6x5 grid (AC-2.3)."""
+        response = client.get("/api/analytics/distributions/screen-sleep-matrix")
+        assert response.status_code == 200
+        data = response.json()
+
+        assert len(data["screen_bins"]) == 6
+        assert len(data["sleep_bins"]) == 5
+        assert len(data["matrix"]) == 6
+        assert all(len(row) == 5 for row in data["matrix"])
+        assert len(data["cells"]) == 30
+
+        total_density = sum(c["density_pct"] for c in data["cells"])
+        assert 99.0 <= total_density <= 101.0
+
+        for cell in data["cells"]:
+            assert cell["screen_bin"] in data["screen_bins"]
+            assert cell["sleep_bin"] in data["sleep_bins"]
+            assert cell["count"] > 0
+            assert cell["sample_count"] == cell["count"]
+            assert 0.0 <= cell["density_pct"] <= 100.0
+            assert 0.0 <= cell["addiction_rate_pct"] <= 100.0
+
+    def test_post_benchmark_overlay_returns_200(self, client: TestClient) -> None:
+        """Verify POST /api/analytics/distributions/benchmark-overlay returns 200 OK with percentiles (AC-2.4)."""
+        payload = {
+            "daily_screen_time_hours": 9.5,
+            "sleep_hours": 5.0,
+            "app_opens_per_day": 120,
+            "notifications_per_day": 180,
+        }
+        response = client.post("/api/analytics/distributions/benchmark-overlay", json=payload)
+        assert response.status_code == 200
+        data = response.json()
+
+        assert 0.0 <= data["screen_time_percentile"] <= 100.0
+        assert 0.0 <= data["sleep_hours_percentile"] <= 100.0
+        # 9.5h screen is ~70.33 percentile (between median 7.77h and 75th pct 9.84h), 5.0h sleep is low (<20%)
+        assert 68.0 <= data["screen_time_percentile"] <= 72.0
+        assert data["sleep_hours_percentile"] < 20.0
+        assert data["sleep_duration_percentile"] == data["sleep_hours_percentile"]
+
+        # High screen time (12h) is >80th percentile
+        high_screen_res = client.post(
+            "/api/analytics/distributions/benchmark-overlay",
+            json={"daily_screen_time_hours": 12.0, "sleep_hours": 5.0},
+        )
+        assert high_screen_res.status_code == 200
+        assert high_screen_res.json()["screen_time_percentile"] > 80.0
+
+        # SPEC AC-2.4 population mean reference values (7.64 +- 0.05, 6.80 +- 0.05)
+        assert 7.55 <= data["population_mean_screen"] <= 7.75
+        assert 6.70 <= data["population_mean_sleep"] <= 6.90
+
+        # Percentile narrative labels
+        assert "percentile in screen time" in data["screen_time_label"]
+        assert "percentile in sleep duration" in data["sleep_hours_label"]
+
+        # Optional interaction percentiles
+        assert data["app_opens_percentile"] is not None
+        assert data["notifications_percentile"] is not None
+        assert 0.0 <= data["app_opens_percentile"] <= 100.0
+        assert 0.0 <= data["notifications_percentile"] <= 100.0
+
+    @pytest.mark.parametrize(
+        "invalid_payload",
+        [
+            {"daily_screen_time_hours": -1.0, "sleep_hours": 7.0},  # screen < 0.0
+            {"daily_screen_time_hours": 25.0, "sleep_hours": 7.0},  # screen > 24.0
+            {"daily_screen_time_hours": 8.0, "sleep_hours": 0.5},   # sleep < 1.0
+            {"daily_screen_time_hours": 8.0, "sleep_hours": 19.0},  # sleep > 18.0
+            {"daily_screen_time_hours": 8.0, "sleep_hours": 7.0, "app_opens_per_day": -5},
+            {"daily_screen_time_hours": 8.0, "sleep_hours": 7.0, "notifications_per_day": 600},
+            {"daily_screen_time_hours": 8.0},                       # missing sleep_hours
+            {"sleep_hours": 7.0},                                   # missing daily_screen_time_hours
+            {},                                                     # empty payload
+        ],
+    )
+    def test_post_benchmark_overlay_invalid_payload_returns_422(
+        self, client: TestClient, invalid_payload: dict[str, Any]
+    ) -> None:
+        """Verify invalid or out-of-bounds benchmark overlay payloads return HTTP 422 Unprocessable Entity."""
+        response = client.post("/api/analytics/distributions/benchmark-overlay", json=invalid_payload)
+        assert response.status_code == 422
+        data = response.json()
+        assert "detail" in data or "error" in data
+
+
+
 
