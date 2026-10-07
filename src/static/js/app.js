@@ -331,7 +331,10 @@
                 targetPanel.classList.add('active');
             }
 
-            btn.focus();
+            btn.focus({ preventScroll: true });
+            // Keep the active tab visible when the tab bar scrolls (mobile)
+            const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            btn.scrollIntoView({ inline: 'center', block: 'nearest', behavior: reduceMotion ? 'auto' : 'smooth' });
 
             // Refresh tab-specific dynamic content
             if (targetTabId === 'tab-cohorts') {
@@ -1155,18 +1158,19 @@
             optimalPrescription = data;
 
             dom.optimalTargetCard.style.display = 'block';
-            let pathwayText = '';
+            let steps = [];
             if (Array.isArray(data.recommended_pathway) && data.recommended_pathway.length > 0) {
-                pathwayText = data.recommended_pathway.join(' • ');
+                steps = data.recommended_pathway;
             } else if (data.summary) {
-                pathwayText = data.summary;
+                steps = [data.summary];
             } else {
-                pathwayText = 'Recommended adjustment: Reduce daily screen time by ' +
-                    Number(data.target_screen_time_reduction_hours || 0).toFixed(1) + 'h, increase sleep by ' +
-                    Number(data.target_sleep_increase_hours || 0).toFixed(1) + 'h, and batch ' +
-                    (data.target_app_opens_reduction || 0) + ' app opens.';
+                steps = [
+                    'Reduce daily screen time by ' + Number(data.target_screen_time_reduction_hours || 0).toFixed(1) + 'h',
+                    'Increase sleep by ' + Number(data.target_sleep_increase_hours || 0).toFixed(1) + 'h',
+                    'Batch ' + (data.target_app_opens_reduction || 0) + ' app opens'
+                ];
             }
-            dom.optimalTargetText.textContent = pathwayText;
+            renderPathwaySteps(steps);
         } catch (err) {
             toastManager.showToast('Offline Target Solver', 'Applied calibrated lifestyle recommendation offline.', 'info');
             optimalPrescription = {
@@ -1176,8 +1180,21 @@
                 summary: 'Recommended habit adjustments: Reduce recreational screen time by 1.5h, increase sleep by 1.0h, and batch notifications.'
             };
             dom.optimalTargetCard.style.display = 'block';
-            dom.optimalTargetText.textContent = optimalPrescription.summary;
+            renderPathwaySteps([
+                'Reduce recreational screen time by 1.5h',
+                'Increase sleep by 1.0h',
+                'Batch notifications'
+            ]);
         }
+    }
+
+    function renderPathwaySteps(steps) {
+        dom.optimalTargetText.innerHTML = '';
+        steps.forEach(function (step) {
+            const li = document.createElement('li');
+            li.textContent = String(step);
+            dom.optimalTargetText.appendChild(li);
+        });
     }
 
     function applyOptimalTargetToSliders() {
@@ -1265,12 +1282,17 @@
             });
         }
 
+        const btnTemplate = document.getElementById('btn-batch-error-template');
+        if (btnTemplate) {
+            btnTemplate.addEventListener('click', downloadTemplateCsv);
+        }
+
         if (dom.btnExportCsv) {
             dom.btnExportCsv.addEventListener('click', function () {
                 if (state.batch.downloadToken) {
                     window.location.href = '/api/predict/batch/export?token=' + encodeURIComponent(state.batch.downloadToken);
                 } else {
-                    showBatchError('No batch scoring results available to export. Please upload or score a dataset first.');
+                    showBatchError('No batch scoring results are available to export yet. Upload a CSV or load the demo cohort first.', { upload: false });
                 }
             });
         }
@@ -1300,22 +1322,11 @@
 
             if (!resp.ok) {
                 const errData = await resp.json().catch(function () { return {}; });
-                let errorMsg = 'Batch processing failed';
-                if (resp.status === 413) {
-                    errorMsg = errData.detail || 'Batch upload exceeds maximum limit of 10,000 rows.';
-                } else if (resp.status === 422) {
-                    if (typeof errData.detail === 'string') {
-                        errorMsg = errData.detail;
-                    } else if (Array.isArray(errData.detail)) {
-                        errorMsg = errData.detail.map(function (e) {
-                            return (e.loc ? e.loc.join('.') + ': ' : '') + (e.msg || 'Validation error');
-                        }).join('; ');
-                    } else {
-                        errorMsg = 'Validation error: Missing or invalid CSV headers/data.';
-                    }
-                } else {
-                    errorMsg = errData.detail || ('Batch request failed with HTTP ' + resp.status);
-                }
+                const errorMsg = errData && errData.detail !== undefined
+                    ? errData.detail
+                    : (resp.status === 413
+                        ? 'Batch upload exceeds maximum limit of 10,000 rows.'
+                        : 'Batch request failed with HTTP ' + resp.status);
                 showBatchError(errorMsg);
                 return;
             }
@@ -1328,7 +1339,7 @@
         }
     }
 
-    function generateAndSubmitDemoBatch() {
+    function buildDemoCsvText() {
         const headers = [
             'age', 'gender', 'stress_level', 'academic_work_impact',
             'daily_screen_time_hours', 'social_media_hours', 'gaming_hours',
@@ -1368,24 +1379,114 @@
             ].join(','));
         });
 
-        const blob = new Blob([csvLines.join('\n')], { type: 'text/csv' });
+        return csvLines.join('\n');
+    }
+
+    function generateAndSubmitDemoBatch() {
+        const blob = new Blob([buildDemoCsvText()], { type: 'text/csv' });
         const file = new File([blob], 'demo_cohort_20_records.csv', { type: 'text/csv' });
         handleBatchUpload(file);
     }
 
-    function showBatchError(msg) {
-        if (dom.batchError) {
-            dom.batchError.style.display = 'flex';
+    function downloadTemplateCsv() {
+        const blob = new Blob([buildDemoCsvText()], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'cohort_template.csv';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(function () { URL.revokeObjectURL(url); }, 0);
+    }
+
+    /**
+     * Turns whatever the server sent (plain string, string containing a Python
+     * list repr, object, or FastAPI validation array) into a readable message.
+     * Returns { message, missing: string[] }.
+     */
+    function describeBatchError(raw) {
+        const quoted = /'([^']+)'|"([^"]+)"/g;
+        function listItems(text) {
+            const items = [];
+            let m;
+            quoted.lastIndex = 0;
+            while ((m = quoted.exec(text)) !== null) items.push(m[1] || m[2]);
+            return items;
         }
-        if (dom.batchErrorMsg) {
-            dom.batchErrorMsg.textContent = msg;
+        function fromString(text) {
+            const str = String(text).trim();
+            const listMatch = /\[([^\]]*)\]/.exec(str);
+            if (listMatch) {
+                const items = listItems(listMatch[1]);
+                if (items.length > 0) {
+                    if (/missing|required|column|header/i.test(str)) {
+                        return { message: '', missing: items };
+                    }
+                    return { message: str.replace(listMatch[0], items.join(', ')), missing: [] };
+                }
+            }
+            return { message: str, missing: [] };
         }
+
+        if (raw == null || raw === '') {
+            return { message: 'The server could not process this file.', missing: [] };
+        }
+        if (typeof raw === 'string') return fromString(raw);
+        if (raw instanceof Error) return fromString(raw.message);
+        if (Array.isArray(raw)) {
+            const parts = raw.map(function (e) {
+                if (typeof e === 'string') return e;
+                const loc = Array.isArray(e && e.loc) ? e.loc.filter(function (x) { return x !== 'body'; }).join('.') : '';
+                return (loc ? loc + ': ' : '') + ((e && e.msg) || 'Invalid value');
+            });
+            return { message: parts.join('; '), missing: [] };
+        }
+        if (typeof raw === 'object') {
+            const cols = raw.missing_columns || raw.missing || raw.columns;
+            if (Array.isArray(cols) && cols.length > 0) {
+                return { message: '', missing: cols.map(String) };
+            }
+            const inner = raw.message || raw.msg || raw.detail || raw.error;
+            if (inner !== undefined && inner !== raw) return describeBatchError(inner);
+            return { message: 'The server could not process this file.', missing: [] };
+        }
+        return { message: String(raw), missing: [] };
+    }
+
+    function showBatchError(raw, opts) {
+        const isUpload = !(opts && opts.upload === false);
+        const info = describeBatchError(raw);
+        const titleEl = document.getElementById('batch-error-title');
+        const hintEl = document.getElementById('batch-error-hint');
+        const tplBtn = document.getElementById('btn-batch-error-template');
+
+        let message = info.message;
+        let hint = '';
+        if (info.missing.length > 0) {
+            message = 'Your file is missing these columns: ' + info.missing.join(', ') + '.';
+            hint = 'Add them to the header row and upload again.';
+        } else if (isUpload) {
+            hint = 'Check the file against the template, then upload it again.';
+        }
+
+        if (titleEl) titleEl.textContent = isUpload ? 'This file could not be scored' : 'Nothing to export yet';
+        if (dom.batchErrorMsg) dom.batchErrorMsg.textContent = message;
+        if (hintEl) hintEl.textContent = hint;
+        if (tplBtn) tplBtn.style.display = isUpload ? '' : 'none';
+        if (dom.batchError) dom.batchError.style.display = 'flex';
     }
 
     function hideBatchError() {
         if (dom.batchError) {
             dom.batchError.style.display = 'none';
         }
+    }
+
+    function esc(value) {
+        return String(value).replace(/[&<>"']/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
     }
 
     function renderBatchResults(data) {
@@ -1411,23 +1512,23 @@
                     const riskPct = (Number(prob) * 100).toFixed(1);
                     const screenTime = r.daily_screen_time_hours != null ? Number(r.daily_screen_time_hours).toFixed(1) + 'h' : '--';
                     const sleepTime = r.sleep_hours != null ? Number(r.sleep_hours).toFixed(1) + 'h' : '--';
-                    const age = r.age != null ? r.age : '--';
-                    const gender = r.gender || '--';
-                    const primaryAdvisory = r.primary_intervention || 'Balanced Routine';
+                    const age = r.age != null ? esc(r.age) : '--';
+                    const gender = esc(r.gender || '--');
+                    const primaryAdvisory = esc(r.primary_intervention || 'Balanced Routine');
 
                     tr.innerHTML =
-                        '<td>' + (idx + 1) + '</td>' +
-                        '<td>' + age + '</td>' +
-                        '<td>' + gender + '</td>' +
-                        '<td>' + screenTime + '</td>' +
-                        '<td>' + sleepTime + '</td>' +
-                        '<td><strong>' + riskPct + '%</strong></td>' +
-                        '<td>' +
+                        '<td data-label="#">' + (idx + 1) + '</td>' +
+                        '<td data-label="Age">' + age + '</td>' +
+                        '<td data-label="Gender">' + gender + '</td>' +
+                        '<td data-label="Daily screen">' + screenTime + '</td>' +
+                        '<td data-label="Sleep">' + sleepTime + '</td>' +
+                        '<td data-label="Predicted risk"><strong>' + riskPct + '%</strong></td>' +
+                        '<td data-label="Classification">' +
                             '<span class="badge ' + (isAddicted ? 'badge-danger' : 'badge-low') + '">' +
                                 (isAddicted ? 'Addiction Detected' : 'Healthy Pattern') +
                             '</span>' +
                         '</td>' +
-                        '<td style="font-size: 0.8rem; color: var(--text-2);">' + primaryAdvisory + '</td>';
+                        '<td data-label="Primary advisory"><span class="batch-advisory" title="' + primaryAdvisory + '">' + primaryAdvisory + '</span></td>';
                     dom.batchTableBody.appendChild(tr);
                 });
             }

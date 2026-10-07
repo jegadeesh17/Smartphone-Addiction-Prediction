@@ -274,20 +274,34 @@ select:focus-visible,
     -webkit-appearance: none;
     appearance: none;
     width: 100%;
+    height: 44px; /* 44px hit area; the visible track is drawn inside it */
+    margin: 0;
+    background: transparent;
+    cursor: pointer;
+}
+
+.range-slider::-webkit-slider-runnable-track {
     height: 6px;
     background: var(--track);
     border-radius: var(--radius-pill);
-    cursor: pointer;
+}
+
+.range-slider::-moz-range-track {
+    height: 6px;
+    background: var(--track);
+    border-radius: var(--radius-pill);
 }
 
 .range-slider:focus-visible {
     outline: 2px solid var(--gold);
-    outline-offset: 2px;
+    outline-offset: 0;
+    border-radius: var(--radius-md);
 }
 
 .range-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
+    margin-top: -6px; /* centres 18px thumb on 6px track */
     width: 18px;
     height: 18px;
     border-radius: 50%;
@@ -1010,10 +1024,16 @@ select:focus-visible,
     font-family: var(--font-sans);
 }
 
-.optimal-target-body {
+.optimal-target-list {
+    margin: 0;
+    padding-left: 20px;
     font-size: 0.825rem;
     color: var(--text-1);
     line-height: 1.45;
+}
+
+.optimal-target-list li + li {
+    margin-top: 4px;
 }
 
 /* --------------------------------------------------------------------------
@@ -1114,8 +1134,52 @@ select:focus-visible,
     font-size: 0.85rem;
     font-weight: 500;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 10px;
+}
+
+.batch-error-body {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    min-width: 0;
+}
+
+.batch-error-title {
+    font-weight: 600;
+}
+
+.batch-error-msg,
+.batch-error-hint {
+    overflow-wrap: anywhere;
+    line-height: 1.45;
+}
+
+.batch-error-msg:empty,
+.batch-error-hint:empty {
+    display: none;
+}
+
+.batch-error-hint {
+    color: var(--text-1);
+    font-weight: 400;
+}
+
+.batch-error-action {
+    margin-top: 6px;
+    min-height: 44px;
+}
+
+.batch-advisory {
+    font-size: 0.8rem;
+    color: var(--text-2);
+    max-width: 280px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 /* Buttons */
@@ -1319,6 +1383,86 @@ select:focus-visible,
     }
 }
 
+/* Batch results: stacked rows so Predicted Risk and Classification lead
+   and nothing needs horizontal scrolling */
+@media (max-width: 900px) {
+    .batch-table-wrapper {
+        max-height: none;
+        overflow-x: visible;
+        overflow-y: visible;
+        border: none;
+        background: transparent;
+    }
+    #batch-table,
+    #batch-table tbody {
+        display: block;
+    }
+    #batch-table thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+    }
+    #batch-table tr {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px 12px;
+        padding: 12px;
+        margin-bottom: 8px;
+        background: var(--panel);
+        border: 1px solid var(--line-soft);
+        border-radius: var(--radius-md);
+    }
+    #batch-table td {
+        display: block;
+        padding: 0;
+        border: none;
+        min-width: 0;
+    }
+    #batch-table td:not([data-label]) {
+        grid-column: 1 / -1;
+    }
+    #batch-table td[data-label]::before {
+        content: attr(data-label);
+        display: block;
+        font-size: 0.7rem;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--text-3);
+        margin-bottom: 2px;
+    }
+    #batch-table td[data-label="#"] {
+        display: none;
+    }
+    #batch-table td[data-label="Predicted risk"] {
+        order: -2;
+        grid-column: span 2;
+        font-size: 1.1rem;
+    }
+    #batch-table td[data-label="Classification"] {
+        order: -1;
+        grid-column: span 2;
+    }
+    #batch-table td[data-label="Primary advisory"] {
+        grid-column: 1 / -1;
+        order: 1;
+    }
+    .batch-advisory {
+        max-width: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .panel-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+    }
+}
+
 @media (max-width: 640px) {
     .main-workspace {
         padding: 16px;
@@ -1391,12 +1535,12 @@ select:focus-visible,
         width: 100%;
         max-width: 100%;
     }
-    .range-slider {
+    .range-slider::-webkit-slider-runnable-track,
+    .range-slider::-moz-range-track {
         height: 8px;
-        padding: 18px 0; /* Creates an accessible 44px tap zone */
-        margin: 2px 0;
     }
     .range-slider::-webkit-slider-thumb {
+        margin-top: -9px; /* centres 26px thumb on 8px track */
         width: 26px;
         height: 26px;
     }

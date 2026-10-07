@@ -516,7 +516,7 @@
 
                     <div id="optimal-target-card" class="optimal-target-card" style="display: none;">
                         <h3 class="optimal-target-title">Optimal Intervention Pathway:</h3>
-                        <p id="optimal-target-text" class="optimal-target-body"></p>
+                        <ol id="optimal-target-text" class="optimal-target-list"></ol>
                         <button type="button" id="btn-apply-optimal" class="btn-secondary" style="margin-top: 10px; width: 100%;">
                             Apply Target to Simulation Levers
                         </button>
@@ -625,7 +625,14 @@
 
                 <!-- Error State -->
                 <div id="batch-error" class="boundary-warning batch-error-alert" style="display: none;" role="alert" aria-live="assertive">
-                    <span id="batch-error-msg">Error message details</span>
+                    <div class="batch-error-body">
+                        <strong id="batch-error-title" class="batch-error-title">Upload could not be scored</strong>
+                        <span id="batch-error-msg" class="batch-error-msg"></span>
+                        <span id="batch-error-hint" class="batch-error-hint"></span>
+                        <button type="button" id="btn-batch-error-template" class="btn-secondary batch-error-action">
+                            Download template CSV
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Batch Results View -->
@@ -644,12 +651,12 @@
                         <div class="metric-card">
                             <div class="metric-card-label">High-Risk Severe Share</div>
                             <div class="metric-card-value" id="batch-high-risk-rate">45.0%</div>
-                            <div class="metric-card-target" style="color: var(--danger);">Urgent Clinical Action</div>
+                            <div class="metric-card-target" style="color: var(--danger);">Prioritise for follow-up</div>
                         </div>
                         <div class="metric-card">
                             <div class="metric-card-label">Mean Screen/Sleep Ratio</div>
                             <div class="metric-card-value" id="batch-mean-ss">1.24x</div>
-                            <div class="metric-card-target" style="color: var(--danger);">Compressed Sleep</div>
+                            <div class="metric-card-target" style="color: var(--danger);">Sleep short relative to screen time</div>
                         </div>
                     </div>
 
@@ -695,7 +702,7 @@
                 <strong>Smartphone Addiction Analytical Platform</strong> &bull; Sub-20ms LightGBM Inference Engine
             </div>
             <div>
-                Evaluated against Kaggle S6E8 (691k records) &bull; Designed strictly to DESIGN.md tokens &bull; Version 1.0.0
+                Evaluated against Kaggle S6E8 (691k records) &bull; Version 1.0.0
             </div>
         </div>
     </footer>

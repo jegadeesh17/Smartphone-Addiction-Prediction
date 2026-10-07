@@ -197,6 +197,27 @@
      * @param {*} str - Raw string or value
      * @returns {string} Escaped string
      */
+    /**
+     * Reads a CSS custom property (hex colour) from :root and returns it with
+     * the given alpha. Falls back to the opaque token via var() if unreadable.
+     */
+    function tokenWithAlpha(tokenName, alpha) {
+        let raw = '';
+        try {
+            raw = getComputedStyle(document.documentElement).getPropertyValue(tokenName).trim();
+        } catch (e) {
+            raw = '';
+        }
+        const m = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(raw);
+        if (!m) return 'var(' + tokenName + ')';
+        let hex = m[1];
+        if (hex.length === 3) {
+            hex = hex.split('').map(function (c) { return c + c; }).join('');
+        }
+        const n = parseInt(hex, 16);
+        return 'rgba(' + ((n >> 16) & 255) + ', ' + ((n >> 8) & 255) + ', ' + (n & 255) + ', ' + alpha.toFixed(2) + ')';
+    }
+
     function escapeHtml(str) {
         if (str === null || str === undefined) return '';
         return String(str)
@@ -395,15 +416,15 @@
                 if (rate >= 70.0) {
                     cellClass = 'heatmap-cell-danger';
                     const alpha = Math.min(0.98, Math.max(0.60, 0.60 + 0.38 * ((rate - 70.0) / 30.0)));
-                    bgColor = 'rgba(156, 63, 44, ' + alpha.toFixed(2) + ')';
+                    bgColor = tokenWithAlpha('--danger', alpha);
                 } else if (rate >= 40.0) {
                     cellClass = 'heatmap-cell-amber';
                     const alpha = Math.min(0.92, Math.max(0.55, 0.55 + 0.37 * ((rate - 40.0) / 30.0)));
-                    bgColor = 'rgba(161, 91, 22, ' + alpha.toFixed(2) + ')';
+                    bgColor = tokenWithAlpha('--amber', alpha);
                 } else {
                     cellClass = 'heatmap-cell-low';
                     const alpha = Math.min(0.92, Math.max(0.55, 0.55 + 0.37 * (rate / 40.0)));
-                    bgColor = 'rgba(30, 126, 52, ' + alpha.toFixed(2) + ')';
+                    bgColor = tokenWithAlpha('--low-risk', alpha);
                 }
 
                 cell.classList.add(cellClass);
