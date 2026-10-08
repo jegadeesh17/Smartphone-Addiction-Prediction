@@ -25,6 +25,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Built What-If Scenario Simulator and Batch Diagnostics UI views, including template CSV download and mobile card layout (M3-TASK-03).
 - Frontend craft polish pass, responsive hardening, 44px touch targets and accessibility compliance (M3-TASK-04).
 - Comprehensive regression safeguards and full pipeline verification (M3-TASK-05).
+- Multi-stage production container configuration with OpenMP LightGBM runtime dependencies (`Dockerfile`, `.dockerignore`).
+- Automated Google Cloud Run CI/CD deployment pipeline via GitHub Actions and Artifact Registry (`.github/workflows/deploy.yml`, `.github/workflows/ci.yml`, `docs/DEPLOYMENT.md`).
 
 ### Changed
 - Brand accent changed from golden yellow to deep indigo (`--gold` token values in `tokens.css`; token name kept).

@@ -14,5 +14,6 @@ Living documentation suite for the Smartphone Addiction Prediction analytical da
 | [QA_RESULTS.json](QA_RESULTS.json) | Automated test execution log and exit codes per task attempt | QaTester | Phase 3 build loop |
 | [ADVERSARIAL_REVIEW.md](ADVERSARIAL_REVIEW.md) | Milestone adversarial audits, security, and edge-case evaluations | AdversarialReviewer | End of each milestone |
 | [UI_REVIEW.md](UI_REVIEW.md) | Visual design, responsive layout, and WCAG accessibility reviews | UiReviewer | Discovery and milestones |
+| [DEPLOYMENT.md](DEPLOYMENT.md) | Cloud Run infrastructure, CI/CD pipeline, and deployment runbook | PlatformEngineer | Handover / Deploy |
 | [FEEDBACK.md](FEEDBACK.md) | User feedback triage across UI, Behavior, and Contract | Orchestrator | Feedback gates |
 

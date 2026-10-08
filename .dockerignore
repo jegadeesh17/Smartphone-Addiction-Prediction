@@ -1,0 +1,47 @@
+# Version control & tooling
+.git
+.gitignore
+.gitattributes
+.claude
+.vscode
+.cursor
+
+# Environment & credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Python bytecode & runtime caches
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+catboost_info/
+
+# Development artifacts & tests
+tests/
+.ui-review/
+.impeccable/
+docs/
+
+# Data: Exclude raw datasets and submissions; keep only priors and cohort summaries
+data/*
+!data/priors.json
+!data/cohort_summary.json
+
+# Models: Exclude unneeded folds and offline checkpoints; keep champion fold
+models/*
+!models/lgb_fold_1.joblib
+
+# Legacy prototype & offline scripts
+app/
+notebooks/
+scripts/
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+
