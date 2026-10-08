@@ -8,13 +8,13 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential curl \
+    build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
+COPY requirements-api.txt .
 RUN python -m venv /opt/venv && \
     /opt/venv/bin/pip install --no-cache-dir --upgrade pip && \
-    /opt/venv/bin/pip install --no-cache-dir -r requirements.txt
+    /opt/venv/bin/pip install --no-cache-dir -r requirements-api.txt
 
 # Stage 2: Minimal non-root runner
 FROM python:3.11-slim AS runner
@@ -27,9 +27,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-# Install runtime OpenMP support for LightGBM and curl for health checks
+# Install runtime OpenMP support for LightGBM
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libgomp1 curl \
+    libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 
 # Security: unprivileged application user
@@ -37,13 +37,14 @@ RUN groupadd -g 10001 appgroup && \
     useradd -u 10001 -g appgroup -s /bin/bash -m appuser
 
 COPY --from=builder /opt/venv /opt/venv
-COPY --chown=appuser:appgroup . .
+
+# Copy only the runtime files the API loads (model, priors, cohort cache, code)
+COPY --chown=appuser:appgroup src/ ./src/
+COPY --chown=appuser:appgroup data/priors.json data/cohort_summary.json ./data/
+COPY --chown=appuser:appgroup models/lgb_fold_1.joblib ./models/
 
 USER appuser
 
 EXPOSE 8080
-
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD curl -f http://localhost:${PORT:-8080}/api/health || exit 1
 
 CMD ["sh", "-c", "exec uvicorn src.main:app --host 0.0.0.0 --port ${PORT:-8080}"]

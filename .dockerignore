@@ -5,6 +5,7 @@
 .claude
 .vscode
 .cursor
+.github
 
 # Environment & credentials
 .env
@@ -40,6 +41,10 @@ models/*
 app/
 notebooks/
 scripts/
+
+# Documentation & build files (not needed at runtime)
+*.md
+Dockerfile
 
 # OS artifacts
 .DS_Store
