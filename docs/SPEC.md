@@ -19,7 +19,7 @@ This document defines the functional requirements, user journeys, parity baselin
 ## 2. User Journeys
 
 ### Journey 1: Executive Overview & Live Individual Risk Diagnostic (M1 - Redesign)
-*Starts from*: The legacy single-page Streamlit diagnostic screen ([app/app.py](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/app/app.py)), which used heuristic mock logit scoring disconnected from trained ML checkpoints.
+*Starts from*: The legacy single-page Streamlit diagnostic screen ([app/app.py](../app/app.py)), which used heuristic mock logit scoring disconnected from trained ML checkpoints.
 
 1. **Dashboard Access**: The user opens `http://localhost:8000/app` (or `/`). The application renders a polished editorial header, system health/latency telemetry badges, and a tabbed navigation bar (`Individual Diagnostic`, `Population Cohort Analytics`, `What-If Simulation`).
 2. **Behavioral Profile Configuration**: In the "Individual Diagnostic" view, the user interacts with two structured input cards:
@@ -280,7 +280,7 @@ This document defines the functional requirements, user journeys, parity baselin
 
 ## 4. Parity Criteria (Redesigned Diagnostic View)
 
-To ensure zero feature regression when replacing the legacy Streamlit prototype ([app/app.py](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/app/app.py)), the redesigned Individual Diagnostic view must satisfy the following parity requirements:
+To ensure zero feature regression when replacing the legacy Streamlit prototype ([app/app.py](../app/app.py)), the redesigned Individual Diagnostic view must satisfy the following parity requirements:
 
 - **PAR-1: Input Parameter Completeness**:
   - *Given* the legacy Streamlit form captured 12 input features (`age`, `gender`, `stress_level`, `academic_work_impact`, `daily_screen_time`, `social_media_hours`, `gaming_hours`, `work_study_hours`, `weekend_screen_time`, `sleep_hours`, `notifications_per_day`, `app_opens_per_day`) plus decision threshold $\tau$,
@@ -322,7 +322,7 @@ To ensure zero feature regression when replacing the legacy Streamlit prototype 
 
 ## 5. Regression Criteria (Existing ML & Data Pipeline)
 
-The introduction of the FastAPI backend and cohort cache must not regress or mutate existing training and feature generation routines documented in [docs/CODEBASE_MAP.md](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/docs/CODEBASE_MAP.md):
+The introduction of the FastAPI backend and cohort cache must not regress or mutate existing training and feature generation routines documented in [docs/CODEBASE_MAP.md](../docs/CODEBASE_MAP.md):
 
 - **REG-1: Feature Engineering Pipeline Integrity**:
   - *Given* raw dataframes loaded from `data/train.csv` and `data/test.csv`,
@@ -337,7 +337,7 @@ The introduction of the FastAPI backend and cohort cache must not regress or mut
   - *When* cohort pre-aggregation scripts or analytical caches are generated,
   - *Then* the source data files in `data/` must not be overwritten, truncated, or modified in place.
 - **REG-4: Ensemble Optimization Driver Stability**:
-  - *Given* existing scripts [src/ensemble.py](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/src/ensemble.py) and [src/train.py](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/src/train.py),
+  - *Given* existing scripts [src/ensemble.py](../src/ensemble.py) and [src/train.py](../src/train.py),
   - *When* executed or imported,
   - *Then* their public signatures and command-line execution interfaces must remain fully operational.
 
@@ -356,7 +356,7 @@ The introduction of the FastAPI backend and cohort cache must not regress or mut
 5. **Real-Time Mobile OS Telemetry Streaming**:
    - Integrating live OS background daemons or Screen Time APIs to stream device metrics in real-time is out of scope. Input is driven by interactive sliders and batch CSV uploads.
 6. **Maintenance of Legacy Streamlit Runtime**:
-   - Streamlit runtime dependencies and [app/app.py](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/app/app.py) will be retired in favor of the unified FastAPI service and bespoke HTML5/CSS3/JS interface.
+   - Streamlit runtime dependencies and [app/app.py](../app/app.py) will be retired in favor of the unified FastAPI service and bespoke HTML5/CSS3/JS interface.
 
 ---
 

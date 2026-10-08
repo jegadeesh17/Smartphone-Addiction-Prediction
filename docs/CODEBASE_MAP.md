@@ -11,19 +11,19 @@ The project is a competitive tabular machine learning system developed for the *
 - Complete exploratory analysis and competitive feature engineering pipelines producing 74 domain, interaction, and cohort-level features.
 - A 5-fold stratified cross-validation training driver supporting four model families: LightGBM, XGBoost, CatBoost, and a PyTorch Tabular ResNet, achieving an out-of-fold benchmark $>0.964$ ROC AUC and $>90.3\%$ accuracy.
 - An SLSQP continuous logit ensembling and threshold calibration engine exporting competition-ready submissions.
-- An interactive single-page Streamlit diagnostic web application ([app/app.py](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/app/app.py)) presenting individual behavioral risk assessments, ratio diagnostics, and population comparisons.
+- An interactive single-page Streamlit diagnostic web application ([app/app.py](../app/app.py)) presenting individual behavioral risk assessments, ratio diagnostics, and population comparisons.
 
 ---
 
 ## 2. Stack
 - **Language**: Python 3.13.2
-- **Package Manager**: `pip` (manifest: [requirements.txt](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/requirements.txt))
+- **Package Manager**: `pip` (manifest: [requirements.txt](../requirements.txt))
 - **Machine Learning & Gradient Boosting**:
   - `lightgbm` 4.7.0 (manifest: `>=4.0.0`)
   - `xgboost` 3.2.0 (manifest: `>=2.0.0`)
   - `catboost` 1.2.10 (manifest: `>=1.2.0`)
   - `scikit-learn` 1.8.0 (manifest: `>=1.4.0`)
-  - `torch` 2.12.1+cpu (PyTorch tabular neural network; used in [src/nn_model.py](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/src/nn_model.py) and [src/train.py](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/src/train.py), omitted from [requirements.txt](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/requirements.txt))
+  - `torch` 2.12.1+cpu (PyTorch tabular neural network; used in [src/nn_model.py](../src/nn_model.py) and [src/train.py](../src/train.py), omitted from [requirements.txt](../requirements.txt))
   - `scipy` 1.17.1 (manifest: `>=1.12.0`)
   - `joblib` 1.4.2 (manifest: `>=1.3.0`)
 - **Data Manipulation**:
@@ -35,7 +35,7 @@ The project is a competitive tabular machine learning system developed for the *
   - `uvicorn` 0.32.1 (installed in runtime environment)
 - **Testing**:
   - `pytest` 8.3.4 (with plugins: `pytest-asyncio` 0.24.0, `anyio` 4.13.0, `pytest-cov` 7.1.0)
-- **Manifest File**: [requirements.txt](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/requirements.txt)
+- **Manifest File**: [requirements.txt](../requirements.txt)
 
 ---
 
@@ -79,35 +79,35 @@ SmartphoneAddictionPrediction/
 ```
 
 ### Entry Points
-- **Streamlit Web Application**: `streamlit run app/app.py` ([app/app.py](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/app/app.py))
-- **Cross-Validation Training Driver**: `python src/train.py` ([src/train.py](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/src/train.py#L220-L222))
-- **Ensemble Optimization & Submission**: `python src/ensemble.py` ([src/ensemble.py](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/src/ensemble.py#L193-L195))
+- **Streamlit Web Application**: `streamlit run app/app.py` ([app/app.py](../app/app.py))
+- **Cross-Validation Training Driver**: `python src/train.py` ([src/train.py](../src/train.py#L220-L222))
+- **Ensemble Optimization & Submission**: `python src/ensemble.py` ([src/ensemble.py](../src/ensemble.py#L193-L195))
 
 ---
 
 ## 4. Conventions
 - **Naming Conventions**:
-  - Python files: lowercase `snake_case.py` (e.g., [src/features.py](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/src/features.py), [src/nn_model.py](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/src/nn_model.py), [src/ensemble.py](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/src/ensemble.py)).
-  - Classes: `PascalCase` (e.g., `TabularDataset` at [src/nn_model.py#L14](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/src/nn_model.py#L14), `ResNetBlock` at [src/nn_model.py#L29](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/src/nn_model.py#L29), `TabularResNet` at [src/nn_model.py#L47](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/src/nn_model.py#L47)).
-  - Functions: lowercase `snake_case` (e.g., `create_features()` at [src/features.py#L12](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/src/features.py#L12), `train_pipeline()` at [src/train.py#L35](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/src/train.py#L35), `optimize_and_submit()` at [src/ensemble.py#L23](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/src/ensemble.py#L23)).
+  - Python files: lowercase `snake_case.py` (e.g., [src/features.py](../src/features.py), [src/nn_model.py](../src/nn_model.py), [src/ensemble.py](../src/ensemble.py)).
+  - Classes: `PascalCase` (e.g., `TabularDataset` at [src/nn_model.py#L14](../src/nn_model.py#L14), `ResNetBlock` at [src/nn_model.py#L29](../src/nn_model.py#L29), `TabularResNet` at [src/nn_model.py#L47](../src/nn_model.py#L47)).
+  - Functions: lowercase `snake_case` (e.g., `create_features()` at [src/features.py#L12](../src/features.py#L12), `train_pipeline()` at [src/train.py#L35](../src/train.py#L35), `optimize_and_submit()` at [src/ensemble.py#L23](../src/ensemble.py#L23)).
   - Variables: lowercase `snake_case` (e.g., `daily_screen_time_hours`, `recreational_hours`, `feat_cols`).
-  - Documentation files: `UPPER_SNAKE_CASE.md` in `docs/` (e.g., [docs/CODEBASE_MAP.md](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/docs/CODEBASE_MAP.md), [docs/PROJECT_MENTAL_MODEL.md](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/docs/PROJECT_MENTAL_MODEL.md)).
+  - Documentation files: `UPPER_SNAKE_CASE.md` in `docs/` (e.g., [docs/CODEBASE_MAP.md](../docs/CODEBASE_MAP.md), [docs/PROJECT_MENTAL_MODEL.md](../docs/PROJECT_MENTAL_MODEL.md)).
 - **Formatting and Lint Configuration**:
   - 4-space indentation across all Python modules.
   - No `.flake8`, `.black`, or `ruff.toml` config file currently present.
-  - Multi-line module docstrings describe functionality at the head of every source file (e.g., [src/features.py#L1-L6](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/src/features.py#L1-L6)).
+  - Multi-line module docstrings describe functionality at the head of every source file (e.g., [src/features.py#L1-L6](../src/features.py#L1-L6)).
   - Explicit console encoding handling for cross-platform Windows compatibility:
     ```python
     if hasattr(sys.stdout, 'reconfigure'):
         sys.stdout.reconfigure(encoding='utf-8', errors='replace')
     ```
-    (Found in [src/train.py#L28-L29](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/src/train.py#L28-L29) and [src/ensemble.py#L19-L20](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/src/ensemble.py#L19-L20)).
+    (Found in [src/train.py#L28-L29](../src/train.py#L28-L29) and [src/ensemble.py#L19-L20](../src/ensemble.py#L19-L20)).
 - **Typing**:
-  - Python standard type hints are partially adopted in function signatures (e.g., `def create_features(df_train: pd.DataFrame, df_test: pd.DataFrame = None) -> tuple[pd.DataFrame, pd.DataFrame, list[str]]:` in [src/features.py#L12](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/src/features.py#L12)).
+  - Python standard type hints are partially adopted in function signatures (e.g., `def create_features(df_train: pd.DataFrame, df_test: pd.DataFrame = None) -> tuple[pd.DataFrame, pd.DataFrame, list[str]]:` in [src/features.py#L12](../src/features.py#L12)).
   - Local variables and helper sub-routines generally omit type hints.
 - **Error Handling**:
-  - Suppressive error handling in training driver: `warnings.filterwarnings('ignore')` in [src/train.py#L25](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/src/train.py#L25).
-  - Defensive missing-value imputation prevents NaN propagation in feature generation (`.fillna(0.0)`, `.fillna(median)`, and `.clip(lower=1.0)` in [src/features.py#L53-L69](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/src/features.py#L53-L69)).
+  - Suppressive error handling in training driver: `warnings.filterwarnings('ignore')` in [src/train.py#L25](../src/train.py#L25).
+  - Defensive missing-value imputation prevents NaN propagation in feature generation (`.fillna(0.0)`, `.fillna(median)`, and `.clip(lower=1.0)` in [src/features.py#L53-L69](../src/features.py#L53-L69)).
   - Explicit existence verification on required disk assets before processing:
     ```python
     oof_path = os.path.join(models_dir, 'oof_predictions.npz')
@@ -115,9 +115,9 @@ SmartphoneAddictionPrediction/
         print(f"Error: {oof_path} not found. Please run train.py first.")
         return
     ```
-    (Found in [src/ensemble.py#L28-L31](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/src/ensemble.py#L28-L31)).
+    (Found in [src/ensemble.py#L28-L31](../src/ensemble.py#L28-L31)).
 - **Module Organization**:
-  - Single-responsibility scripts: data transformation ([src/features.py](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/src/features.py)), neural architecture definition ([src/nn_model.py](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/src/nn_model.py)), training orchestration ([src/train.py](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/src/train.py)), meta-learning ensembling ([src/ensemble.py](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/src/ensemble.py)), and web presentation ([app/app.py](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/app/app.py)).
+  - Single-responsibility scripts: data transformation ([src/features.py](../src/features.py)), neural architecture definition ([src/nn_model.py](../src/nn_model.py)), training orchestration ([src/train.py](../src/train.py)), meta-learning ensembling ([src/ensemble.py](../src/ensemble.py)), and web presentation ([app/app.py](../app/app.py)).
 
 ---
 
@@ -144,7 +144,7 @@ SmartphoneAddictionPrediction/
 ## 7. Existing Behavior
 The existing user-visible journeys, public interfaces, and data transformation routines comprise:
 
-1. **Interactive Streamlit Diagnostic Dashboard** ([app/app.py](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/app/app.py)):
+1. **Interactive Streamlit Diagnostic Dashboard** ([app/app.py](../app/app.py)):
    - **Input Profile Form**: Sidebar widgets capturing 4 demographic and 8 behavioral indicators:
      - `Age` (18–35), `Gender` (Male, Female, Other), `Stress Level` (Low, Medium, High), `Academic / Work Impact` (No, Yes).
      - `Daily Screen Time` (0.5–15.0h), `Social Media` (0.0–10.0h), `Gaming` (0.0–8.0h), `Work / Study` (0.0–12.0h), `Weekend Daily Screen Time` (0.5–17.5h), `Sleep Duration` (3.0–12.0h).
@@ -161,7 +161,7 @@ The existing user-visible journeys, public interfaces, and data transformation r
    - **Multi-Model Benchmark Display**: Read-only comparison table displaying local 5-fold CV ROC AUC and accuracy.
    - *Test Coverage*: Untested (0% automated test coverage).
 
-2. **Feature Engineering Pipeline** ([src/features.py:create_features](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/src/features.py#L12)):
+2. **Feature Engineering Pipeline** ([src/features.py:create_features](../src/features.py#L12)):
    - Ingests raw train and optional test datasets; concatenates with `is_train` partition flags.
    - Generates 12 missingness flags (`*_isna`) and total missing sensor count (`num_missing`).
    - Generates composite categorical encodings (`gender_stress_code`, `stress_impact_code`).
@@ -171,14 +171,14 @@ The existing user-visible journeys, public interfaces, and data transformation r
    - Drops non-feature columns (`id`, `is_train`, `addicted_label`, raw categoricals) and outputs 74 feature columns.
    - *Test Coverage*: Untested.
 
-3. **Stratified 5-Fold Training Pipeline** ([src/train.py:train_pipeline](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/src/train.py#L35)):
+3. **Stratified 5-Fold Training Pipeline** ([src/train.py:train_pipeline](../src/train.py#L35)):
    - Loads `data/train.csv` (691,369 rows) and `data/test.csv` (296,302 rows).
    - Trains LightGBM (191 leaves), XGBoost (hist), CatBoost (symmetric), and PyTorch Tabular ResNet across 5 stratified folds.
    - Saves 20 trained model checkpoint files into `models/` directory.
    - Serializes out-of-fold and test predictions to `models/oof_predictions.npz`.
    - *Test Coverage*: Untested.
 
-4. **SLSQP Logit Ensembling & Submission Export** ([src/ensemble.py:optimize_and_submit](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/src/ensemble.py#L23)):
+4. **SLSQP Logit Ensembling & Submission Export** ([src/ensemble.py:optimize_and_submit](../src/ensemble.py#L23)):
    - Loads `models/oof_predictions.npz`.
    - Computes probability-space and logit-space continuous blend weights using SciPy SLSQP optimization.
    - Computes rank averaging and logistic regression stacking meta-learner.
@@ -194,7 +194,7 @@ The existing user-visible journeys, public interfaces, and data transformation r
   - Operating System: Windows / Linux / macOS
 - **Environment Variables**:
   - No required runtime environment variables.
-  - An empty `.env` configuration template exists at [.env](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/.env).
+  - A `.env.example` configuration template is tracked at [.env.example](../.env.example); the local `.env` is git-ignored.
 - **External Services**:
   - None required. All computation, training, and inference operate against local file storage (`data/` and `models/`).
 
@@ -202,27 +202,27 @@ The existing user-visible journeys, public interfaces, and data transformation r
 
 ## 9. Risks
 1. **Disconnected Model Inference in Legacy Streamlit Prototype**:
-   - The prototype [app/app.py](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/app/app.py) imports `joblib` but never invokes any trained model from `models/`. Instead, it uses a hand-coded linear logit equation (`logit_score = -4.15 + 0.38 * daily_screen_time ...`). User predictions from the prototype do not reflect the actual competitive ML pipeline ($>0.964$ ROC AUC).
+   - The prototype [app/app.py](../app/app.py) imports `joblib` but never invokes any trained model from `models/`. Instead, it uses a hand-coded linear logit equation (`logit_score = -4.15 + 0.38 * daily_screen_time ...`). User predictions from the prototype do not reflect the actual competitive ML pipeline ($>0.964$ ROC AUC).
 2. **Dynamic Cohort GroupBy Leakage & Single-Sample Inference Failure**:
-   - In [src/features.py](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/src/features.py), cohort means, standard deviations, and frequency encodings are computed on the passed dataframe via `df_all.groupby(...)` and `df_all[c].value_counts(...)`.
+   - In [src/features.py](../src/features.py), cohort means, standard deviations, and frequency encodings are computed on the passed dataframe via `df_all.groupby(...)` and `df_all[c].value_counts(...)`.
    - Passing a single sample (as in interactive single-user inference) produces `NaN` for standard deviations, `1.0` for frequency encodings, and malformed category codes. Real-time inference requires extracting and caching population-level reference statistics (means, standard deviations, frequencies) from `data/train.csv`.
 3. **Missing Dependency in Manifest**:
-   - `torch` is imported and used in [src/train.py](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/src/train.py) and [src/nn_model.py](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/src/nn_model.py), and PyTorch model checkpoints exist in `models/`, but `torch` is not listed in [requirements.txt](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/requirements.txt). Clean environment setups will fail without installing PyTorch.
+   - `torch` is imported and used in [src/train.py](../src/train.py) and [src/nn_model.py](../src/nn_model.py), and PyTorch model checkpoints exist in `models/`, but `torch` is not listed in [requirements.txt](../requirements.txt). Clean environment setups will fail without installing PyTorch.
 4. **Complete Absence of Automated Tests**:
    - No test suite exists. Refactoring feature generation, model loading, or API routing carries high regression risk unless automated test coverage is established.
 5. **Memory Footprint of Multi-Fold Ensembles**:
    - The 20 saved models in `models/` total ~360MB (LightGBM models are ~50MB each). Loading all 20 models into memory concurrently for interactive web serving incurs significant RAM overhead (>2GB) and initial cold-start latency. Serving LightGBM Fold 1 as the primary interactive inference engine provides $<20\text{ms}$ latency with minimal memory footprint.
 6. **Typographical Defect in User-Facing String**:
-   - [app/app.py#L136](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/app/app.py#L136) contains `'ADDICITON DETECTED'`. Any migration or replacement must correct this to `'ADDICTION DETECTED'`.
+   - [app/app.py#L136](../app/app.py#L136) contains `'ADDICITON DETECTED'`. Any migration or replacement must correct this to `'ADDICTION DETECTED'`.
 
 ---
 
 ## 10. Documentation
-- **Root Repository Overview**: [README.md](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/README.md) (109 lines detailing competition framing, 5-fold benchmarks, 74-column feature matrix, and execution steps).
-- **Living Documentation Index**: [docs/README.md](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/docs/README.md) (index linking living documents).
-- **Mental Model & Invariants**: [docs/PROJECT_MENTAL_MODEL.md](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/docs/PROJECT_MENTAL_MODEL.md) (vision, technical decisions, persona, milestone roadmap).
-- **Project Workflow Status**: [docs/PROJECT_STATUS.md](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/docs/PROJECT_STATUS.md) (phase completion checklist).
-- **Exploratory Jupyter Notebook**: [notebooks/SmartphoneAddictionPrediction.ipynb](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/notebooks/SmartphoneAddictionPrediction.ipynb) (comprehensive 10-step EDA and cross-validation walkthrough).
+- **Root Repository Overview**: [README.md](../README.md) (109 lines detailing competition framing, 5-fold benchmarks, 74-column feature matrix, and execution steps).
+- **Living Documentation Index**: [docs/README.md](../docs/README.md) (index linking living documents).
+- **Mental Model & Invariants**: [docs/PROJECT_MENTAL_MODEL.md](../docs/PROJECT_MENTAL_MODEL.md) (vision, technical decisions, persona, milestone roadmap).
+- **Project Workflow Status**: [docs/PROJECT_STATUS.md](../docs/PROJECT_STATUS.md) (phase completion checklist).
+- **Exploratory Jupyter Notebook**: [notebooks/SmartphoneAddictionPrediction.ipynb](../notebooks/SmartphoneAddictionPrediction.ipynb) (comprehensive 10-step EDA and cross-validation walkthrough).
 - **CHANGELOG**: None (no `CHANGELOG.md` present).
 - **ADR Location & Format**: Projected living document at `docs/DECISIONS.md`.
 - **Planned Living Documents**: `docs/SPEC.md`, `docs/ARCHITECTURE.md`, `docs/TASKS.json`.
@@ -230,11 +230,11 @@ The existing user-visible journeys, public interfaces, and data transformation r
 ---
 
 ## 11. UI Inventory
-- **Frontend Framework**: Streamlit (version 1.40.2) in [app/app.py](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/app/app.py).
-- **Styling Approach**: Custom CSS block embedded directly in Python via `st.markdown("<style>...</style>", unsafe_allow_html=True)` ([app/app.py#L16-L53](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/app/app.py#L16-L53)).
+- **Frontend Framework**: Streamlit (version 1.40.2) in [app/app.py](../app/app.py).
+- **Styling Approach**: Custom CSS block embedded directly in Python via `st.markdown("<style>...</style>", unsafe_allow_html=True)` ([app/app.py#L16-L53](../app/app.py#L16-L53)).
 - **Component Library**: Streamlit built-in widgets: `st.sidebar.slider`, `st.sidebar.selectbox`, `st.sidebar.subheader`, `st.metric`, `st.progress`, `st.bar_chart`, `st.dataframe`, `st.warning`, `st.info`.
 - **Colors, Fonts, and Spacing Definitions**:
-  - Color Palette ([app/app.py#L16-L52](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/app/app.py#L16-L52)):
+  - Color Palette ([app/app.py#L16-L52](../app/app.py#L16-L52)):
     - Primary text / headers: `#1E293B` (slate 800)
     - Subtitle / captions: `#64748B` (slate 500)
     - Metric card background: `#F8FAFC` (slate 50)

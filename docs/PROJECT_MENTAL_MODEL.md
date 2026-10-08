@@ -21,7 +21,7 @@
 - **Repository Remote**: `https://github.com/jegadeesh17/Smartphone-Addiction-Prediction.git`
 - **Working Branch**: `feature/analytical-dashboard`
 - **Base Commit**: `b8b89352ab428366beca33997ef54f1d2e2225cc`
-- **Codebase Map**: [docs/CODEBASE_MAP.md](file:///c:/Users/jegad/projects/SmartphoneAddictionPrediction/docs/CODEBASE_MAP.md)
+- **Codebase Map**: [docs/CODEBASE_MAP.md](../docs/CODEBASE_MAP.md)
 
 ---
 
