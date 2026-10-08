@@ -86,7 +86,7 @@ SmartphoneAddictionPrediction/
 ## 🌐 Live Deployment
 
 - **Service**: Cloud Run service `smartphone-addiction-api` (region `asia-south1`)
-- **URL**: https://smartphone-addiction-api-242711953247.asia-south1.run.app/app *(live after first deploy)*
+- **URL**: https://smartphone-addiction-api-242711953247.asia-south1.run.app/app
 - **Deployment details**: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
 
 ---
