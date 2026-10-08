@@ -60,3 +60,4 @@ To list past revisions and route traffic back to an earlier stable deployment:
 gcloud run revisions list --service smartphone-addiction-api --region asia-south1
 gcloud run services update-traffic smartphone-addiction-api --region asia-south1 --to-revisions <REVISION_NAME>=100
 ```
+

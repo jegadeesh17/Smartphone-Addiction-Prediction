@@ -21,5 +21,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Download Model Artifacts from Release
+        run: |
+          mkdir -p models
+          gh release download v1.0.0-artifacts -p "lgb_fold_1.joblib" -D models/
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Run fast test suite
         run: pytest -q -m "not slow"
+
