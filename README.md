@@ -23,7 +23,7 @@ This repository contains an end-to-end Competitive Machine Learning solution for
 ## 🧬 Feature Engineering Matrix (74 Total Columns)
 
 1. **Explicit Missingness Indicators & Masking**:
-   - `is_missing_*` flags for all 12 raw numerical and categorical variables.
+   - `<column>_isna` flags for all 12 raw numerical and categorical variables (`src/features.py:64`).
    - `num_missing`: Sum of unobserved sensors per participant.
    - Safe filled arithmetic representations to prevent cascading `NaN` drops across domain features.
 
@@ -67,7 +67,7 @@ SmartphoneAddictionPrediction/
 ├── docs/                                  # Documentation and schema references
 ├── models/                                # Saved model checkpoints & OOF predictions (.joblib, .pt, .npz)
 ├── notebooks/
-│   └── SmartphoneAddictionPrediction.ipynb # Comprehensive 10-Step Jupyter Notebook
+│   └── SmartphoneAddictionPrediction.ipynb # Comprehensive 8-Step Jupyter Notebook
 ├── src/
 │   ├── main.py                            # FastAPI app: live dashboard (4 views) and REST API
 │   ├── api/                               # FastAPI routers: health, predict (single + batch), analytics
@@ -112,7 +112,7 @@ python src/ensemble.py
 ```bash
 python -m uvicorn src.main:app
 ```
-Open http://127.0.0.1:8000. Tabs: Individual Diagnostic, Population Analytics, What-If Simulator, Batch Diagnostics (CSV upload, up to 5 MB / 10,000 rows, with report export).
+Open http://127.0.0.1:8000. Tabs: Individual Diagnostic, Population Cohort Analytics, What-If Simulation, Batch Diagnostics (CSV upload, up to 5 MB / 10,000 rows, with report export).
 
 ### 5. Run the Test Suite
 ```bash
