@@ -8,6 +8,7 @@ from pathlib import Path
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from src.config import Settings, get_settings
+from src.inference import is_inference_engine_loaded
 from src.schemas import HealthResponse
 
 router = APIRouter(tags=["Health"])
@@ -21,8 +22,9 @@ def get_health(settings: Settings = Depends(get_settings)) -> HealthResponse:
     """Return system health status, artifact availability, and uptime telemetry.
 
     Raises:
-        HTTPException: 503 Service Unavailable if required model or priors are missing
-                       and not running in mock mode (AC-1.9).
+        HTTPException: 503 Service Unavailable if required model or priors are missing,
+                       or if the LightGBM engine is not loaded yet, and not running in
+                       mock mode (AC-1.9). The check never triggers a model load.
     """
     uptime = max(0.0, round(time.time() - START_TIME, 2))
 
@@ -49,6 +51,12 @@ def get_health(settings: Settings = Depends(get_settings)) -> HealthResponse:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Model checkpoint or priors artifact missing",
+        )
+
+    if not is_inference_engine_loaded():
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Inference engine not loaded",
         )
 
     return HealthResponse(

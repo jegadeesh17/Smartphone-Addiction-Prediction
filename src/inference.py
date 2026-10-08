@@ -623,6 +623,11 @@ def get_inference_engine(
     return _engine_instance
 
 
+def is_inference_engine_loaded() -> bool:
+    """Report whether the LightGBM engine singleton is loaded, without triggering a load."""
+    return _engine_instance is not None
+
+
 def reset_inference_engine() -> None:
     """Reset cached singleton instances (useful for test isolation)."""
     global _engine_instance, _mock_engine_instance

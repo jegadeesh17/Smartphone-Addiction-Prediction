@@ -22,7 +22,7 @@ from fastapi.testclient import TestClient
 
 from src.api.predict import clear_batch_export_cache
 from src.config import Settings, get_settings
-from src.inference import reset_inference_engine
+from src.inference import is_inference_engine_loaded, reset_inference_engine
 from src.main import app
 
 
@@ -107,6 +107,22 @@ class TestHealthEndpoint:
         assert response.status_code == 503
         data = response.json()
         assert "artifact missing" in str(data).lower()
+
+    def test_health_returns_503_until_engine_is_loaded(self, tmp_path: Path) -> None:
+        """Verify GET /health returns 503 while the LightGBM engine is not loaded, and does not load it."""
+        # Dummy checkpoint so the file check passes and only the engine check can fail.
+        dummy_model = tmp_path / "dummy_model.joblib"
+        dummy_model.write_bytes(b"")
+        app.dependency_overrides[get_settings] = lambda: Settings(
+            MODEL_PATH=dummy_model,
+            USE_MOCK_MODEL=False,
+        )
+
+        # No `with` block: the lifespan warmup does not run, so the engine stays unloaded.
+        response = TestClient(app).get("/health")
+        assert response.status_code == 503
+        assert response.json()["detail"] == "Inference engine not loaded"
+        assert is_inference_engine_loaded() is False
 
 
 # ==============================================================================
