@@ -138,7 +138,7 @@ def predict(
 
 @router.post("/api/predict/batch", response_model=BatchPredictionResponse)
 @router.post("/predict/batch", response_model=BatchPredictionResponse)
-async def predict_batch(
+def predict_batch(
     file: UploadFile = File(...),
     threshold: Optional[float] = Query(default=None, ge=0.05, le=0.95),
     settings: Settings = Depends(get_settings),
@@ -147,11 +147,13 @@ async def predict_batch(
 
     Validates mandatory header schemas (AC-3.4), enforces a 10,000 row upper limit (AC-3.5),
     vectorizes tabular inference, and stores an enriched diagnostic report for export (AC-3.6).
+    Sync on purpose: FastAPI runs it in the threadpool so CPU-bound pandas/LightGBM work
+    does not block the event loop.
     """
     # Enforce byte cap before parsing: never read more than MAX_UPLOAD_BYTES + 1 bytes
     if file.size is not None and file.size > MAX_UPLOAD_BYTES:
         raise HTTPException(status_code=413, detail=BYTE_LIMIT_MESSAGE)
-    content = await file.read(MAX_UPLOAD_BYTES + 1)
+    content = file.file.read(MAX_UPLOAD_BYTES + 1)
     if len(content) > MAX_UPLOAD_BYTES:
         raise HTTPException(status_code=413, detail=BYTE_LIMIT_MESSAGE)
     if not content or len(content.strip()) == 0:
