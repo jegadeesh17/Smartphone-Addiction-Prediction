@@ -23,10 +23,14 @@ router = APIRouter(tags=["Inference"])
 _batch_export_cache: dict[str, tuple[float, bytes]] = {}
 CACHE_TTL_SECONDS = 3600
 MAX_CACHE_ENTRIES = 500
+MAX_CACHE_BYTES = 50 * 1024 * 1024
 
 
 def store_batch_export(token: str, content: bytes) -> None:
-    """Store generated CSV diagnostic report bytes keyed by download token."""
+    """Store generated CSV diagnostic report bytes keyed by download token.
+
+    The cache is bounded by entry count and by total bytes; the oldest entries are evicted first.
+    """
     now = time.time()
     if len(_batch_export_cache) >= MAX_CACHE_ENTRIES:
         expired = [k for k, (t, _) in _batch_export_cache.items() if now - t > CACHE_TTL_SECONDS]
@@ -36,6 +40,11 @@ def store_batch_export(token: str, content: bytes) -> None:
             oldest = min(_batch_export_cache.keys(), key=lambda k: _batch_export_cache[k][0])
             _batch_export_cache.pop(oldest, None)
     _batch_export_cache[token] = (now, content)
+
+    total_bytes = sum(len(data) for _, data in _batch_export_cache.values())
+    while total_bytes > MAX_CACHE_BYTES and _batch_export_cache:
+        oldest = min(_batch_export_cache.keys(), key=lambda k: _batch_export_cache[k][0])
+        total_bytes -= len(_batch_export_cache.pop(oldest)[1])
 
 
 def get_batch_export(token: str) -> Optional[bytes]:

@@ -18,7 +18,8 @@ import pandas as pd
 import pytest
 from fastapi.testclient import TestClient
 
-from src.api.predict import clear_batch_export_cache
+from src.api import predict as predict_mod
+from src.api.predict import clear_batch_export_cache, get_batch_export, store_batch_export
 from src.config import Settings, get_settings
 from src.inference import get_inference_engine, reset_inference_engine
 from src.main import app
@@ -414,3 +415,19 @@ class TestBatchHardening:
         export = client.get(f"/api/predict/batch/export?token={upload.json()['download_token']}")
         ids = pd.read_csv(io.BytesIO(export.content), dtype=str)["participant_id"].tolist()
         assert ids == ["'=SUM(A1)", "'@cmd", "'-1+2"]
+
+
+class TestExportCacheByteCap:
+    """The export cache evicts oldest entries once total stored bytes exceed the cap."""
+
+    def test_oldest_entries_evicted_when_total_bytes_exceed_cap(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setattr(predict_mod, "MAX_CACHE_BYTES", 100)
+        store_batch_export("first", b"a" * 40)
+        store_batch_export("second", b"b" * 40)
+        store_batch_export("third", b"c" * 40)  # 120 bytes total: "first" is evicted
+
+        assert get_batch_export("first") is None
+        assert get_batch_export("second") == b"b" * 40
+        assert get_batch_export("third") == b"c" * 40
