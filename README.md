@@ -58,7 +58,7 @@ This repository contains an end-to-end Competitive Machine Learning solution for
 ```bash
 SmartphoneAddictionPrediction/
 ├── app/
-│   └── app.py                             # Interactive Streamlit Diagnostic & Assessment Engine
+│   └── app.py                             # Legacy Streamlit prototype (not deployed; the live app is src/main.py)
 ├── data/
 │   ├── train.csv                          # 691,369 training samples
 │   ├── test.csv                           # 296,302 test samples
@@ -69,13 +69,25 @@ SmartphoneAddictionPrediction/
 ├── notebooks/
 │   └── SmartphoneAddictionPrediction.ipynb # Comprehensive 10-Step Jupyter Notebook
 ├── src/
+│   ├── main.py                            # FastAPI app: live dashboard (4 views) and REST API
+│   ├── api/                               # FastAPI routers: health, predict (single + batch), analytics
 │   ├── features.py                        # 74-column feature extraction pipeline
 │   ├── nn_model.py                        # PyTorch Tabular ResNet & Deep MLP architecture
 │   ├── train.py                           # 5-Fold Stratified cross-validation training (4 models)
 │   └── ensemble.py                        # SLSQP logit optimization, stacking & threshold tuning
-├── requirements.txt                       # Dependencies
+├── requirements-api.txt                   # Pinned serving runtime (used by the Docker image)
+├── requirements-dev.txt                   # Serving + pytest and test-only libraries (used by CI)
+├── requirements.txt                       # Full training/notebook environment
 └── README.md
 ```
+
+---
+
+## 🌐 Live Deployment
+
+- **Service**: Cloud Run service `smartphone-addiction-api` (region `asia-south1`)
+- **URL**: https://smartphone-addiction-api-242711953247.asia-south1.run.app/app *(live after first deploy)*
+- **Deployment details**: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
 
 ---
 
