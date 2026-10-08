@@ -30,9 +30,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Brand accent changed from golden yellow to deep indigo (`--gold` token values in `tokens.css`; token name kept).
+- Split dependencies into `requirements-api.txt` (pinned serving runtime used by the Docker image), `requirements-dev.txt` (adds test libraries, used by CI) and `requirements.txt` (adds training and notebook libraries).
+- Dockerfile installs serving dependencies only and copies only runtime files (`src/`, `data/priors.json`, `data/cohort_summary.json`, `models/lgb_fold_1.joblib`). curl and the HEALTHCHECK were removed because Cloud Run ignores them. Expected image size is under 0.5 GB (not yet measured).
+- Cloud Run deploy uses `--max-instances 1` (the batch export cache is per instance) and `--cpu-boost`.
+- Batch upload handler (`predict_batch`) is a sync endpoint, so FastAPI runs its CPU-bound pandas and LightGBM work in the threadpool instead of blocking the event loop (`src/api/predict.py`).
 
 ### Fixed
 - Decoupled classification threshold ($\tau$) from intrinsic severity and risk tier mapping per SPEC AC-1.1, PAR-3, and PAR-4.
 - Rendered single authoritative diagnostic verdict (`ADDICTION DETECTED` vs `HEALTHY PATTERN`) in UI status pill and narrative summary per ADR-0006.
 - Aligned behavioral ratio target thresholds for Avg Session Length (> 5.0 min) and Weekend Surge (< 2.0h) per SPEC Journey 1.
 - Batch scoring no longer returns HTTP 500 on non-numeric or infinite cells; invalid rows return a readable 422 naming rows and columns.
+- `/health` returns 503 until the LightGBM engine is loaded, instead of 200 whenever the artifact files exist (`src/api/health.py`).
+- Batch export cache is also capped at 50 MB total; the oldest entries are evicted first (`src/api/predict.py`).
