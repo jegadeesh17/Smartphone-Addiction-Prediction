@@ -16,6 +16,11 @@ RUN python -m venv /opt/venv && \
     /opt/venv/bin/pip install --no-cache-dir --upgrade pip && \
     /opt/venv/bin/pip install --no-cache-dir -r requirements-api.txt
 
+# Trim the venv: drop test suites, bytecode caches and pip/setuptools (exact name matches only; numpy/_core/tests is imported by numpy.testing, so keep it)
+RUN find /opt/venv -depth \( -type d \( -name tests -o -name test -o -name __pycache__ \) ! -path '*/numpy/_core/tests' -o -type f -name '*.pyc' \) -exec rm -rf {} + && \
+    find /opt/venv/lib -maxdepth 3 \( -name 'pip' -o -name 'pip-*' -o -name 'setuptools' -o -name 'setuptools-*' -o -name 'pkg_resources' -o -name '_distutils_hack' -o -name 'distutils-precedence.pth' \) -exec rm -rf {} + && \
+    rm -f /opt/venv/bin/pip /opt/venv/bin/pip3 /opt/venv/bin/pip3.*
+
 # Stage 2: Minimal non-root runner
 FROM python:3.11-slim AS runner
 

@@ -28,6 +28,14 @@ tests/
 .impeccable/
 docs/
 
+# Local envs, checkpoints and bulk data files
+venv/
+.venv/
+*.ipynb_checkpoints
+*.csv
+*.npz
+*.pt
+
 # Data: Exclude raw datasets and submissions; keep only priors and cohort summaries
 data/*
 !data/priors.json
