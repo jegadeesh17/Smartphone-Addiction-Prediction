@@ -261,6 +261,49 @@ class TestWhatIfEndpoint:
         assert data["risk_delta"] < 0.0
 
 
+_REAL_MODEL_SETTINGS = Settings(USE_MOCK_MODEL=False)
+
+
+@pytest.mark.skipif(
+    not _REAL_MODEL_SETTINGS.MODEL_PATH.exists(),
+    reason="trained LightGBM checkpoint not available",
+)
+class TestWhatIfRealModel:
+    """What-If direction checks against the trained LightGBM model (no mock)."""
+
+    # Accounted hours (social + gaming + work/study) = 6.0h, consistent with training data
+    BASELINE = {
+        "age": 21,
+        "gender": "Male",
+        "stress_level": "Medium",
+        "academic_work_impact": "No",
+        "daily_screen_time_hours": 9.0,
+        "social_media_hours": 2.0,
+        "gaming_hours": 1.0,
+        "work_study_hours": 3.0,
+        "weekend_screen_time": 10.0,
+        "sleep_hours": 7.0,
+        "notifications_per_day": 100,
+        "app_opens_per_day": 80,
+    }
+
+    @pytest.mark.parametrize("delta", [-0.5, -1.0, -2.0, -3.0, -5.0])
+    def test_reducing_screen_time_never_raises_risk(self, client: TestClient, delta: float) -> None:
+        """Cutting screen time must not increase risk, even past the accounted-hours floor."""
+        app.dependency_overrides[get_settings] = lambda: _REAL_MODEL_SETTINGS
+
+        response = client.post(
+            "/api/analytics/what-if",
+            json={"baseline_profile": self.BASELINE, "delta_daily_screen_time_hours": delta},
+        )
+        assert response.status_code == 200
+        data = response.json()
+
+        assert data["risk_delta"] <= 0.0
+        floor = self.BASELINE["social_media_hours"] + self.BASELINE["gaming_hours"] + self.BASELINE["work_study_hours"]
+        assert data["simulated_profile"]["daily_screen_time_hours"] >= floor
+
+
 # ==============================================================================
 # 2. Habit Optimizer Tests (POST /api/analytics/what-if/optimize, AC-3.2)
 # ==============================================================================

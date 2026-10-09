@@ -153,8 +153,10 @@ def simulate_what_if(
 
     # Clamping daily screen time within physiological limits
     sim_screen = max(0.0, min(24.0, sim_screen))
-    if sim_screen < (sim_social + sim_gaming):
-        sim_screen = min(24.0, sim_social + sim_gaming)
+    # Training data never has screen time below social + gaming + work/study hours
+    accounted_floor = sim_social + sim_gaming + baseline.work_study_hours
+    if sim_screen < accounted_floor:
+        sim_screen = min(24.0, accounted_floor)
 
     # 3. Weekend screen time adjustment
     if request.delta_weekend_screen_time != 0.0:
