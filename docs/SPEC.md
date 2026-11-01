@@ -1,10 +1,8 @@
 # Product Specification: Smartphone Addiction Prediction Platform
 
-This document defines the functional requirements, user journeys, parity baselines, regression safeguards, and testable acceptance criteria for the Smartphone Addiction Prediction analytical dashboard platform across Milestones M1, M2, and M3.
+This document defines the functional requirements, user journeys, parity baselines, regression safeguards, and testable acceptance criteria for the Smartphone Addiction Prediction analytical dashboard platform across its feature areas.
 
 *Date: 2026-10-06*  
-*Related Documents: [mental model](PROJECT_MENTAL_MODEL.md) | [codebase map](CODEBASE_MAP.md)*
-
 ---
 
 ## 1. Summary
@@ -18,7 +16,7 @@ This document defines the functional requirements, user journeys, parity baselin
 
 ## 2. User Journeys
 
-### Journey 1: Executive Overview & Live Individual Risk Diagnostic (M1 - Redesign)
+### Journey 1: Executive Overview & Live Individual Risk Diagnostic
 *Starts from*: The legacy single-page Streamlit diagnostic screen ([app/app.py](../app/app.py)), which used heuristic mock logit scoring disconnected from trained ML checkpoints.
 
 1. **Dashboard Access**: The user opens `http://localhost:8000/app` (or `/`). The application renders a polished editorial header, system health/latency telemetry badges, and a tabbed navigation bar (`Individual Diagnostic`, `Population Cohort Analytics`, `What-If Simulation`).
@@ -44,7 +42,7 @@ This document defines the functional requirements, user journeys, parity baselin
 
 ---
 
-### Journey 2: Population Cohort Analytics Explorer & Demographic Slicing (M2 - Feature)
+### Journey 2: Population Cohort Analytics Explorer & Demographic Slicing
 *Starts from*: The legacy static 5-metric benchmark bar chart comparing individual sliders against hard-coded means.
 
 1. **Cohort Explorer Navigation**: The user clicks the "Population Cohort Analytics" tab in the main header. The dashboard transitions smoothly to the population exploration view.
@@ -60,8 +58,8 @@ This document defines the functional requirements, user journeys, parity baselin
 
 ---
 
-### Journey 3: Real-Time What-If Behavioral Habit Simulation (M3 - Feature)
-*Starts from*: The static diagnostic output in M1 where users cannot directly model habit modifications side-by-side.
+### Journey 3: Real-Time What-If Behavioral Habit Simulation
+*Starts from*: The static diagnostic output, where users cannot directly model habit modifications side-by-side.
 
 1. **Simulator Activation**: The user clicks the "What-If Simulation" tab. The dashboard presents a split comparison layout: "Current Baseline Profile" vs "Simulated Counterfactual".
 2. **Interactive Intervention Adjustments**: The user manipulates target behavioral levers:
@@ -77,8 +75,8 @@ This document defines the functional requirements, user journeys, parity baselin
 
 ---
 
-### Journey 4: Batch Population CSV Diagnostic Upload & Export (M3 - Feature)
-*Starts from*: Single-user manual slider input in M1.
+### Journey 4: Batch Population CSV Diagnostic Upload & Export
+*Starts from*: Single-user manual slider input.
 
 1. **Batch Mode Access**: A clinical researcher or analyst clicks "Batch Diagnostics" in the dashboard utility navigation.
 2. **File Selection & Upload**: The user uploads a CSV file containing participant records (up to 10,000 rows with required demographic and digital usage columns) to `/api/predict/batch`.
@@ -92,7 +90,7 @@ This document defines the functional requirements, user journeys, parity baselin
 
 ## 3. Acceptance Criteria
 
-### Milestone 1: Executive Overview, Live Inference & Risk Diagnostic
+### Executive Overview, Live Inference & Risk Diagnostic
 
 #### AC-1.1: Live Inference Endpoint Contract & Response Structure
 - **Given** a valid participant payload containing:
@@ -185,7 +183,7 @@ This document defines the functional requirements, user journeys, parity baselin
 
 ---
 
-### Milestone 2: Population Cohort Analytics Explorer
+### Population Cohort Analytics Explorer
 
 #### AC-2.1: Population Cohort Metrics Retrieval
 - **Given** the pre-aggregated population cache from `data/train.csv` (691,369 records)
@@ -227,7 +225,7 @@ This document defines the functional requirements, user journeys, parity baselin
 
 ---
 
-### Milestone 3: Real-Time What-If Simulation, Batch Scoring & Craft Polish
+### Real-Time What-If Simulation, Batch Scoring & Craft Polish
 
 #### AC-3.1: Counterfactual What-If Scenario Evaluation
 - **Given** a baseline profile with addiction probability $P_{\text{base}} = 0.78$
@@ -322,7 +320,7 @@ To ensure zero feature regression when replacing the legacy Streamlit prototype 
 
 ## 5. Regression Criteria (Existing ML & Data Pipeline)
 
-The introduction of the FastAPI backend and cohort cache must not regress or mutate existing training and feature generation routines documented in [docs/CODEBASE_MAP.md](../docs/CODEBASE_MAP.md):
+The introduction of the FastAPI backend and cohort cache must not regress or mutate existing training and feature generation routines:
 
 - **REG-1: Feature Engineering Pipeline Integrity**:
   - *Given* raw dataframes loaded from `data/train.csv` and `data/test.csv`,

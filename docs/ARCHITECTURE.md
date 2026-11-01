@@ -43,7 +43,7 @@ Three exact test commands govern automated verification across development cycle
   ```
   Targeted execution pattern for single test modules (e.g., `pytest -q tests/test_api.py` or `pytest -q tests/test_inference.py`).
 
-*Note on baseline*: The untouched repository contained zero automated tests (pytest collected 0 items with exit code 1). The first engineering milestone introduces `pytest.ini` with the `slow` marker definition and establishes comprehensive test coverage in `tests/`.
+*Note on baseline*: The untouched repository contained zero automated tests (pytest collected 0 items with exit code 1). The test baseline introduces `pytest.ini` with the `slow` marker definition and establishes comprehensive test coverage in `tests/`.
 
 ---
 
@@ -411,11 +411,7 @@ SmartphoneAddictionPrediction/
 ├── docs/                                 # Living documentation suite
 │   ├── ARCHITECTURE.md                   # This document
 │   ├── DECISIONS.md                      # Architecture Decision Records (ADRs)
-│   ├── SPEC.md                           # Functional specification & user journeys
-│   ├── PROJECT_MENTAL_MODEL.md           # Vision, routing flags, and roadmap
-│   ├── CODEBASE_MAP.md                   # Existing codebase architecture and inventory
-│   ├── FEEDBACK.md                       # Feedback log from user reviews
-│   └── PROJECT_STATUS.md                 # Workflow status checklist
+│   └── SPEC.md                           # Functional specification & user journeys
 ├── models/                               # Trained gradient boosting and neural checkpoints
 │   ├── lgb_fold_1.joblib                 # Champion LightGBM Fold 1 checkpoint (~49.5MB)
 │   ├── lgb_fold_2.joblib .. fold_5.joblib# Remaining LightGBM folds
