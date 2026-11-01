@@ -229,7 +229,7 @@
     }
 
     /**
-     * Renders demographic sub-cohort breakdown cards (M2-TASK-04, Journey 2, AC-2.1, AC-2.2).
+     * Renders demographic sub-cohort breakdown cards (Journey 2, AC-2.1, AC-2.2).
      * Displays cohort title, sample count, addiction prevalence %, and key time allocations
      * (mean screen time, sleep hours, social media, mobile gaming, and daily app opens).
      *
@@ -337,7 +337,7 @@
     }
 
     /**
-     * Renders 6 Screen bins x 5 Sleep bins 2D joint density & addiction heatmap (M2-TASK-04, AC-2.3).
+     * Renders 6 Screen bins x 5 Sleep bins 2D joint density & addiction heatmap (AC-2.3).
      * Cells display density % and addiction rate %, with background color styled according to
      * addiction rate (--danger for high, --amber for moderate, --low-risk for low).
      * Tooltips/hover show exact count and rates.
@@ -448,7 +448,7 @@
     }
 
     /**
-     * Updates personal quantile benchmark overlay bars and labels (M2-TASK-04, AC-2.4).
+     * Updates personal quantile benchmark overlay bars and labels (AC-2.4).
      * Updates percentile progress bars and narrative labels for:
      * - Daily Screen Time
      * - Sleep Duration

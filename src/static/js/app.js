@@ -771,7 +771,7 @@
     }
 
     // -------------------------------------------------------------------------
-    // TAB 2: Population Cohort Analytics (M2 Support)
+    // TAB 2: Population Cohort Analytics
     // -------------------------------------------------------------------------
     function bindCohortControls() {
         document.querySelectorAll('.segment-btn[data-cohort-dim]').forEach(function (btn) {
@@ -948,7 +948,7 @@
     }
 
     // -------------------------------------------------------------------------
-    // TAB 3: What-If Simulation & Optimizer (M3 Support)
+    // TAB 3: What-If Simulation & Optimizer
     // -------------------------------------------------------------------------
     function bindWhatIfControls() {
         if (!dom.leverRecreation || !dom.leverSleep || !dom.leverOpens) return;
@@ -1236,7 +1236,7 @@
     }
 
     // -------------------------------------------------------------------------
-    // TAB 4: Batch CSV Diagnostics (M3 Support)
+    // TAB 4: Batch CSV Diagnostics
     // -------------------------------------------------------------------------
     function bindBatchControls() {
         if (!dom.batchDropzone || !dom.batchFileInput) return;

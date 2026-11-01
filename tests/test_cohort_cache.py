@@ -1,6 +1,6 @@
 """Unit and integration tests for population cohort cache generation and validation.
 
-Verifies SPEC AC-2.1, AC-2.3, REG-3, and ADR-0003 for M2-TASK-01.
+Verifies SPEC AC-2.1, AC-2.3, REG-3, and ADR-0003.
 """
 
 from __future__ import annotations
@@ -35,7 +35,7 @@ def cohort_cache_data(cohort_cache_path: Path) -> dict[str, Any]:
 
 
 class TestCohortCacheIntegrity:
-    """Validate schema integrity and contents of data/cohort_summary.json (M2-TASK-01, ADR-0003)."""
+    """Validate schema integrity and contents of data/cohort_summary.json (ADR-0003)."""
 
     def test_cohort_summary_file_exists_and_validates(self, cohort_cache_path: Path) -> None:
         """Verify data/cohort_summary.json exists and passes self-validation routine."""

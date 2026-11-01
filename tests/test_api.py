@@ -459,12 +459,12 @@ class TestCorsAndRootRoutes:
 
 
 # ==============================================================================
-# 6. Individual Diagnostic View & UI Components (M1-TASK-07)
+# 6. Individual Diagnostic View & UI Components
 # ==============================================================================
 
 
 class TestIndividualDiagnosticView:
-    """Test suite validating UI template delivery and components for M1-TASK-07."""
+    """Test suite validating UI template delivery and components."""
 
     def test_static_js_assets_served(self, client: TestClient) -> None:
         """Verify static JavaScript visualization and client application files are served."""
@@ -615,7 +615,7 @@ class TestIndividualDiagnosticView:
 
 
 # ==============================================================================
-# 9. Cohort Analytics Endpoints (Milestone 2, Journey 2)
+# 9. Cohort Analytics Endpoints (Journey 2)
 # ==============================================================================
 
 
@@ -813,12 +813,12 @@ class TestCohortAnalyticsApi:
 
 
 # ==============================================================================
-# 10. Population Cohort Analytics Explorer UI View (M2-TASK-04, Journey 2)
+# 10. Population Cohort Analytics Explorer UI View (Journey 2)
 # ==============================================================================
 
 
 class TestCohortAnalyticsView:
-    """Test suite validating UI template delivery, controls, and script exports for M2-TASK-04."""
+    """Test suite validating UI template delivery, controls, and script exports."""
 
     def test_cohort_tab_and_segmented_controls(self, client: TestClient) -> None:
         """Verify index.html delivers #tab-cohorts with 4 primary dimension and stress filter buttons (AC-2.1, AC-2.2)."""
@@ -897,7 +897,7 @@ class TestCohortAnalyticsView:
         assert 'id="val-user-notifs-echo"' in html
 
     def test_cohort_charts_and_app_js_exports(self, client: TestClient) -> None:
-        """Verify charts.js and app.js implement cohort rendering and endpoint integration (M2-TASK-04)."""
+        """Verify charts.js and app.js implement cohort rendering and endpoint integration."""
         # charts.js exports
         charts_js = client.get("/static/js/charts.js").text
         assert "renderCohortCards" in charts_js
@@ -915,7 +915,7 @@ class TestCohortAnalyticsView:
 
 
 # ==============================================================================
-# 11. Counterfactual What-If Simulation and Habit Optimizer (M3-TASK-01, AC-3.1, AC-3.2)
+# 11. Counterfactual What-If Simulation and Habit Optimizer (AC-3.1, AC-3.2)
 # ==============================================================================
 
 
@@ -1187,12 +1187,12 @@ class TestBatchEndpoints:
 
 
 # ==============================================================================
-# 13. What-If Scenario Simulator & Batch Diagnostics UI Views (M3-TASK-03)
+# 13. What-If Scenario Simulator & Batch Diagnostics UI Views
 # ==============================================================================
 
 
 class TestWhatIfAndBatchViews:
-    """Test suite validating UI template delivery, controls, and script wiring for M3-TASK-03."""
+    """Test suite validating UI template delivery, controls, and script wiring."""
 
     def test_whatif_tab_and_counterfactual_levers_markup(self, client: TestClient) -> None:
         """Verify index.html delivers #tab-whatif with 3 interactive counterfactual sliders and buttons."""
@@ -1322,7 +1322,7 @@ class TestWhatIfAndBatchViews:
 
 
 # ==============================================================================
-# 14. Frontend Craft Polish Pass, Responsive Hardening, and A11y Compliance (M3-TASK-04)
+# 14. Frontend Craft Polish Pass, Responsive Hardening, and A11y Compliance
 # ==============================================================================
 
 
