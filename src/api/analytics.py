@@ -1,7 +1,7 @@
 """Cohort Analytics API router and population distribution endpoints.
 
 Exposes demographic cohort slicing, 2D screen-sleep joint density matrix,
-and personal quantile benchmark calculation (Milestone 2, Journey 2, AC-2.1 to AC-2.5).
+and personal quantile benchmark calculation (Journey 2, AC-2.1 to AC-2.5).
 """
 
 from __future__ import annotations

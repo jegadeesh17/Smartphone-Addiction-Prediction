@@ -1,4 +1,4 @@
-"""Unit and latency benchmark tests for CohortService (Milestone 2, Journey 2)."""
+"""Unit and latency benchmark tests for CohortService (Journey 2)."""
 
 import time
 from pathlib import Path

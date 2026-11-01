@@ -52,7 +52,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     except Exception as exc:
         logger.error("Unexpected error during inference warmup: %s", exc)
 
-    # Warm up cohort analytics cache if artifact exists (M2-TASK-03)
+    # Warm up cohort analytics cache if artifact exists
     try:
         cohort_cache_file = Path(settings.COHORT_CACHE_PATH)
         if cohort_cache_file.is_file():

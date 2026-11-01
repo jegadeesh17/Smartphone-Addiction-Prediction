@@ -1,7 +1,7 @@
 """Application configuration management using Pydantic v2 Settings.
 
 Loads environment variables, defines default paths, application ports,
-CORS permissions, and model toggles (M1-TASK-05).
+CORS permissions, and model toggles.
 """
 
 from __future__ import annotations

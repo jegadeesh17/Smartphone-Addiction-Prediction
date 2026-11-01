@@ -336,7 +336,7 @@ class HealthResponse(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Cohort Analytics & Demographic Distribution Schemas (Milestone 2)
+# Cohort Analytics & Demographic Distribution Schemas
 # ---------------------------------------------------------------------------
 
 class CohortFilterParams(BaseModel):
@@ -558,7 +558,7 @@ class BenchmarkOverlayResponse(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Counterfactual What-If Simulation & Habit Optimizer Schemas (Milestone 3)
+# Counterfactual What-If Simulation & Habit Optimizer Schemas
 # ---------------------------------------------------------------------------
 
 class WhatIfRequest(BaseModel):
