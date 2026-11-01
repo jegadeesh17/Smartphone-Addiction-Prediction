@@ -1,11 +1,18 @@
-# Smartphone Addiction Prediction (Kaggle Playground Series S6E8)
+# Smartphone Addiction Prediction
 
-## 📌 Project Overview
-This repository contains an end-to-end Competitive Machine Learning solution for **Kaggle Playground Series Season 6 Episode 8: Predicting Smartphone Addiction**. The objective is to accurately predict the probability of smartphone addiction (`addicted_label` $\in [0, 1]$) evaluated on **Area Under the ROC Curve (ROC AUC)** as well as optimizing discrete **Classification Accuracy**.
+Kaggle Playground Series S6E8 solution plus a live diagnostic dashboard. It predicts the probability of smartphone addiction (`addicted_label`, scored by ROC AUC and accuracy) with a tuned ensemble, and serves single-user diagnostics, cohort analytics, what-if simulation and batch scoring through a FastAPI app.
 
----
+Live app: https://smartphone-addiction-api-242711953247.asia-south1.run.app/app
 
-## 🏆 Model Performance Benchmark Progression
+## Features
+
+- **Individual diagnostic:** risk gauge, behavioral ratio cards and interventions for one person.
+- **Population cohort analytics:** demographic cohorts, a screen-versus-sleep density heatmap and personal quantile benchmarks.
+- **What-if simulation:** change habits and see the predicted risk move.
+- **Batch diagnostics:** upload a CSV (up to 5 MB and 10,000 rows) and export a scored report.
+- **Training pipeline:** 74-column feature extraction, 5-fold cross-validation for four model families, and an optimized logit ensemble.
+
+## Model performance
 
 | Model Architecture | Feature Engineering Scheme | Local 5-Fold OOF ROC AUC | Classification Accuracy | Improvement vs Baseline |
 | :--- | :--- | :--- | :--- | :--- |
@@ -18,9 +25,7 @@ This repository contains an end-to-end Competitive Machine Learning solution for
 | **PyTorch Tabular ResNet** | **74 Features (Entity Embeddings + Residual Blocks)** | `0.957500` | `89.20%` | Neural Manifold Diversity |
 | **Optimized Logit Ensemble** | **74 Features (Multi-Model SLSQP + Stacking)** | **`0.964120+`** | **`90.30%+`** | **Best Competition Score** |
 
----
-
-## 🧬 Feature Engineering Matrix (74 Total Columns)
+## Feature engineering (74 columns)
 
 1. **Explicit Missingness Indicators & Masking**:
    - `<column>_isna` flags for all 12 raw numerical and categorical variables (`src/features.py:64`).
@@ -51,76 +56,81 @@ This repository contains an end-to-end Competitive Machine Learning solution for
 5. **Cross-Product Interaction Terms**:
    - `screen_x_social`, `screen_x_weekend`, `screen_x_opens`.
 
----
+## Quick start
 
-## 📁 Repository Structure
+Requires Python 3.13.
 
 ```bash
-SmartphoneAddictionPrediction/
-├── app/
-│   └── app.py                             # Legacy Streamlit prototype (not deployed; the live app is src/main.py)
-├── data/
-│   ├── train.csv                          # 691,369 training samples
-│   ├── test.csv                           # 296,302 test samples
-│   ├── sample_submission.csv              # Baseline template
-│   └── submission_optimized_ensemble.csv  # Final verified competition submission
-├── docs/                                  # Documentation and schema references
-├── models/                                # Saved model checkpoints & OOF predictions (.joblib, .pt, .npz)
-├── notebooks/
-│   └── SmartphoneAddictionPrediction.ipynb # Comprehensive 8-Step Jupyter Notebook
-├── src/
-│   ├── main.py                            # FastAPI app: live dashboard (4 views) and REST API
-│   ├── api/                               # FastAPI routers: health, predict (single + batch), analytics
-│   ├── features.py                        # 74-column feature extraction pipeline
-│   ├── nn_model.py                        # PyTorch Tabular ResNet & Deep MLP architecture
-│   ├── train.py                           # 5-Fold Stratified cross-validation training (4 models)
-│   └── ensemble.py                        # SLSQP logit optimization, stacking & threshold tuning
-├── requirements-api.txt                   # Pinned serving runtime (used by the Docker image)
-├── requirements-dev.txt                   # Serving + pytest and test-only libraries (used by CI)
-├── requirements.txt                       # Full training/notebook environment
-└── README.md
-```
-
----
-
-## 🌐 Live Deployment
-
-- **Service**: Cloud Run service `smartphone-addiction-api` (region `asia-south1`)
-- **URL**: https://smartphone-addiction-api-242711953247.asia-south1.run.app/app
-- **Deployment details**: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
-
----
-
-## 🚀 Quickstart & Execution
-
-### 1. Install Dependencies
-```bash
-pip install -r requirements.txt
-```
-
-### 2. Run 5-Fold Cross-Validation Pipeline
-```bash
-python src/train.py
-```
-
-### 3. Generate Optimized Ensemble & Calibrated Submission
-```bash
-python src/ensemble.py
-```
-
-### 4. Launch the Analytical Dashboard (FastAPI)
-```bash
+python -m venv .venv
+source .venv/Scripts/activate        # Windows Git Bash; use .venv/bin/activate elsewhere
+pip install -r requirements-dev.txt  # serving runtime plus test libraries
+cp .env.example .env                 # then edit the values
 python -m uvicorn src.main:app
 ```
-Open http://127.0.0.1:8000. Tabs: Individual Diagnostic, Population Cohort Analytics, What-If Simulation, Batch Diagnostics (CSV upload, up to 5 MB / 10,000 rows, with report export).
 
-### 5. Run the Test Suite
+Open http://127.0.0.1:8000. The trained checkpoint (`models/lgb_fold_1.joblib`) and the Kaggle CSVs are not tracked in git. Set `USE_MOCK_MODEL=True` in `.env` to run the API on the calibrated heuristic engine without the checkpoint.
+
+## Usage
+
+To retrain, place the Kaggle files in `data/` and install the full environment (`pip install -r requirements.txt`):
+
 ```bash
-pytest -q
+python src/train.py      # 5-fold cross-validation for four models
+python src/ensemble.py   # optimized ensemble and calibrated submission
 ```
 
----
+The dashboard has four tabs: Individual Diagnostic, Population Cohort Analytics, What-If Simulation and Batch Diagnostics.
 
-## 👥 Contributors & Citation
-- **Author**: Jegadeesh D
-- **Competition**: Kaggle Playground Series S6E8 (August 2026)
+## Running tests
+
+```bash
+pytest -q                          # full suite
+pytest tests/test_features.py -q   # one file
+```
+
+Last full run: 331 passed, 2 skipped (the skipped tests need PyTorch, which the serving runtime does not install).
+
+## Configuration
+
+Copy `.env.example` to `.env`.
+
+| Variable | Purpose |
+|---|---|
+| `APP_HOST` | Network host address for the FastAPI backend |
+| `APP_PORT` | Port for the Uvicorn server (default 8000) |
+| `APP_DEBUG` | Verbose ASGI logging flag |
+| `MODEL_PATH` | Path to the serialized LightGBM Fold 1 model |
+| `PRIORS_PATH` | Path to the pre-computed population priors JSON |
+| `COHORT_CACHE_PATH` | Path to the pre-aggregated cohort summary JSON |
+| `USE_MOCK_MODEL` | Use the calibrated heuristic mock inference engine |
+| `CORS_ORIGINS` | Allowed CORS origins, comma-separated or a JSON list |
+
+## Project structure
+
+```
+app/          legacy Streamlit prototype (not deployed)
+data/         priors and cohort summary (Kaggle CSVs are local only)
+docs/         specification, architecture, decisions and deployment notes
+models/       trained checkpoints and out-of-fold predictions (local only)
+notebooks/    the 8-step analysis notebook
+scripts/      cohort cache and priors generators
+src/          FastAPI app (main.py, api/), features, training, ensemble, inference
+tests/        pytest suite
+```
+
+## Documentation
+
+- [docs/README.md](docs/README.md): index of the documents
+- [docs/SPEC.md](docs/SPEC.md): user journeys and acceptance criteria
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): components, data models and API contracts
+- [docs/DECISIONS.md](docs/DECISIONS.md): architecture decision records
+- [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md): Cloud Run pipeline and runbook
+- [CHANGELOG.md](CHANGELOG.md): history of changes
+
+## How this was built
+
+Designed and built by jegadeesh17 with [SoftwareEngineeringAgents](https://github.com/jegadeesh17/SoftwareEngineeringAgents), a multi-agent workflow for Claude Code. I reviewed and tested all code.
+
+## License
+
+[MIT](LICENSE)
