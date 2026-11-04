@@ -1,8 +1,8 @@
 # Smartphone Addiction Prediction
 
-Kaggle Playground Series S6E8 solution plus a live diagnostic dashboard. It predicts the probability of smartphone addiction (`addicted_label`, scored by ROC AUC and accuracy) with a tuned ensemble, and serves single-user diagnostics, cohort analytics, what-if simulation and batch scoring through a FastAPI app.
+Kaggle Playground Series S6E8 solution plus a diagnostic dashboard. It predicts the probability of smartphone addiction (`addicted_label`, scored by ROC AUC and accuracy) with a tuned ensemble, and serves single-user diagnostics, cohort analytics, what-if simulation and batch scoring through a FastAPI app.
 
-Live app: https://smartphone-addiction-api-242711953247.asia-south1.run.app/app
+Live app: not currently deployed (Cloud Run service removed Nov 2026; redeploy with `.github/workflows/deploy.yml`, which is disabled in GitHub Actions)
 
 ## Features
 
